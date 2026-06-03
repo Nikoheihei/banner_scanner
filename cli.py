@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Banner Scanner CLI"""
 
 import argparse
@@ -13,7 +12,6 @@ from .core.log import setup_logging
 
 
 def _result_to_dict(result: Any) -> dict:
-    """BannerResult 或 HostResult 转可序列化字典"""
     from .core.models import BannerResult, HostResult
     if isinstance(result, HostResult):
         return {
@@ -52,20 +50,14 @@ def _result_to_dict(result: Any) -> dict:
                 "mldst": result.ftp.mldst,
                 "tvfs": result.ftp.tvfs,
             }
-        # 指纹信息
         if result.vendor:
             d["vendor"] = result.vendor
             d["vendor_id"] = result.vendor_id
             d["vendor_confidence"] = result.vendor_confidence
         if result.matched_rules:
             d["matched_rules"] = [
-                {
-                    "vendor_id": r.vendor_id,
-                    "vendor_name": r.vendor_name,
-                    "pattern": r.pattern,
-                    "confidence": r.confidence,
-                    "source": r.source,
-                }
+                {"vendor_id": r.vendor_id, "vendor_name": r.vendor_name,
+                 "pattern": r.pattern, "source": r.source}
                 for r in result.matched_rules
             ]
         return d
@@ -73,7 +65,6 @@ def _result_to_dict(result: Any) -> dict:
 
 
 def _format_text(results: list) -> str:
-    """格式化为可读文本"""
     lines = []
     for host_result in results:
         if isinstance(host_result, dict):
@@ -96,39 +87,22 @@ def _format_text(results: list) -> str:
                 continue
 
             lines.append(f"  ✅ 可访问")
-            lines.append(f"  ⏱  响应时间: {result.get('response_time_ms', 0):.1f}ms")
-
+            lines.append(f"  ⏱  {result.get('response_time_ms', 0):.1f}ms")
             banner = result.get("banner", "")
             if banner:
-                lines.append(f"  📋 Banner:")
-                for line in banner.split("\n"):
-                    lines.append(f"      {line}")
-            if result.get("banner_truncated"):
-                lines.append(f"  ⚠️  Banner 被截断")
+                lines.append(f"  📋 {banner}")
 
             ssh = result.get("ssh")
             if ssh and ssh.get("software"):
-                lines.append(f"  🔑 SSH 详细信息:")
-                lines.append(f"      软件: {ssh['software']}")
-                if ssh.get("version"):
-                    lines.append(f"      版本: {ssh['version']}")
-                lines.append(f"      协议版本: {ssh['protocol_version']}")
+                lines.append(f"  🔑 {ssh['software']} {ssh.get('version', '')}")
 
             ftp = result.get("ftp")
             if ftp and ftp.get("features"):
-                lines.append(f"  📁 FTP 特性: {ftp['features']}")
+                lines.append(f"  📁 {ftp['features']}")
 
-            # 指纹信息
             vendor = result.get("vendor")
             if vendor:
-                lines.append(f"  🏷️  指纹匹配: {vendor}")
-                if result.get("vendor_confidence", 0) > 0:
-                    lines.append(f"      置信度: {result['vendor_confidence']:.0%}")
-            matched = result.get("matched_rules")
-            if matched and len(matched) > 1:
-                lines.append(f"      更多匹配:")
-                for r in matched[1:]:
-                    lines.append(f"        - {r['vendor_name']} (来源: {r.get('source', 'banner')})")
+                lines.append(f"  🏷️  {vendor}")
 
     return "\n".join(lines)
 
@@ -136,46 +110,24 @@ def _format_text(results: list) -> str:
 async def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Banner Scanner - 网络协议 Banner 探测工具",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-示例:
-  %(prog)s 192.168.1.1
-  %(prog)s 192.168.1.1 --protocols ssh,ftp
-  %(prog)s 192.168.1.1 10.0.0.1 --timeout 5 --json
-  %(prog)s 192.168.1.1 --protocols telnet --no-feat
-  %(prog)s --health                         # 探测引擎健康状态
-  %(prog)s 192.168.1.1 --fingerprint vendors.json  # 加载指纹库
-        """,
     )
     parser.add_argument("hosts", nargs="*", help="目标 IP 地址")
-    parser.add_argument("-p", "--protocols", default="ssh,ftp,telnet",
-                        help="协议列表，逗号分隔 (默认: ssh,ftp,telnet)")
-    parser.add_argument("-t", "--timeout", type=float, default=3.0,
-                        help="连接超时秒数 (默认: 3.0)")
-    parser.add_argument("--read-timeout", type=float, default=4.0,
-                        help="读取超时秒数 (默认: 4.0)")
-    parser.add_argument("--max-banner", type=int, default=65536,
-                        help="Banner 最大字节数 (默认: 65536)")
-    parser.add_argument("--concurrent", type=int, default=50,
-                        help="最大并发主机数 (默认: 50)")
-    parser.add_argument("--json", action="store_true", help="JSON 格式输出")
-    parser.add_argument("--json-log", action="store_true", help="JSON 格式日志")
-    parser.add_argument("--log-file", help="日志文件路径")
-    parser.add_argument("--no-feat", action="store_true", help="FTP 不发送 FEAT")
-    parser.add_argument("--health", action="store_true", help="查看引擎健康状态")
-    parser.add_argument("--fingerprint", help="指纹库文件路径（JSON）")
-    parser.add_argument("--verbose", "-v", action="store_true", help="DEBUG 日志")
+    parser.add_argument("-p", "--protocols", default="ssh,ftp,telnet")
+    parser.add_argument("-t", "--timeout", type=float, default=3.0)
+    parser.add_argument("--read-timeout", type=float, default=4.0)
+    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--no-feat", action="store_true")
+    parser.add_argument("--health", action="store_true")
+    parser.add_argument("--fingerprint", help="指纹库文件路径")
+    parser.add_argument("--verbose", "-v", action="store_true")
 
     args = parser.parse_args(argv)
 
-    log_level = "DEBUG" if args.verbose else "INFO"
-    setup_logging(level=log_level, json_format=args.json_log, log_file=args.log_file)
+    setup_logging(level="DEBUG" if args.verbose else "INFO")
 
     config = ProbeConfig(
         connect_timeout=args.timeout,
         read_timeout=args.read_timeout,
-        max_banner_bytes=args.max_banner,
-        max_concurrent_hosts=args.concurrent,
         fingerprint_path=args.fingerprint,
     )
     if args.no_feat:
@@ -189,17 +141,9 @@ async def main(argv: list[str] | None = None) -> int:
             json.dump(health, sys.stdout, indent=2, ensure_ascii=False)
             print()
         else:
-            print(f"  ✅ 健康: {health['healthy']}")
-            print(f"  ⏱  运行时间: {health['uptime_s']:.0f}s")
-            print(f"  📊 总探测: {health['total_probes']}")
-            print(f"  ❌ 总错误: {health['total_errors']}")
-            print(f"  📈 错误率: {health['error_rate_pct']}%")
-            print(f"  🔒 熔断主机: {health['circuit_breaker_open_hosts']}")
-            if health.get("fingerprint"):
-                fp = health["fingerprint"]
-                print(f"  🏷️  指纹规则: {fp['total_rules']} 条, {len(fp['vendors'])} 个厂商")
-            else:
-                print(f"  🏷️  指纹库: 未加载")
+            print(f"  总探测: {health['total_probes']}")
+            print(f"  总错误: {health['total_errors']}")
+            print(f"  错误率: {health['error_rate_pct']}%")
         return 0
 
     if not args.hosts:

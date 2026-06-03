@@ -1,12 +1,11 @@
 """Banner Scanner - 网络协议 Banner 探测工具。"""
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __all__ = [
     "ProbeEngine", "probe_host", "probe_ssh", "probe_ftp", "probe_telnet",
     "BannerResult", "SshBanner", "FtpFeatures", "HostResult", "ProbeConfig",
     "FingerprintMatch", "FingerprintMatcher", "FingerprintRule", "FingerprintLoader",
-    "normalize_banner", "match_banner",
-    "setup_logging",
+    "normalize_banner", "match_banner", "setup_logging",
 ]
 
 from .core.engine import ProbeEngine, probe_host, probe_ssh, probe_ftp, probe_telnet
