@@ -209,6 +209,51 @@ python3 -m banner_scanner [hosts...] [options]
   --verbose, -v       DEBUG 日志
 ```
 
+## MCP 服务
+
+支持通过 MCP（Model Context Protocol）在 AI 客户端中直接调用扫描能力，例如 Cherry Studio、Claude Desktop 等。
+
+### 启动服务
+
+```bash
+cd banner_scanner
+PYTHONPATH="$(dirname $(pwd)):$PYTHONPATH" python3 -m server.mcp_http_server
+```
+
+服务默认监听 `http://127.0.0.1:8877`，可通过环境变量 `MCP_PORT` 修改端口。
+
+### 客户端配置
+
+将 `mcp.json` 导入 MCP 客户端：
+
+```json
+{
+  "mcpServers": {
+    "banner-scanner": {
+      "type": "streamableHttp",
+      "url": "http://127.0.0.1:8877"
+    }
+  }
+}
+```
+
+### 可用工具
+
+| 工具 | 说明 |
+|------|------|
+| `health_check` | 引擎健康状态和指纹库信息 |
+| `probe_banner` | 探测 IP 的 SSH / FTP / Telnet Banner，自动指纹识别 |
+| `scan_batch` | 批量扫描多个 IP |
+
+### 协议支持
+
+| 传输方式 | 端点 | 说明 |
+|----------|------|------|
+| POST `/message` | JSON-RPC 2.0 | 工具调用 |
+| GET `/sse` | Server-Sent Events | 会话建立 |
+
+> **注意**：部分模型（如 Qwen）可能不主动调用 MCP 工具，表现为只给出文字回复而非实际调用接口。这是模型能力差异，非服务端问题。推荐使用支持 function calling 的模型。
+
 ## 项目结构
 
 ```
