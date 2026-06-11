@@ -14,9 +14,6 @@ python3 -m banner_scanner 192.168.1.1 --fingerprint vendors.json
 # 批量随机扫描
 python3 batch_scanner.py -c 300 --random --limit 10000 --protocol SSH --output result.txt
 
-# 离线指纹匹配（基于已有 Banner 数据库）
-python3 offline_match.py
-
 # 从 SQLite 数据库构建指纹库
 python3 build_fingerprints.py --db fingerprint.db --output vendors.json
 ```
@@ -133,14 +130,6 @@ python3 batch_scanner.py -c 300 --random --limit 100000 --protocol FTP --timeout
 
 # Telnet 5 万随机
 python3 batch_scanner.py -c 200 --random --limit 50000 --protocol TELNET --timeout 5.0 --output telnet_output.txt
-```
-
-### 离线指纹匹配
-
-基于已有 Banner 数据库（不发起网络连接）：
-
-```bash
-python3 offline_match.py
 ```
 
 ### 成功率分析
@@ -271,7 +260,7 @@ banner_scanner/
 │   └── telnet.py         Telnet 探测（被动接收 → IAC 协商 → \r\n → 二次探测 → 微特征）
 ├── build_fingerprints.py 从 SQLite 构建指纹库
 ├── batch_scanner.py      高并发批量扫描器（分块 + 断点续传）
-├── offline_match.py      离线指纹匹配（不联网）
+
 ├── vendors.json          205 条指纹规则
 └── tests/                单元测试
 ```
