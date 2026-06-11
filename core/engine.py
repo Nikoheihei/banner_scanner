@@ -56,16 +56,21 @@ class ProbeEngine:
             for port in ports:
                 try:
                     result = await self._probe_with_retry(probe_fn, host, port, proto)
-                    results[proto] = result
                     self._total_probes += 1
-                    if not result.accessible:
+                    if result.accessible:
+                        results[proto] = result
+                        break  # 成功则不再尝试其他端口
+                    # 失败时仅在没有更早结果时记录
+                    if proto not in results:
+                        results[proto] = result
                         self._total_errors += 1
                 except Exception as e:
-                    results[proto] = BannerResult(
-                        protocol=proto.upper(), host=host, port=port,
-                        error=f"Probe failed: {e}",
-                    )
-                    self._total_errors += 1
+                    if proto not in results:
+                        results[proto] = BannerResult(
+                            protocol=proto.upper(), host=host, port=port,
+                            error=f"Probe failed: {e}",
+                        )
+                        self._total_errors += 1
 
         # 指纹匹配 + 更新 info
         if self._matcher is not None:
