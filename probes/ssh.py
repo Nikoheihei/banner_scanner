@@ -4,8 +4,8 @@ import asyncio
 import logging
 from typing import Optional
 
-from ..core.models import BannerResult, SshBanner, ProbeConfig
-from ..core.parsers import parse_ssh_banner
+from ..core.models import BannerResult, SshBanner, ProbeConfig, get_effective_timeout
+from ..core.parsers import parse_ssh_banner, extract_banner_info
 import banner_scanner.core.transport as _transport
 
 logger = logging.getLogger("banner_scanner.probe.ssh")
@@ -24,15 +24,16 @@ async def probe_ssh(
     writer = None
 
     try:
-        reader, writer = await _transport.connect_tcp(
+        ct, rt = get_effective_timeout(config, "ssh")
+        reader, writer, _tcp = await _transport.connect_tcp(
             host, port,
-            connect_timeout=config.connect_timeout,
+            connect_timeout=ct,
         )
 
         data, truncated = await _transport.read_exact(
             reader,
             max_bytes=config.max_banner_bytes,
-            read_timeout=config.read_timeout,
+            read_timeout=rt,
         )
 
         elapsed = (asyncio.get_event_loop().time() - start) * 1000
@@ -44,6 +45,8 @@ async def probe_ssh(
         result.banner_truncated = truncated
         result.ssh = parse_ssh_banner(banner)
         result.accessible = True
+        # 统一提取有效信息
+        result.info = extract_banner_info(result)
 
     except (_transport.ConnectionTimeout,
             _transport.ReadTimeout,

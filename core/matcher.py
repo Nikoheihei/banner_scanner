@@ -135,7 +135,9 @@ class FingerprintMatcher:
 
     def match(self, result: BannerResult) -> BannerResult:
         """对单个 BannerResult 执行指纹匹配，结果写入 vendor / matched_rules"""
-        if not result.accessible or not result.banner:
+        if not result.accessible:
+            return result
+        if not result.banner and not result.banner_raw_hex:
             return result
 
         candidates = self._collect_candidates(result)
@@ -143,23 +145,26 @@ class FingerprintMatcher:
 
         for rule in self._rules:
             for source, text in candidates:
-                if rule.match(text):
+                m = rule.regex.search(text)
+                if m:
+                    match_len = m.end() - m.start()
                     fm = FingerprintMatch(
                         vendor_id=rule.vendor_id,
                         vendor_name=rule.name,
                         pattern=rule.pattern,
-                        confidence=1.0,
+                        confidence=min(1.0, match_len / max(len(text), 1) * 2),
                         source=source,
                     )
-                    matches.append(fm)
+                    matches.append((match_len, fm))
 
-        # 去重：同 vendor 只保留第一个匹配
+        # 按匹配长度降序排列（长匹配优先），同 vendor 只保留最长
+        matches.sort(key=lambda x: -x[0])
         seen_ids = set()
         unique: list[FingerprintMatch] = []
-        for m in matches:
-            if m.vendor_id not in seen_ids:
-                seen_ids.add(m.vendor_id)
-                unique.append(m)
+        for _, fm in matches:
+            if fm.vendor_id not in seen_ids:
+                seen_ids.add(fm.vendor_id)
+                unique.append(fm)
 
         result.matched_rules = unique
         if unique:
@@ -179,7 +184,9 @@ class FingerprintMatcher:
 
     def _collect_candidates(self, result: BannerResult) -> list[tuple[str, str]]:
         """收集待匹配的文本来源"""
-        candidates = [("banner", result.banner)]
+        candidates = []
+        if result.banner:
+            candidates.append(("banner", result.banner))
 
         # SSH：用结构化字段做额外匹配
         if result.ssh:
@@ -188,8 +195,31 @@ class FingerprintMatcher:
             if result.ssh.version_string:
                 candidates.append(("ssh.version_string", result.ssh.version_string))
 
-        # FTP：banner 已经覆盖了 FEAT 里的信息
-        # 但如果想单独匹配 FEAT 特征，可以在这里扩展
+        # Telnet IAC 字节 hex + 标准化签名
+        if result.banner_raw_hex:
+            candidates.append(("telnet_raw_hex", result.banner_raw_hex))
+        if result.info and result.info.get("iac_signature"):
+            candidates.append(("iac_signature", result.info["iac_signature"]))
+        if result.info and result.info.get("micro_features"):
+            mf = result.info["micro_features"]
+            micro_text = f"PROMPT={mf.get('prompt_type','')} LE={mf.get('line_ending','')} TS={'1' if mf.get('trailing_space') else '0'} LCRLF={mf.get('leading_crlf',0)} ANSI={'1' if mf.get('has_ansi') else '0'}"
+            # 长度簇
+            if mf.get("length_cluster"):
+                micro_text += f" LEN={mf['length_cluster']}"
+            candidates.append(("micro_features", micro_text))
+
+        # TCP 层指纹
+        if result.info and result.info.get("tcp_info"):
+            ti = result.info["tcp_info"]
+            tcp_text = f"MSS={ti.get('mss','?')} BUF={ti.get('sndbuf','?')}"
+            candidates.append(("tcp_info", tcp_text))
+
+        # 长度+填充指纹
+        if result.info:
+            if result.info.get("length_cluster"):
+                candidates.append(("length_cluster", f"LEN={result.info['length_cluster']}"))
+            if result.info.get("padding"):
+                candidates.append(("padding", f"PAD={result.info['padding']}"))
 
         return candidates
 

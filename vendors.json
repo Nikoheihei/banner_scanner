@@ -1,173 +1,1825 @@
 {
   "vendors": [
     {
-      "id": 204,
-      "matched_ids": [],
-      "name": "hMailServer",
-      "pattern": ".*hMailServer.*"
-    },
-    {
-      "id": 402,
-      "matched_ids": [],
-      "name": "Dropbear",
-      "pattern": ".*Dropbear.*"
-    },
-    {
-      "id": 205,
-      "matched_ids": [],
-      "name": "IceWarp",
-      "pattern": ".*IceWarp.*"
-    },
-    {
-      "id": 203,
-      "matched_ids": [],
-      "name": "Courier SMTP",
-      "pattern": ".*Courier.*ESMTP.*"
-    },
-    {
-      "id": 502,
-      "matched_ids": [],
-      "name": "Cisco Telnet",
-      "pattern": ".*Cisco IOS.*"
-    },
-    {
-      "id": 201,
-      "matched_ids": [],
-      "name": "Exchange",
-      "pattern": ".*Microsoft Exchange.*"
-    },
-    {
-      "id": 202,
-      "matched_ids": [],
-      "name": "OpenSMTPD",
-      "pattern": ".*OpenSMTPD.*"
-    },
-    {
-      "id": 501,
-      "matched_ids": [],
-      "name": "MikroTik Telnet",
-      "pattern": ".*MikroTik.*RouterOS.*"
-    },
-    {
-      "id": 301,
-      "matched_ids": [],
-      "name": "vsftpd",
-      "pattern": ".*vsftpd.*"
+      "id": 1,
+      "name": "OpenSSH",
+      "protocol": "SSH",
+      "pattern": ".*OpenSSH.*",
+      "count": 1923,
+      "template_ids": [
+        1,
+        2,
+        4,
+        6,
+        13,
+        14,
+        18,
+        20,
+        26,
+        32,
+        35,
+        50
+      ]
     },
     {
       "id": 2,
-      "matched_ids": [],
-      "name": "Postfix",
-      "pattern": ".*Postfix.*"
+      "name": "AWS SFTP",
+      "protocol": "SSH",
+      "pattern": ".*AWS.*SFTP.*",
+      "count": 861,
+      "template_ids": [
+        3
+      ]
     },
     {
-      "id": 25,
-      "matched_ids": [
-        1520520706,
-        663809266
-      ],
-      "name": "QQ Mail",
-      "pattern": ".*qq\\.com.*"
-    },
-    {
-      "id": 401,
-      "matched_ids": [
-        436906184,
-        2036039246
-      ],
-      "name": "OpenSSH",
-      "pattern": ".*OpenSSH.*"
-    },
-    {
-      "id": 305,
-      "matched_ids": [],
-      "name": "Serv-U",
-      "pattern": ".*Serv-U.*"
-    },
-    {
-      "id": 6,
-      "matched_ids": [
-        -664863285
-      ],
-      "name": "Microsoft",
-      "pattern": ".*Microsoft.*"
-    },
-    {
-      "id": 403,
-      "matched_ids": [],
-      "name": "libssh",
-      "pattern": ".*libssh.*"
-    },
-    {
-      "id": 121,
-      "matched_ids": [],
-      "name": "iCloud",
-      "pattern": ".*iCloud.*"
-    },
-    {
-      "id": 54,
-      "matched_ids": [],
-      "name": "Yahoo",
-      "pattern": ".*yahoo.*"
-    },
-    {
-      "id": 7,
-      "matched_ids": [],
-      "name": "Sendmail",
-      "pattern": ".*Sendmail.*"
-    },
-    {
-      "id": 5,
-      "matched_ids": [],
-      "name": "MailEnable",
-      "pattern": ".*MailEnable.*"
-    },
-    {
-      "id": 304,
-      "matched_ids": [],
-      "name": "FileZilla Server",
-      "pattern": ".*FileZilla Server.*"
+      "id": 44,
+      "name": "vsFTPd",
+      "protocol": "FTP",
+      "pattern": ".*vsFTPd.*",
+      "count": 105,
+      "template_ids": [
+        59,
+        84
+      ]
     },
     {
       "id": 3,
-      "matched_ids": [],
-      "name": "Exim",
-      "pattern": ".*Exim.*"
+      "name": "FILES.COM",
+      "protocol": "SSH",
+      "pattern": ".*FILES.*COM.*",
+      "count": 65,
+      "template_ids": [
+        5
+      ]
     },
     {
-      "id": 302,
-      "matched_ids": [],
+      "id": 45,
+      "name": "Unknown-FTP-45",
+      "protocol": "FTP",
+      "pattern": "220\\ Service\\ ready\\ for\\ new\\ .+?",
+      "count": 64,
+      "template_ids": [
+        60
+      ]
+    },
+    {
+      "id": 46,
+      "name": "FileZilla Server",
+      "protocol": "FTP,TELNET",
+      "pattern": ".*FileZilla.*Server.*",
+      "count": 43,
+      "template_ids": [
+        61,
+        100
+      ]
+    },
+    {
+      "id": 47,
       "name": "Pure-FTPd",
-      "pattern": ".*Pure-FTPd.*"
+      "protocol": "FTP",
+      "pattern": ".*Pure.*FTPd.*",
+      "count": 37,
+      "template_ids": [
+        62
+      ]
     },
     {
-      "id": 39,
-      "matched_ids": [],
-      "name": "Zimbra",
-      "pattern": ".*zimbra.*"
+      "id": 48,
+      "name": "Microsoft FTP",
+      "protocol": "FTP",
+      "pattern": ".*Microsoft.*FTP.*",
+      "count": 35,
+      "template_ids": [
+        63
+      ]
     },
     {
-      "id": 303,
-      "matched_ids": [],
+      "id": 49,
       "name": "ProFTPD",
-      "pattern": ".*ProFTPD.*"
+      "protocol": "FTP",
+      "pattern": ".*ProFTPD.*",
+      "count": 22,
+      "template_ids": [
+        64,
+        65,
+        74,
+        85,
+        97
+      ]
+    },
+    {
+      "id": 50,
+      "name": "Unknown-FTP-50",
+      "protocol": "FTP",
+      "pattern": "220\\ Welcome\\ to\\ .+?",
+      "count": 7,
+      "template_ids": [
+        66
+      ]
     },
     {
       "id": 4,
-      "matched_ids": [
-        1298664709
-      ],
-      "name": "Gmail",
-      "pattern": ".*gsmtp.*"
+      "name": "Bitvise",
+      "protocol": "SSH",
+      "pattern": ".*Bitvise.*",
+      "count": 6,
+      "template_ids": [
+        7,
+        15,
+        43
+      ]
     },
     {
-      "id": 1,
-      "matched_ids": [
-        1716309186,
-        1913655422
-      ],
-      "name": "Outlook",
-      "pattern": ".*outlook.*"
+      "id": 5,
+      "name": "Serv-U",
+      "protocol": "SSH",
+      "pattern": ".*Serv.*U.*",
+      "count": 6,
+      "template_ids": [
+        8,
+        31
+      ]
+    },
+    {
+      "id": 6,
+      "name": "CrushFTP",
+      "protocol": "SSH",
+      "pattern": ".*CrushFTP.*",
+      "count": 6,
+      "template_ids": [
+        9
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Cisco",
+      "protocol": "SSH,FTP",
+      "pattern": ".*Cisco.*",
+      "count": 5,
+      "template_ids": [
+        10,
+        95
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Unknown-SSH-8",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-Go",
+      "count": 5,
+      "template_ids": [
+        11
+      ]
+    },
+    {
+      "id": 9,
+      "name": "SFTPGo",
+      "protocol": "SSH",
+      "pattern": ".*SFTPGo.*",
+      "count": 5,
+      "template_ids": [
+        12
+      ]
+    },
+    {
+      "id": 51,
+      "name": "Serv-U FTP",
+      "protocol": "FTP",
+      "pattern": ".*Serv.*U.*FTP.*",
+      "count": 4,
+      "template_ids": [
+        67
+      ]
+    },
+    {
+      "id": 10,
+      "name": "srtSSHServer",
+      "protocol": "SSH",
+      "pattern": ".*srtSSHServer.*",
+      "count": 3,
+      "template_ids": [
+        16
+      ]
+    },
+    {
+      "id": 11,
+      "name": "GoAnywhere",
+      "protocol": "SSH",
+      "pattern": ".*GoAnywhere.*",
+      "count": 3,
+      "template_ids": [
+        17
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Unknown-SSH-12",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-ssh2js1\\.17\\.5",
+      "count": 3,
+      "template_ids": [
+        19
+      ]
+    },
+    {
+      "id": 52,
+      "name": "Unknown-FTP-52",
+      "protocol": "FTP",
+      "pattern": "220\\ FTP\\ Server",
+      "count": 3,
+      "template_ids": [
+        68
+      ]
+    },
+    {
+      "id": 53,
+      "name": "Unknown-FTP-53",
+      "protocol": "FTP",
+      "pattern": "220\\ 'FTP\\ U2FsdGVkX1\\+49718V45bZYaAtYtFl\\+0sIqki8MgKxDY='",
+      "count": 3,
+      "template_ids": [
+        69
+      ]
+    },
+    {
+      "id": 54,
+      "name": "Unknown-FTP-54",
+      "protocol": "FTP",
+      "pattern": "220\\ Service\\ Ready",
+      "count": 3,
+      "template_ids": [
+        70
+      ]
+    },
+    {
+      "id": 55,
+      "name": "Unknown-FTP-55",
+      "protocol": "FTP",
+      "pattern": "220\\ FTP\\ Server\\ Welcome",
+      "count": 3,
+      "template_ids": [
+        71
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Cerberus FTP",
+      "protocol": "SSH",
+      "pattern": ".*Cerberus.*FTP.*",
+      "count": 2,
+      "template_ids": [
+        21
+      ]
+    },
+    {
+      "id": 14,
+      "name": "WS_FTP",
+      "protocol": "SSH,FTP",
+      "pattern": ".*WS.*FTP.*",
+      "count": 2,
+      "template_ids": [
+        22,
+        92
+      ]
+    },
+    {
+      "id": 15,
+      "name": "GitLab SSHD",
+      "protocol": "SSH",
+      "pattern": ".*GitLab.*SSHD.*",
+      "count": 2,
+      "template_ids": [
+        23
+      ]
+    },
+    {
+      "id": 16,
+      "name": "Domo",
+      "protocol": "SSH",
+      "pattern": ".*Domo.*",
+      "count": 2,
+      "template_ids": [
+        24
+      ]
+    },
+    {
+      "id": 17,
+      "name": "Maverick SSHD",
+      "protocol": "SSH",
+      "pattern": ".*Maverick.*SSHD.*",
+      "count": 2,
+      "template_ids": [
+        25
+      ]
+    },
+    {
+      "id": 56,
+      "name": "Alpine FTP",
+      "protocol": "FTP",
+      "pattern": ".*Alpine.*FTP.*",
+      "count": 2,
+      "template_ids": [
+        72
+      ]
+    },
+    {
+      "id": 57,
+      "name": "Unknown-FTP-57",
+      "protocol": "FTP",
+      "pattern": "220\\ Welcome\\ to\\ FW\\ SFTP\\ Server",
+      "count": 2,
+      "template_ids": [
+        73
+      ]
+    },
+    {
+      "id": 18,
+      "name": "Unknown-SSH-18",
+      "protocol": "SSH",
+      "pattern": "@RSYNCD:\\ 30\\.0",
+      "count": 1,
+      "template_ids": [
+        27
+      ]
+    },
+    {
+      "id": 19,
+      "name": "Wing FTP",
+      "protocol": "SSH",
+      "pattern": ".*Wing.*FTP.*",
+      "count": 1,
+      "template_ids": [
+        28
+      ]
+    },
+    {
+      "id": 20,
+      "name": "Unknown-SSH-20",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-SSHD",
+      "count": 1,
+      "template_ids": [
+        29
+      ]
+    },
+    {
+      "id": 21,
+      "name": "mod_sftp",
+      "protocol": "SSH",
+      "pattern": ".*mod.*sftp.*",
+      "count": 1,
+      "template_ids": [
+        30,
+        44
+      ]
+    },
+    {
+      "id": 22,
+      "name": "Unknown-SSH-22",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-onboarding\\.neustar\\.biz",
+      "count": 1,
+      "template_ids": [
+        33
+      ]
+    },
+    {
+      "id": 23,
+      "name": "Nielsen SFTP",
+      "protocol": "SSH",
+      "pattern": ".*Nielsen.*SFTP.*",
+      "count": 1,
+      "template_ids": [
+        34
+      ]
+    },
+    {
+      "id": 24,
+      "name": "Unknown-SSH-24",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-FTP\\ Server\\ ready\\.\\\n\u0000\u0000\u0003<\u0004\u0014��3j\u0002�\u001bW�J����\u001ff\u0000\u0000\u0000�ecdh\\-sha2\\-nistp256,ecdh\\-sha2\\-nistp384,ecdh\\-sha2\\-nistp521,diffie\\-hellman\\-group\\-exchange\\-sha256,diffie\\-hellman\\-group\\-exchange\\-sha1,diffie\\-hellman\\-group14\\-sha1,diffie\\-hellman\\-group1\\-sha1,rsa1024\\-sha1\u0000\u0000\u0000\u000fssh\\-rsa,ssh\\-dss\u0000\u0000\u0000�aes256\\-ctr,aes192\\-ctr,aes128\\-ctr,aes256\\-cbc,aes192\\-cbc,aes128\\-cbc,blowfish\\-ctr,blowfish\\-cbc,cast128\\-cbc,arcfour256,arcfour128,3des\\-ctr,3des\\-cbc\u0000\u0000\u0000�aes256\\-ctr,aes192\\-ctr,aes128\\-ctr,aes256\\-cbc,aes192\\-cbc,aes128\\-cbc,blowfish\\-ctr,blowfish\\-cbc,c",
+      "count": 1,
+      "template_ids": [
+        36
+      ]
+    },
+    {
+      "id": 25,
+      "name": "WeOnlyDo wodFTPD",
+      "protocol": "SSH",
+      "pattern": ".*WeOnlyDo.*wodFTPD.*",
+      "count": 1,
+      "template_ids": [
+        37
+      ]
+    },
+    {
+      "id": 26,
+      "name": "Unknown-SSH-26",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-Vcz8Kd7wc",
+      "count": 1,
+      "template_ids": [
+        38
+      ]
+    },
+    {
+      "id": 27,
+      "name": "Unknown-SSH-27",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-FTP\\ Server\\ ready\\.\\\n\u0000\u0000\u0003<\u0004\u0014u\\&I�\\.��\\+Y0�̅���\u0000\u0000\u0000�ecdh\\-sha2\\-nistp256,ecdh\\-sha2\\-nistp384,ecdh\\-sha2\\-nistp521,diffie\\-hellman\\-group\\-exchange\\-sha256,diffie\\-hellman\\-group\\-exchange\\-sha1,diffie\\-hellman\\-group14\\-sha1,diffie\\-hellman\\-group1\\-sha1,rsa1024\\-sha1\u0000\u0000\u0000\u000fssh\\-rsa,ssh\\-dss\u0000\u0000\u0000�aes256\\-ctr,aes192\\-ctr,aes128\\-ctr,aes256\\-cbc,aes192\\-cbc,aes128\\-cbc,blowfish\\-ctr,blowfish\\-cbc,cast128\\-cbc,arcfour256,arcfour128,3des\\-ctr,3des\\-cbc\u0000\u0000\u0000�aes256\\-ctr,aes192\\-ctr,aes128\\-ctr,aes256\\-cbc,aes192\\-cbc,aes128\\-cbc,blowfish\\-ctr,blowfish\\-cbc,c",
+      "count": 1,
+      "template_ids": [
+        39
+      ]
+    },
+    {
+      "id": 28,
+      "name": "SSHPiper",
+      "protocol": "SSH",
+      "pattern": ".*SSHPiper.*",
+      "count": 1,
+      "template_ids": [
+        40
+      ]
+    },
+    {
+      "id": 29,
+      "name": "VShell",
+      "protocol": "SSH",
+      "pattern": ".*VShell.*",
+      "count": 1,
+      "template_ids": [
+        41
+      ]
+    },
+    {
+      "id": 30,
+      "name": "Platform.sh",
+      "protocol": "SSH",
+      "pattern": ".*Platform.*sh.*",
+      "count": 1,
+      "template_ids": [
+        42
+      ]
+    },
+    {
+      "id": 31,
+      "name": "Unknown-SSH-31",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-mutUr",
+      "count": 1,
+      "template_ids": [
+        45
+      ]
+    },
+    {
+      "id": 32,
+      "name": "Unknown-SSH-32",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-FTP\\ Server\\ ready\\.\\\n\u0000\u0000\u0003<\u0004\u0014\u0003���A,�\b\u0002����\\.t�\u0000\u0000\u0000�ecdh\\-sha2\\-nistp256,ecdh\\-sha2\\-nistp384,ecdh\\-sha2\\-nistp521,diffie\\-hellman\\-group\\-exchange\\-sha256,diffie\\-hellman\\-group\\-exchange\\-sha1,diffie\\-hellman\\-group14\\-sha1,diffie\\-hellman\\-group1\\-sha1,rsa1024\\-sha1\u0000\u0000\u0000\u000fssh\\-rsa,ssh\\-dss\u0000\u0000\u0000�aes256\\-ctr,aes192\\-ctr,aes128\\-ctr,aes256\\-cbc,aes192\\-cbc,aes128\\-cbc,blowfish\\-ctr,blowfish\\-cbc,cast128\\-cbc,arcfour256,arcfour128,3des\\-ctr,3des\\-cbc\u0000\u0000\u0000�aes256\\-ctr,aes192\\-ctr,aes128\\-ctr,aes256\\-cbc,aes192\\-cbc,aes128\\-cbc,blowfish\\-ctr,blowfish\\-cbc,c",
+      "count": 1,
+      "template_ids": [
+        46
+      ]
+    },
+    {
+      "id": 33,
+      "name": "xlightftpd",
+      "protocol": "SSH",
+      "pattern": ".*xlightftpd.*",
+      "count": 1,
+      "template_ids": [
+        47
+      ]
+    },
+    {
+      "id": 34,
+      "name": "Paramiko",
+      "protocol": "SSH",
+      "pattern": ".*Paramiko.*",
+      "count": 1,
+      "template_ids": [
+        48
+      ]
+    },
+    {
+      "id": 35,
+      "name": "babeld",
+      "protocol": "SSH",
+      "pattern": ".*babeld.*",
+      "count": 1,
+      "template_ids": [
+        49
+      ]
+    },
+    {
+      "id": 36,
+      "name": "AudioCodes",
+      "protocol": "SSH",
+      "pattern": ".*AudioCodes.*",
+      "count": 1,
+      "template_ids": [
+        51
+      ]
+    },
+    {
+      "id": 37,
+      "name": "Unknown-SSH-37",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-0",
+      "count": 1,
+      "template_ids": [
+        52
+      ]
+    },
+    {
+      "id": 38,
+      "name": "Unknown-SSH-38",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-b5935dd",
+      "count": 1,
+      "template_ids": [
+        53
+      ]
+    },
+    {
+      "id": 39,
+      "name": "Unknown-SSH-39",
+      "protocol": "SSH",
+      "pattern": "220\\-FileZilla\\ Server\\ 0\\.9\\.60\\ beta\\\n220\\-written\\ by\\ Tim\\ Kosse\\ \\(tim\\.kosse@filezilla\\-project\\.org\\)\\\n220\\ Please\\ visit\\ https://filezilla\\-project\\.org/",
+      "count": 1,
+      "template_ids": [
+        54
+      ]
+    },
+    {
+      "id": 40,
+      "name": "Unknown-SSH-40",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-SFTPPlus\\\n\u0000\u0000\u0003D\\\u000b\u0014�н�\u000e��I<�O�٣U\u001f\u0000\u0000\u0001\\-curve25519\\-sha256,curve25519\\-sha256@libssh\\.org,ecdh\\-sha2\\-nistp256,ecdh\\-sha2\\-nistp384,ecdh\\-sha2\\-nistp521,diffie\\-hellman\\-group\\-exchange\\-sha256,diffie\\-hellman\\-group18\\-sha512,diffie\\-hellman\\-group17\\-sha512,diffie\\-hellman\\-group16\\-sha512,diffie\\-hellman\\-group15\\-sha512,diffie\\-hellman\\-group14\\-sha256,ext\\-info\\-s\u0000\u0000\u0000qrsa\\-sha2\\-512,rsa\\-sha2\\-256,ssh\\-rsa,ssh\\-dss,ecdsa\\-sha2\\-nistp256,ecdsa\\-sha2\\-nistp384,ecdsa\\-sha2\\-nistp521,ssh\\-ed25519\u0000\u0000\u0000Naes256\\-gcm@openssh\\.com,aes128\\-gcm@openssh\\.com,",
+      "count": 1,
+      "template_ids": [
+        55
+      ]
+    },
+    {
+      "id": 41,
+      "name": "Unknown-SSH-41",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-SSH2\\.0GA",
+      "count": 1,
+      "template_ids": [
+        56
+      ]
+    },
+    {
+      "id": 42,
+      "name": "Unknown-SSH-42",
+      "protocol": "SSH",
+      "pattern": "SSH\\-2\\.0\\-9\\.8\\.1\\.0_openssh",
+      "count": 1,
+      "template_ids": [
+        57
+      ]
+    },
+    {
+      "id": 43,
+      "name": "SSHD-CORE",
+      "protocol": "SSH",
+      "pattern": ".*SSHD.*CORE.*",
+      "count": 1,
+      "template_ids": [
+        58
+      ]
+    },
+    {
+      "id": 58,
+      "name": "Unknown-FTP-58",
+      "protocol": "FTP",
+      "pattern": "220\\ This\\ is\\ a\\ restricted\\ .+?\\ Any\\ unauthorized\\ access\\ will\\ be\\ persecuted\\ and\\ punished\\ by\\ federal\\ .+?",
+      "count": 1,
+      "template_ids": [
+        75
+      ]
+    },
+    {
+      "id": 59,
+      "name": "Unknown-FTP-59",
+      "protocol": "FTP",
+      "pattern": "220\\ .+?2",
+      "count": 1,
+      "template_ids": [
+        76
+      ]
+    },
+    {
+      "id": 60,
+      "name": "Unknown-FTP-60",
+      "protocol": "FTP",
+      "pattern": "220\\-Welcome\\ to",
+      "count": 1,
+      "template_ids": [
+        77
+      ]
+    },
+    {
+      "id": 61,
+      "name": "FileZilla Pro Enterprise",
+      "protocol": "FTP",
+      "pattern": ".*FileZilla.*Pro.*Enterprise.*",
+      "count": 1,
+      "template_ids": [
+        78
+      ]
+    },
+    {
+      "id": 62,
+      "name": "OnShift FTP",
+      "protocol": "FTP",
+      "pattern": ".*OnShift.*FTP.*",
+      "count": 1,
+      "template_ids": [
+        79
+      ]
+    },
+    {
+      "id": 63,
+      "name": "Unknown-FTP-63",
+      "protocol": "FTP",
+      "pattern": "220\\ ESP",
+      "count": 1,
+      "template_ids": [
+        80
+      ]
+    },
+    {
+      "id": 64,
+      "name": "pyftpdlib",
+      "protocol": "FTP",
+      "pattern": ".*pyftpdlib.*",
+      "count": 1,
+      "template_ids": [
+        81
+      ]
+    },
+    {
+      "id": 65,
+      "name": "Unknown-FTP-65",
+      "protocol": "FTP",
+      "pattern": "220\\ Welcome\\ to\\ Gudgel\\ Graphix",
+      "count": 1,
+      "template_ids": [
+        82
+      ]
+    },
+    {
+      "id": 66,
+      "name": "Unknown-FTP-66",
+      "protocol": "FTP",
+      "pattern": "220\\ For\\ Previously\\ Approved\\ company\\ business\\ purposes\\ only",
+      "count": 1,
+      "template_ids": [
+        83
+      ]
+    },
+    {
+      "id": 67,
+      "name": "Unknown-FTP-67",
+      "protocol": "FTP",
+      "pattern": "220\\ Welcome\\ message",
+      "count": 1,
+      "template_ids": [
+        86
+      ]
+    },
+    {
+      "id": 68,
+      "name": "Unknown-FTP-68",
+      "protocol": "FTP",
+      "pattern": "220\\ \"Welcome\\ to\\ .+?com!\\ Check\\ out\\ .+?txt\\ for\\ .+?\"",
+      "count": 1,
+      "template_ids": [
+        87
+      ]
+    },
+    {
+      "id": 69,
+      "name": "Adeptia Internal FTP",
+      "protocol": "FTP",
+      "pattern": ".*Adeptia.*Internal.*FTP.*",
+      "count": 1,
+      "template_ids": [
+        88
+      ]
+    },
+    {
+      "id": 70,
+      "name": "Phoenix Online FTP",
+      "protocol": "FTP",
+      "pattern": ".*Phoenix.*Online.*FTP.*",
+      "count": 1,
+      "template_ids": [
+        89
+      ]
+    },
+    {
+      "id": 71,
+      "name": "CoursEval FTPS",
+      "protocol": "FTP",
+      "pattern": ".*CoursEval.*FTPS.*",
+      "count": 1,
+      "template_ids": [
+        90
+      ]
+    },
+    {
+      "id": 72,
+      "name": "Hindawi FTP",
+      "protocol": "FTP",
+      "pattern": ".*Hindawi.*FTP.*",
+      "count": 1,
+      "template_ids": [
+        91
+      ]
+    },
+    {
+      "id": 73,
+      "name": "Unknown-FTP-73",
+      "protocol": "FTP",
+      "pattern": "220\\ Unauthorized\\ access\\ is\\ strictly\\ .+?",
+      "count": 1,
+      "template_ids": [
+        93
+      ]
+    },
+    {
+      "id": 74,
+      "name": "Unknown-FTP-74",
+      "protocol": "FTP",
+      "pattern": "220\\ Image\\ Gallery",
+      "count": 1,
+      "template_ids": [
+        94
+      ]
+    },
+    {
+      "id": 75,
+      "name": "Lumina Datamatics FTP",
+      "protocol": "FTP",
+      "pattern": ".*Lumina.*Datamatics.*FTP.*",
+      "count": 1,
+      "template_ids": [
+        96
+      ]
+    },
+    {
+      "id": 76,
+      "name": "Core FTP Server",
+      "protocol": "FTP",
+      "pattern": ".*Core.*FTP.*Server.*",
+      "count": 1,
+      "template_ids": [
+        98
+      ]
+    },
+    {
+      "id": 77,
+      "name": "Unknown-FTP-77",
+      "protocol": "FTP",
+      "pattern": "220\\ \\-\\ \\-\\ \\-",
+      "count": 1,
+      "template_ids": [
+        99
+      ]
+    },
+    {
+      "id": 78,
+      "name": "Unknown-TELNET-78",
+      "protocol": "TELNET",
+      "pattern": "��\u0018��\\ ��\\#��'",
+      "count": 1,
+      "template_ids": [
+        101
+      ]
+    },
+    {
+      "id": 79,
+      "name": "Unknown-UNKNOWN-79",
+      "protocol": "UNKNOWN",
+      "pattern": ".*220\\-FileZilla\\ Server\\ \\[DomainName\\]60\\ beta.*",
+      "count": 1,
+      "template_ids": [
+        102
+      ]
+    },
+    {
+      "id": 80,
+      "name": "Dropbear",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Dd]ropbear.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 81,
+      "name": "BusyBox",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*BusyBox.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 82,
+      "name": "RouterOS",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*RouterOS.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 83,
+      "name": "DreamHost FTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*DreamHost.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 84,
+      "name": "www.net.cn FTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*www\\.net\\.cn.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 85,
+      "name": "QTCP FTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*QTCP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 86,
+      "name": "Eshcom FTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Eshcom.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 87,
+      "name": "OnShift FTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*OnShift.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 88,
+      "name": "Adeptia Internal FTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Adeptia.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 89,
+      "name": "Lumina Datamatics FTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Lumina.*Datamatics.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 90,
+      "name": "Phoenix Online FTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Phoenix.*Online.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 91,
+      "name": "CoursEval FTPS",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*CoursEval.*FTPS.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 92,
+      "name": "Hindawi FTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Hindawi.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 93,
+      "name": "Axis Camera FTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*AXIS.*Network.*Camera.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 94,
+      "name": "APC Management Card",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*AP.*Network.*Management.*Card.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 95,
+      "name": "MikroTik",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*MikroTik.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 96,
+      "name": "NetScreen",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*NetScreen.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 97,
+      "name": "Adtran",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Adtran.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 98,
+      "name": "MOVEit",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*MOVEit.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 99,
+      "name": "Crestron",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Crestron.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 100,
+      "name": "RomSShell",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*RomSShell.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 101,
+      "name": "Gameservers FTPD",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Gameservers.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 102,
+      "name": "Arvixe FTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Arvixe.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 103,
+      "name": "Firmware Update FTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Ff]irmware.*[Uu]pdate.*[Ff][Tt][Pp].*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 104,
+      "name": "Ubuntu Server",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Ubuntu \\d+\\.\\d+.*login:.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 105,
+      "name": "login+Password同屏设备",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*login:.*Password:.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 106,
+      "name": "Ruijie Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Rr]ui[Jj]ie.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 107,
+      "name": "IPCamera Telnet",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*IP[Cc]amera.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 108,
+      "name": "ATP-Cli Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*ATP.Cli.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 109,
+      "name": "Aamra Networks",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Aa]amra.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 110,
+      "name": "Remote Management Console",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Remote Management Console.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 111,
+      "name": "HD9084 Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*HD9084.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 112,
+      "name": "Synchronet BBS",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Synchronet BBS.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 113,
+      "name": "CP841 Telnet",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*CP841.*Telnet.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 114,
+      "name": "AC7621 Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*AC7621.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 115,
+      "name": "YHTC Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*YHTC.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 116,
+      "name": "sbs-ipcam",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*sbs[- ]?ipcam.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 117,
+      "name": "ASUS Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Aa]su login:.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 118,
+      "name": "Huawei Stelnet Warning",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Ss]telnet.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 119,
+      "name": "Synology DiskStation",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Synology.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 120,
+      "name": "ASUS Router (RT-AC)",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*RT-AC\\d+.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 121,
+      "name": "DASAN Zhone GPON",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*DASAN.*Zhone.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 122,
+      "name": "TANDBERG Codec",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*TANDBERG.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 123,
+      "name": "DragonWave Horizon",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*DragonWave.*|.*Horizon_IDU.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 124,
+      "name": "UHP Satellite Modem",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*UHP-10.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 125,
+      "name": "buildroot",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*buildroot.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 126,
+      "name": "EdgeOS Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*EdgeOS.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 127,
+      "name": "NetComm Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*NetComm.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 128,
+      "name": "Debian Linux",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Debian GNU/Linux.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 129,
+      "name": "RTCS RTOS",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*RTCS.*Telnet.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 130,
+      "name": "VOTER System",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*VOTER.*System.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 131,
+      "name": "Matrix NVR",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Matrix[- ]NVR.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 132,
+      "name": "Adtec Telnet",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Adtec.*Telnet.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 133,
+      "name": "UsenetExpress NNTP",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*UsenetExpress.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 134,
+      "name": "FG8102 Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*FG8102.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 135,
+      "name": "DSL-500B Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*DSL-500B.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 136,
+      "name": "XPON ONT",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*XPON-\\d+.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 137,
+      "name": "aigoWiFi",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*aigoWiFi.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 138,
+      "name": "AsyncSSH",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*AsyncSSH.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 139,
+      "name": "WeOnlyDo SSH",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*WeOnlyDo.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 140,
+      "name": "PYNG-HUB",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*PYNG-HUB.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 141,
+      "name": "Embedded/Gateway (login)",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": "(?<![A-Za-z])[Ll]ogin:",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 142,
+      "name": "Network Device (user prompt)",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": "(?<![A-Za-z])[Uu]ser(?:name)?:",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 143,
+      "name": "Serial Gateway (password)",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": "(?<![A-Za-z])[Pp]assword:",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 144,
+      "name": "Embedded (login+password)",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": "[Ll]ogin:\\s*[Pp]assword:",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 145,
+      "name": "[Status] Connection Refused",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Cc]onnection [Rr]efused.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 146,
+      "name": "[Status] Too Many Connections",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Tt]oo many connections.*|.*maximum number.*exceeded.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 147,
+      "name": "[Status] System Busy",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Bb]usy.*|.*all ports.*|.*try again.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 148,
+      "name": "[Status] Access Denied",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Aa]ccess [Dd]enied.*|.*[Uu]nauthorized.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 149,
+      "name": "[Status] Service Disabled",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Dd]isabled.*|.*not available.*|.*[Ss]hutdown.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 150,
+      "name": "Cisco IOS telnetd",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*ff[fb-fe]01.*ff[fb-fe]03.*ff[fb-fe]18.*ff[fb-fe]1f.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 151,
+      "name": "Linux telnetd",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*ff[fb-fe]25.*ff[fb-fe]26.*ff[fb-fe]01.*ff[fb-fe]03.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 152,
+      "name": "BusyBox telnetd",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*ff[fb-fe]01.*ff[fb-fe]01.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 153,
+      "name": "Windows telnetd",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*ff[fb-fe]18.*ff[fb-fe]1f.*ff[fb-fe]22.*ff[fb-fe]27.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 154,
+      "name": "Embedded telnetd",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*fffd01.*fffb01.*fffb03.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 155,
+      "name": "Router telnetd",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*ff[b-fd]01.*ff[b-fd]03(?!.*ff[b-fd](?:18|1f|25|26)).*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 156,
+      "name": "Cisco Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Uu]ser Access Verification.*|.*[Cc]isco.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 157,
+      "name": "Broadband Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Bb]roadband [Rr]outer.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 158,
+      "name": "Cambium Networks",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Cc]ambium.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 159,
+      "name": "DD-WRT",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*DD-WRT.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 160,
+      "name": "MikroTik RouterOS",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Mm]ikro[Tt]ik.*|.*RouterOS.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 161,
+      "name": "Huawei Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Hh]uawei.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 162,
+      "name": "Ubiquiti Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Uu]biquiti.*|.*[Aa]ir[Mm]ax.*|.*[Ee]dge[Mm]ax.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 163,
+      "name": "OpenWrt",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Oo]pen[Ww]rt.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 164,
+      "name": "D-Link Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Dd][- ]?[Ll]ink.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 165,
+      "name": "Zyxel Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Zz]yxel.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 166,
+      "name": "DrayTek Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Dd]ray[Tt]ek.*|.*[Vv]igor.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 167,
+      "name": "TP-Link Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Tt][Pp][- ]?[Ll]ink.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 168,
+      "name": "Netgear Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Nn]et[Gg]ear.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 169,
+      "name": "ARRIS Gateway",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Aa][Rr][Rr][Ii][Ss].*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 170,
+      "name": "Actiontec Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Aa]ctiontec.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 171,
+      "name": "Raspberry Pi",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Rr]asp[bB]erry.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 172,
+      "name": "BusyBox",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Bb]usy[Bb]ox.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 173,
+      "name": "Juniper SSG",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Ss][Ss][Gg].*[Ll]ogin.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 174,
+      "name": "Fortinet",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Ff]ortinet.*|.*[Ff]orti[Gg]ate.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 175,
+      "name": "pfSense",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*pf[Ss]ense.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 176,
+      "name": "SonicWall",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Ss]onic[Ww]all.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 177,
+      "name": "Technicolor Gateway",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Tt]echnicolor.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 178,
+      "name": "Belkin Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Bb]elkin.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 179,
+      "name": "Buffalo Router",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Bb]uffalo.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 180,
+      "name": "ONT Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Oo][Nn][Tt].*[Ll]ogin.*|.*SFU.*1GE.*Micro.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 181,
+      "name": "RDK Gateway",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*RDK.*Yocto.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 182,
+      "name": "AS400 Mainframe",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*Sign On.*System.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 183,
+      "name": "HP JetDirect",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Hh][Pp].*[Jj]et[Dd]irect.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 184,
+      "name": "APC UPS",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Aa][Pp][Cc].*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 185,
+      "name": "Axis Camera",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Aa][Xx][Ii][Ss].*[Cc]amera.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 186,
+      "name": "Dropbear SSH",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Dd]ropbear.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 187,
+      "name": "Restricted Access Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Rr]estricted [Aa]ccess.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 188,
+      "name": "Session Limited Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Ss]ession.*[Ll]imit.*|.*[Mm]aximum.*[Tt]elnet.*|.*[Nn]o more connections.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 189,
+      "name": "Telnet Disabled/Error",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*[Tt]elnet.*[Dd]isabled.*|.*[Tt]elnet.*[Nn]ot.*[Ss]et.*|.*[Ss]ervice.*disabled.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 190,
+      "name": "HTTP on Port 23",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*HTTP/1\\.[01] 200.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 191,
+      "name": "Connection Closed",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*connection closed.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 192,
+      "name": "Linux login (trailing space)",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*login.*TS=1.*LE=CRLF.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 193,
+      "name": "Linux login (no space)",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*login.*TS=0.*LE=LF.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 194,
+      "name": "Cisco-style prompt",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*prompt_type=username.*LCRLF=2.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 195,
+      "name": "Username prompt",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*prompt_type=username.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 196,
+      "name": "ANSI Terminal Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*ANSI=1.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 197,
+      "name": "NULL-byte Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*has_null.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 198,
+      "name": "Linux netkit-telnetd",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*WILL\\(1\\).*WILL\\(3\\).*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 199,
+      "name": "BusyBox telnetd (iac)",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*WILL\\(1\\).*DO\\(3\\)(?!.*DO\\(24\\)).*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 200,
+      "name": "Full RFC telnetd",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*DO\\(24\\).*DO\\(31\\).*DO\\(32\\).*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 201,
+      "name": "256B Padded Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*LEN=256.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 202,
+      "name": "512B Padded Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*LEN=512.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 203,
+      "name": "1024B Padded Device",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*LEN=1024.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 204,
+      "name": "NULL-padded Firmware",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*PAD=NULL.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 205,
+      "name": "SPACE-padded Firmware",
+      "protocol": "SSH,FTP,TELNET",
+      "pattern": ".*PAD=SPACE.*",
+      "count": 0,
+      "template_ids": []
     }
   ]
 }
