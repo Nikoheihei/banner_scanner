@@ -1,3 +1,250 @@
+# Banner Scanner - Network Protocol Fingerprint Scanner
+
+> Probe SSH, FTP, and Telnet banners from IP addresses, extract vendors, versions, operating systems, and automatically classify device types with 205 fingerprint rules.
+> The project rewrites the core ideas from [protocol_scanner](https://github.com/Open-Coder-oss/protocol_scanner) in Python asyncio with zero third-party runtime dependencies.
+
+---
+
+## Quick Start
+
+```bash
+# Single-IP probing with fingerprint matching
+python3 -m banner_scanner 192.168.1.1 --fingerprint vendors.json
+
+# High-concurrency random batch scan
+python3 batch_scanner.py -c 300 --random --limit 10000 --protocol SSH --output result.txt
+
+# Build a fingerprint database from SQLite
+python3 build_fingerprints.py --db fingerprint.db --output vendors.json
+```
+
+## Three-Protocol Probing Flow
+
+### SSH
+
+```
+TCP connection (port 22)
+    |
+    `-> async_read_some -> read the first line
+            |
+            +- Extract software: OpenSSH, Dropbear, Cisco, AWS_SFTP ...
+            +- Extract version: 8.9p1, 7.6p1 ...
+            +- Extract OS: Ubuntu, Debian, FreeBSD, Windows ...
+            `- Fingerprint match -> vendor
+```
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| Banner acquisition rate | 99.1% | SSH servers usually send the version line immediately after TCP handshake |
+| Fingerprint hit rate | **97.1%** | Text banners naturally include vendor/software identifiers |
+| Timeout | connect=3s, read=4s | |
+
+### FTP
+
+```
+TCP connection (port 21/990)
+    |
+    +- Stage 1: read welcome banner, such as "220 ProFTPD 1.3.5 Server"
+    |       `-> Extract software and version
+    |
+    +- Stage 2: send HELP/SYST if the banner is empty
+    |
+    `- Stage 3: send FEAT\r\n and recursively read until the "211 " terminator
+            `-> Parse UTF8, AUTH TLS, MLSD, SIZE, MDTM, and other features
+```
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| Banner acquisition rate | 99.4% | |
+| Fingerprint hit rate | **94.9%** | Text banner plus recursive FEAT reads |
+| Timeout | connect=3s, read=4s | Uses TCP_NODELAY, following the C++ reference behavior |
+| Upper-bound reason | The remaining 5.1% are generic greetings such as `220 Welcome.` without vendor signals | |
+
+### Telnet
+
+Telnet is the hardest of the three protocols to fingerprint because many servers expose only a `login:` prompt instead of a software name. This project uses six probing and matching layers plus 205 rules to reach an 87.5% effective hit rate:
+
+```
+TCP connection (port 23)
+    |
+    +- Stage 1: passive receive
+    +- Stage 2: IAC negotiation, replying WONT/DONT to trigger more data
+    +- Stage 3: send \r\n to refresh bare login prompts
+    +- Stage 4: second probe; if only login: appears, send admin\r\n to trigger password prompts
+    `- Fingerprint matching: six rule layers
+            +- Layer 1: IAC bytes in hex
+            +- Layer 2: normalized IAC signatures
+            +- Layer 3: text device names
+            +- Layer 4: micro-features such as whitespace, line endings, and ANSI sequences
+            +- Layer 5: fallback families such as "Embedded/Gateway"
+            `- Layer 6: service status such as connection refused
+```
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| Banner acquisition rate | 91% | |
+| Device identification | 84.6% | Specific vendor/model classes |
+| Fallback family | 2.9% | Generic but useful device families |
+| Service status | 9.4% | Classified separately and not treated as failed device identification |
+| Effective hit rate | **87.5%** | Device plus fallback family |
+| Total classification rate | **96.9%** | Every IP receives a clear output category |
+| Timeout | connect=5s, read=8s | Telnet responses are usually slower |
+
+## Testing
+
+### Batch Scan Tests
+
+```bash
+# 100k random SSH targets
+python3 batch_scanner.py -c 300 --random --limit 100000 --protocol SSH --timeout 3.0 --output ssh_output.txt
+
+# 100k random FTP targets
+python3 batch_scanner.py -c 300 --random --limit 100000 --protocol FTP --timeout 3.0 --output ftp_output.txt
+
+# 50k random Telnet targets
+python3 batch_scanner.py -c 200 --random --limit 50000 --protocol TELNET --timeout 5.0 --output telnet_output.txt
+```
+
+### Success-Rate Analysis
+
+```bash
+python3 -c "
+import json
+with open('telnet_final.txt') as f:
+    rows = [json.loads(l) for l in f if l.strip()]
+has_b = [r for r in rows if r['accessible']==1 and (r['banner'].strip() or r.get('banner_raw_hex',''))]
+device = sum(1 for r in has_b if r.get('fingerprint_vendor','') and not r['fingerprint_vendor'].startswith('[Status]'))
+total = sum(1 for r in has_b if r.get('fingerprint_vendor','') or r['fingerprint_vendor'].startswith('[Status]') or r.get('fingerprint_vendor',''))
+print(f'Device identification: {device}/{len(has_b)} ({device/len(has_b)*100:.1f}%)')
+print(f'Total classification: {total}/{len(has_b)} ({total/len(has_b)*100:.1f}%)')
+"
+```
+
+## Fingerprint Library
+
+Build a JSON fingerprint library from a SQLite database:
+
+```bash
+python3 build_fingerprints.py --db fingerprint.db --output vendors.json
+```
+
+Example format:
+
+```json
+{
+  "vendors": [
+    {"id": 1, "name": "OpenSSH", "pattern": ".*OpenSSH.*", "count": 1923},
+    {"id": 100, "name": "Cisco IOS telnetd", "pattern": ".*ff[fb-fe]01.*ff[fb-fe]03.*ff[fb-fe]18.*ff[fb-fe]1f.*"},
+    {"id": 200, "name": "Embedded/Gateway (login)", "pattern": "(?<![A-Za-z])[Ll]ogin:"}
+  ]
+}
+```
+
+## Retry Strategy
+
+All probes include exponential-backoff retries:
+
+```
+connection timeout / read timeout -> wait base_delay * 2^attempt -> retry
+maximum retries: 2 by default
+```
+
+## TCP-Level Optimizations
+
+- `TCP_NODELAY`: disables Nagle's algorithm to reduce small-packet latency.
+- MSS/SNDBUF/RCVBUF metadata collection: used for cross-layer fingerprinting.
+
+## CLI Options
+
+```bash
+python3 -m banner_scanner [hosts...] [options]
+
+  hosts               Target IP addresses
+  -p, --protocols     Protocol list (default: ssh,ftp,telnet)
+  -t, --timeout       Connection timeout in seconds (default: 3.0)
+  --read-timeout      Read timeout in seconds (default: 4.0)
+  --retries           Maximum retries (default: 2)
+  --json              Output JSON
+  --no-feat           Do not send FTP FEAT
+  --health            Print engine health
+  --fingerprint       Fingerprint library path
+  --verbose, -v       DEBUG logging
+```
+
+## MCP Service
+
+The scanner can be exposed as an MCP service so AI clients such as Cherry Studio or Claude Desktop can call the scanning tools directly.
+
+### Start the Service
+
+```bash
+cd banner_scanner
+PYTHONPATH="$(dirname $(pwd)):$PYTHONPATH" python3 -m server.mcp_http_server
+```
+
+The service listens on `http://127.0.0.1:8877` by default. Change it with `MCP_PORT`.
+
+### Client Configuration
+
+Import `mcp.json` into an MCP client:
+
+```json
+{
+  "mcpServers": {
+    "banner-scanner": {
+      "type": "streamableHttp",
+      "url": "http://127.0.0.1:8877"
+    }
+  }
+}
+```
+
+### Available Tools
+
+| Tool | Description |
+|------|-------------|
+| `health_check` | Engine health and fingerprint-library status |
+| `probe_banner` | Probe SSH / FTP / Telnet banners for an IP and match fingerprints |
+| `scan_batch` | Scan multiple IP addresses |
+
+### Supported Transports
+
+| Transport | Endpoint | Description |
+|-----------|----------|-------------|
+| POST `/message` | JSON-RPC 2.0 | Tool calls |
+| GET `/sse` | Server-Sent Events | Session setup |
+
+Some models may respond with text instead of invoking MCP tools. That is a client/model tool-calling limitation, not a server-side issue. Function-calling-capable models are recommended.
+
+## Project Structure
+
+```
+banner_scanner/
+├── core/
+│   ├── engine.py         Probe engine with retry and single-port probing
+│   ├── models.py         Data structures
+│   ├── parsers.py        SSH/FTP/Telnet banner parsers
+│   ├── transport.py      TCP/TLS transport plus TCP metadata
+│   ├── matcher.py        Fingerprint loading and longest-match engine
+│   └── retry.py          Exponential-backoff retry strategy
+├── probes/
+│   ├── ssh.py            SSH probing
+│   ├── ftp.py            FTP probing
+│   └── telnet.py         Telnet probing
+├── build_fingerprints.py Build fingerprints from SQLite
+├── batch_scanner.py      High-concurrency batch scanner
+├── vendors.json          205 fingerprint rules
+└── tests/                Unit tests
+```
+
+## License
+
+MIT
+
+---
+
+# 中文版
+
 # Banner Scanner — 网络协议指纹探测与识别系统
 
 > 从 IP 地址探测 SSH / FTP / Telnet Banner，提取服务商、版本号、操作系统，并通过 205 条指纹规则自动识别设备类型。  
