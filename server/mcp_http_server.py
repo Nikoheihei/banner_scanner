@@ -31,9 +31,9 @@ if matcher:
 
 SYSTEM_INFO = {
     "protocolVersion": "2024-11-05",
-    "serverInfo": {"name": "banner-scanner", "version": "0.4.0"},
+    "serverInfo": {"name": "banner-scanner", "version": "0.5.0"},
     "capabilities": {"tools": {}},
-    "instructions": "Banner Scanner MCP — 探测 SSH/FTP/Telnet 服务 Banner 并指纹识别",
+    "instructions": "Banner Scanner MCP — 探测 SSH/FTP/Telnet/Redis/MySQL/PGSQL 并指纹识别",
 }
 
 
@@ -55,15 +55,32 @@ def _banner_to_dict(br: BannerResult) -> dict:
         d["telnet"] = {"detected_service": br.telnet.detected_service,
                        "has_login_prompt": br.telnet.has_login_prompt,
                        "has_iac": br.telnet.has_iac_negotiation}
+    if br.redis:
+        d["redis"] = {"implementation": br.redis.implementation,
+                      "version": br.redis.version, "mode": br.redis.mode,
+                      "os": br.redis.os, "fields": br.redis.fields}
+    if br.mysql:
+        d["mysql"] = {"protocol_version": br.mysql.protocol_version,
+                      "version": br.mysql.version,
+                      "implementation": br.mysql.implementation,
+                      "capability_flags": br.mysql.capability_flags,
+                      "auth_plugin": br.mysql.auth_plugin}
+    if br.pgsql:
+        d["pgsql"] = {"protocol_version": br.pgsql.protocol_version,
+                      "ssl_response": br.pgsql.ssl_response,
+                      "implementation": br.pgsql.implementation,
+                      "auth_method": br.pgsql.auth_method,
+                      "fields": br.pgsql.fields,
+                      "parameters": br.pgsql.parameters,
+                      "message_types": br.pgsql.message_types}
     if br.vendor:
         d["fingerprint"] = br.vendor
         d["fingerprint_id"] = br.vendor_id
         d["confidence"] = br.vendor_confidence
     if br.info:
-        d["info"] = {"service_name": br.info.get("service_name", ""),
-                     "service_version": br.info.get("service_version", ""),
-                     "os": br.info.get("os", ""),
-                     "iac_signature": br.info.get("iac_signature", "")}
+        d["info"] = br.info
+    if br.fingerprint_details:
+        d["fingerprint_details"] = br.fingerprint_details
     if br.retry_count:
         d["retries"] = br.retry_count
     return d
@@ -75,12 +92,13 @@ def handle_method(method: str, params: dict):
     elif method == "tools/list":
         return {"tools": [
             {"name": "probe_banner",
-             "description": "探测 IP 的 SSH/FTP/Telnet Banner，自动指纹识别。返回 Banner 文本、服务商、版本号、操作系统、设备分类。",
+             "description": "探测 IP 的 SSH/FTP/Telnet/Redis/MySQL/PGSQL，返回结构化字段和指纹。",
              "inputSchema": {"type": "object", "properties": {
                  "hosts": {"type": "array", "items": {"type": "string"},
                            "description": "目标 IP 或域名列表"},
                  "protocols": {"type": "array",
-                               "items": {"type": "string", "enum": ["ssh", "ftp", "telnet"]},
+                               "items": {"type": "string", "enum": [
+                                   "ssh", "ftp", "telnet", "redis", "mysql", "pgsql"]},
                                "description": "协议列表，默认全部"},
                  "retries": {"type": "integer", "description": "最大重试次数，默认 2"}},
                  "required": ["hosts"]}},
@@ -89,7 +107,8 @@ def handle_method(method: str, params: dict):
              "inputSchema": {"type": "object", "properties": {
                  "hosts": {"type": "array", "items": {"type": "string"},
                            "description": "目标 IP 列表"},
-                 "protocol": {"type": "string", "enum": ["ssh", "ftp", "telnet"],
+                 "protocol": {"type": "string", "enum": [
+                     "ssh", "ftp", "telnet", "redis", "mysql", "pgsql"],
                               "description": "协议，默认 SSH"},
                  "concurrency": {"type": "integer", "description": "并发数，默认 100"}},
                  "required": ["hosts"]}},
@@ -136,6 +155,7 @@ def handle_method(method: str, params: dict):
         elif tool_name == "health_check":
             health = asyncio.run(engine.health_check())
             health["fingerprint_rules"] = matcher.rule_count if matcher else 0
+            health["database_fingerprint_rules"] = engine._database_matcher.rule_count
             health["fingerprint_path"] = _DEFAULT_FINGERPRINT
             text = json.dumps(health, indent=2, ensure_ascii=False)
             return {"content": [{"type": "text", "text": text}]}

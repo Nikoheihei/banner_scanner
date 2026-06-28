@@ -50,6 +50,36 @@ def _result_to_dict(result: Any) -> dict:
                 "mldst": result.ftp.mldst,
                 "tvfs": result.ftp.tvfs,
             }
+        if result.redis:
+            d["redis"] = {
+                "implementation": result.redis.implementation,
+                "version": result.redis.version,
+                "mode": result.redis.mode,
+                "os": result.redis.os,
+                "fields": result.redis.fields,
+            }
+        if result.mysql:
+            d["mysql"] = {
+                "protocol_version": result.mysql.protocol_version,
+                "version": result.mysql.version,
+                "implementation": result.mysql.implementation,
+                "connection_id": result.mysql.connection_id,
+                "capability_flags": result.mysql.capability_flags,
+                "character_set": result.mysql.character_set,
+                "status_flags": result.mysql.status_flags,
+                "auth_plugin": result.mysql.auth_plugin,
+            }
+        if result.pgsql:
+            d["pgsql"] = {
+                "protocol_version": result.pgsql.protocol_version,
+                "ssl_response": result.pgsql.ssl_response,
+                "implementation": result.pgsql.implementation,
+                "auth_code": result.pgsql.auth_code,
+                "auth_method": result.pgsql.auth_method,
+                "fields": result.pgsql.fields,
+                "parameters": result.pgsql.parameters,
+                "message_types": result.pgsql.message_types,
+            }
         if result.vendor:
             d["vendor"] = result.vendor
             d["vendor_id"] = result.vendor_id
@@ -57,9 +87,13 @@ def _result_to_dict(result: Any) -> dict:
         if result.matched_rules:
             d["matched_rules"] = [
                 {"vendor_id": r.vendor_id, "vendor_name": r.vendor_name,
-                 "pattern": r.pattern, "source": r.source}
+                 "pattern": r.pattern, "source": r.source,
+                 "category": r.category, "labels": r.labels,
+                 "extracted": r.extracted}
                 for r in result.matched_rules
             ]
+        if result.fingerprint_details:
+            d["fingerprint_details"] = result.fingerprint_details
         return d
     return {}
 
@@ -100,6 +134,28 @@ def _format_text(results: list) -> str:
             if ftp and ftp.get("features"):
                 lines.append(f"  📁 {ftp['features']}")
 
+            redis = result.get("redis")
+            if redis:
+                lines.append(
+                    f"  Redis: {redis.get('implementation', '')} "
+                    f"{redis.get('version', '')} {redis.get('mode', '')}".rstrip()
+                )
+
+            mysql = result.get("mysql")
+            if mysql:
+                lines.append(
+                    f"  MySQL: {mysql.get('implementation', '')} "
+                    f"{mysql.get('version', '')}".rstrip()
+                )
+
+            pgsql = result.get("pgsql")
+            if pgsql:
+                lines.append(
+                    f"  PGSQL: SSL={pgsql.get('ssl_response', '')} "
+                    f"AUTH={pgsql.get('auth_method', '')} "
+                    f"SQLSTATE={pgsql.get('fields', {}).get('sqlstate', '')}".rstrip()
+                )
+
             vendor = result.get("vendor")
             if vendor:
                 lines.append(f"  🏷️  {vendor}")
@@ -112,13 +168,22 @@ async def main(argv: list[str] | None = None) -> int:
         description="Banner Scanner - 网络协议 Banner 探测工具",
     )
     parser.add_argument("hosts", nargs="*", help="目标 IP 地址")
-    parser.add_argument("-p", "--protocols", default="ssh,ftp,telnet")
+    parser.add_argument(
+        "-p", "--protocols",
+        default="ssh,ftp,telnet,redis,mysql,pgsql",
+        help="逗号分隔协议：ssh,ftp,telnet,redis,mysql,pgsql",
+    )
     parser.add_argument("-t", "--timeout", type=float, default=3.0)
     parser.add_argument("--read-timeout", type=float, default=4.0)
+    parser.add_argument("--retries", type=int, default=2)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--no-feat", action="store_true")
     parser.add_argument("--health", action="store_true")
     parser.add_argument("--fingerprint", help="指纹库文件路径")
+    parser.add_argument(
+        "--database-fingerprints",
+        help="Redis/MySQL/PGSQL 结构化指纹库目录（默认使用内置目录）",
+    )
     parser.add_argument("--verbose", "-v", action="store_true")
 
     args = parser.parse_args(argv)
@@ -128,7 +193,9 @@ async def main(argv: list[str] | None = None) -> int:
     config = ProbeConfig(
         connect_timeout=args.timeout,
         read_timeout=args.read_timeout,
+        max_retries=args.retries,
         fingerprint_path=args.fingerprint,
+        database_fingerprint_path=args.database_fingerprints,
     )
     if args.no_feat:
         config.protocol_config["ftp"].send_feat = False

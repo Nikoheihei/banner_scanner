@@ -120,6 +120,11 @@ async def scan_batch(targets: list[dict], engine: ProbeEngine,
                 'os_version': info.get('os_version', ''),
                 'fingerprint_vendor': info.get('fingerprint_vendor', ''),
                 'fingerprint_vendor_id': info.get('fingerprint_vendor_id', 0),
+                'fingerprint_rule_ids': info.get('fingerprint', {}).get('matched_rule_ids', []),
+                'deployment_mode': info.get('deployment_mode', ''),
+                'auth_method': info.get('auth_method', ''),
+                'auth_plugin': info.get('auth_plugin', ''),
+                'sqlstate': info.get('sqlstate', ''),
                 'retry_count': br.retry_count,
             }
             accessible_count += 1

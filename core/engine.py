@@ -8,11 +8,15 @@ from typing import Optional
 
 from .models import BannerResult, HostResult, ProbeConfig
 from .matcher import FingerprintMatcher
+from .database_matcher import DEFAULT_LIBRARY_DIR, DatabaseFingerprintMatcher
 from .retry import RetryExecutor, RetryConfig, RETRYABLE_EXCEPTIONS
 from ..probes import PROTOCOL_PROBES
-from ..probes.ssh import probe_ssh
-from ..probes.ftp import probe_ftp
-from ..probes.telnet import probe_telnet
+from ..probes.ssh import probe_ssh as _probe_ssh
+from ..probes.ftp import probe_ftp as _probe_ftp
+from ..probes.telnet import probe_telnet as _probe_telnet
+from ..probes.redis import probe_redis as _probe_redis
+from ..probes.mysql import probe_mysql as _probe_mysql
+from ..probes.pgsql import probe_pgsql as _probe_pgsql
 
 logger = logging.getLogger("banner_scanner.engine")
 
@@ -36,6 +40,8 @@ class ProbeEngine:
                     "Fingerprint matcher loaded (%d rules from %s)",
                     self._matcher.rule_count, fp_path,
                 )
+        database_path = self.config.database_fingerprint_path or DEFAULT_LIBRARY_DIR
+        self._database_matcher = DatabaseFingerprintMatcher.load_directory(database_path)
 
     async def probe_host(
         self,
@@ -73,12 +79,13 @@ class ProbeEngine:
                         self._total_errors += 1
 
         # 指纹匹配 + 更新 info
-        if self._matcher is not None:
-            from .parsers import extract_banner_info
-            for br in results.values():
+        from .parsers import extract_banner_info
+        for br in results.values():
+            if self._matcher is not None:
                 self._matcher.match(br)
-                if br.accessible:
-                    br.info = extract_banner_info(br)
+            self._database_matcher.match(br)
+            if br.accessible:
+                br.info = extract_banner_info(br)
 
         total_time = (time.time() - start) * 1000
         return HostResult(host=host, results=results, total_time_ms=total_time)
@@ -101,11 +108,12 @@ class ProbeEngine:
             self._total_errors += 1
 
         # 指纹匹配 + 更新 info
+        from .parsers import extract_banner_info
         if self._matcher is not None:
-            from .parsers import extract_banner_info
             self._matcher.match(result)
-            if result.accessible:
-                result.info = extract_banner_info(result)
+        self._database_matcher.match(result)
+        if result.accessible:
+            result.info = extract_banner_info(result)
 
         return result
 
@@ -166,6 +174,10 @@ class ProbeEngine:
                 "max_banner_bytes": self.config.max_banner_bytes,
                 "fingerprint_path": str(self.config.fingerprint_path)
                 if self.config.fingerprint_path else None,
+                "database_fingerprint_rules": self._database_matcher.rule_count,
+                "database_fingerprint_path": str(
+                    self.config.database_fingerprint_path or DEFAULT_LIBRARY_DIR
+                ),
             },
         }
 
@@ -190,12 +202,24 @@ async def probe_host(host: str, protocols: Optional[list[str]] = None) -> HostRe
 
 
 async def probe_ssh(host: str, port: int = 22) -> BannerResult:
-    return await probe_ssh(host, port=port, config=_get_engine().config)
+    return await _probe_ssh(host, port=port, config=_get_engine().config)
 
 
 async def probe_ftp(host: str, port: int = 21) -> BannerResult:
-    return await probe_ftp(host, port=port, config=_get_engine().config)
+    return await _probe_ftp(host, port=port, config=_get_engine().config)
 
 
 async def probe_telnet(host: str, port: int = 23) -> BannerResult:
-    return await probe_telnet(host, port=port, config=_get_engine().config)
+    return await _probe_telnet(host, port=port, config=_get_engine().config)
+
+
+async def probe_redis(host: str, port: int = 6379) -> BannerResult:
+    return await _probe_redis(host, port=port, config=_get_engine().config)
+
+
+async def probe_mysql(host: str, port: int = 3306) -> BannerResult:
+    return await _probe_mysql(host, port=port, config=_get_engine().config)
+
+
+async def probe_pgsql(host: str, port: int = 5432) -> BannerResult:
+    return await _probe_pgsql(host, port=port, config=_get_engine().config)

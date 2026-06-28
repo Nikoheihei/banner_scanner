@@ -67,6 +67,32 @@ def _banner_to_dict(br: BannerResult) -> dict:
             "has_login_prompt": br.telnet.has_login_prompt,
             "has_iac": br.telnet.has_iac_negotiation,
         }
+    if br.redis:
+        d["redis"] = {
+            "implementation": br.redis.implementation,
+            "version": br.redis.version,
+            "mode": br.redis.mode,
+            "os": br.redis.os,
+            "fields": br.redis.fields,
+        }
+    if br.mysql:
+        d["mysql"] = {
+            "protocol_version": br.mysql.protocol_version,
+            "version": br.mysql.version,
+            "implementation": br.mysql.implementation,
+            "capability_flags": br.mysql.capability_flags,
+            "auth_plugin": br.mysql.auth_plugin,
+        }
+    if br.pgsql:
+        d["pgsql"] = {
+            "protocol_version": br.pgsql.protocol_version,
+            "ssl_response": br.pgsql.ssl_response,
+            "implementation": br.pgsql.implementation,
+            "auth_method": br.pgsql.auth_method,
+            "fields": br.pgsql.fields,
+            "parameters": br.pgsql.parameters,
+            "message_types": br.pgsql.message_types,
+        }
     # 指纹/分类
     if br.vendor:
         d["fingerprint"] = br.vendor
@@ -74,12 +100,9 @@ def _banner_to_dict(br: BannerResult) -> dict:
         d["confidence"] = br.vendor_confidence
     # 统一 info
     if br.info:
-        d["info"] = {
-            "service_name": br.info.get("service_name", ""),
-            "service_version": br.info.get("service_version", ""),
-            "os": br.info.get("os", ""),
-            "iac_signature": br.info.get("iac_signature", ""),
-        }
+        d["info"] = br.info
+    if br.fingerprint_details:
+        d["fingerprint_details"] = br.fingerprint_details
     # 重试
     if br.retry_count:
         d["retries"] = br.retry_count
@@ -111,7 +134,7 @@ async def serve() -> None:
         return [
             types.Tool(
                 name="probe_banner",
-                description="探测 IP 的 SSH/FTP/Telnet Banner，自动指纹识别。"
+                description="探测 IP 的 SSH/FTP/Telnet/Redis/MySQL/PGSQL Banner，自动指纹识别。"
                             "返回 Banner 文本、服务商、版本号、操作系统、设备分类。",
                 inputSchema={
                     "type": "object",
@@ -123,7 +146,9 @@ async def serve() -> None:
                         },
                         "protocols": {
                             "type": "array",
-                            "items": {"type": "string", "enum": ["ssh", "ftp", "telnet"]},
+                            "items": {"type": "string", "enum": [
+                                "ssh", "ftp", "telnet", "redis", "mysql", "pgsql",
+                            ]},
                             "description": "协议列表，默认全部",
                         },
                         "retries": {
@@ -147,7 +172,7 @@ async def serve() -> None:
                         },
                         "protocol": {
                             "type": "string",
-                            "enum": ["ssh", "ftp", "telnet"],
+                            "enum": ["ssh", "ftp", "telnet", "redis", "mysql", "pgsql"],
                             "description": "协议，默认 SSH",
                         },
                         "concurrency": {
@@ -218,6 +243,7 @@ async def serve() -> None:
         elif name == "health_check":
             health = await engine.health_check()
             health["fingerprint_rules"] = matcher.rule_count if matcher else 0
+            health["database_fingerprint_rules"] = engine._database_matcher.rule_count
             health["fingerprint_path"] = _DEFAULT_FINGERPRINT
             return [types.TextContent(
                 type="text",
@@ -229,7 +255,7 @@ async def serve() -> None:
     async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
         await server.run(read_stream, write_stream, InitializationOptions(
             server_name="banner-scanner",
-            server_version="0.4.0",
+            server_version="0.5.0",
             capabilities=server.get_capabilities(
                 notification_options=NotificationOptions(),
                 experimental_capabilities={},
