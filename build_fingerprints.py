@@ -253,7 +253,7 @@ def build_fingerprints(db_path: str) -> list[dict]:
                 "id": next_id,
                 "name": vendor_name,
                 "protocol": protocol,
-                "pattern": build_broad_pattern(vendor_name),
+                "pattern": build_broad_pattern(vendor_name, protocol),
                 "count": count,
                 "template_ids": [tid],
                 "is_unknown": False,
@@ -308,13 +308,30 @@ def build_fingerprints(db_path: str) -> list[dict]:
             "id": next_id,
             "name": name,
             "protocol": target_protocol,
-            "pattern": source["pattern"],
+            "pattern": pattern_for_vendor(name, target_protocol, source["pattern"]),
             "count": 0,
             "template_ids": [],
             "derived_from_rule_id": source["id"],
         })
         next_id += 1
 
+    deduplicated = {}
+    for vendor in vendors:
+        key = (vendor["protocol"], vendor["name"], vendor["pattern"])
+        existing = deduplicated.get(key)
+        if existing is None:
+            deduplicated[key] = vendor
+            continue
+        existing["count"] = max(existing.get("count", 0), vendor.get("count", 0))
+        existing["template_ids"] = sorted(set(
+            existing.get("template_ids", []) + vendor.get("template_ids", [])
+        ))
+
+    vendors = list(deduplicated.values())
+    for vendor in vendors:
+        category, priority = rule_metadata(vendor["name"], vendor["pattern"])
+        vendor["category"] = category
+        vendor["priority"] = priority
     return vendors
 
 
@@ -340,16 +357,59 @@ def write_protocol_libraries(vendors: list[dict], output_dir: str | Path) -> dic
     return written
 
 
-def build_broad_pattern(vendor_name: str) -> str:
+def build_broad_pattern(vendor_name: str, protocol: str = "") -> str:
     """为已知厂商构建宽泛匹配的正则模式。
     将非字母数字分隔符替换为 .* 实现最大兼容性。
     例如: GitLab SSHD -> .*GitLab.*SSHD.*
     """
+    override = VENDOR_PATTERN_OVERRIDES.get((protocol, vendor_name))
+    if override:
+        return override
     parts = re.split(r'[^a-zA-Z0-9]+', vendor_name)
     parts = [p for p in parts if p]
     if not parts:
         return f".*{re.escape(vendor_name)}.*"
     return ".*" + ".*".join(re.escape(p) for p in parts) + ".*"
+
+
+VENDOR_PATTERN_OVERRIDES = {
+    ("SSH", "WS_FTP"): r".*(?:^|[^A-Za-z0-9])WS[_ -]?FTP(?:-SSH)?(?:[^A-Za-z0-9]|$).*",
+    ("FTP", "WS_FTP"): r".*(?:^|[^A-Za-z0-9])WS[_ -]?FTP(?:[^A-Za-z0-9]|$).*",
+    ("SSH", "Serv-U"): r".*(?:^|[^A-Za-z0-9])Serv[-_ ]?U(?:[^A-Za-z0-9]|$).*",
+    ("FTP", "Serv-U FTP"): r".*(?:^|[^A-Za-z0-9])Serv[-_ ]?U(?:\s+FTP(?:-Server|\s+Server)?)?(?:[^A-Za-z0-9]|$).*",
+    ("FTP", "xlightftpd"): r".*(?:Xlight(?:\s+FTP)?\s+Server|xlightftpd).*",
+}
+
+
+def pattern_for_vendor(name: str, protocol: str, fallback: str) -> str:
+    return VENDOR_PATTERN_OVERRIDES.get((protocol, name), fallback)
+
+
+GENERIC_RULE_NAMES = {
+    "Embedded/Gateway (login)", "Network Device (user prompt)",
+    "Serial Gateway (password)", "Embedded (login+password)",
+    "Router telnetd", "Embedded telnetd", "Username prompt",
+    "ANSI Terminal Device", "NULL-byte Device", "256B Padded Device",
+    "512B Padded Device", "1024B Padded Device", "NULL-padded Firmware",
+    "SPACE-padded Firmware",
+}
+
+
+def rule_metadata(name: str, pattern: str) -> tuple[str, int]:
+    if name.startswith("Unknown-"):
+        return "fallback", 10
+    if name.startswith("[Status]") or name in {
+        "Restricted Access Device", "Session Limited Device",
+        "Telnet Disabled/Error", "Connection Closed",
+    }:
+        return "status", 20
+    if name == "Windows telnetd" and "Windows" in pattern:
+        return "implementation", 140
+    if name in GENERIC_RULE_NAMES:
+        return "family", 60
+    if "telnetd" in name.lower() and ("ff" in pattern.lower() or "WILL" in pattern):
+        return "implementation", 80
+    return "implementation", 100
 
 
 # 模板库中未覆盖但常见的厂商（手动补充）
@@ -419,6 +479,7 @@ EXTRA_VENDORS = [
     ("DSL-500B Router", r".*DSL-500B.*"),
     ("XPON ONT", r".*XPON-\d+.*"),
     ("aigoWiFi", r".*aigoWiFi.*"),
+    ("Windows telnetd", r".*Windows(?:\s+CE)?\s+Telnet\s+Service.*"),
     ("AsyncSSH", r".*AsyncSSH.*"),
     ("WeOnlyDo SSH", r".*WeOnlyDo.*"),
     ("PYNG-HUB", r".*PYNG-HUB.*"),

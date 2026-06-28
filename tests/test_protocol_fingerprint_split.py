@@ -11,7 +11,7 @@ from banner_scanner.core.matcher import (
 from banner_scanner.core.models import BannerResult
 
 
-EXPECTED_RULE_COUNTS = {"SSH": 55, "FTP": 57, "TELNET": 101}
+EXPECTED_RULE_COUNTS = {"SSH": 55, "FTP": 52, "TELNET": 102}
 
 
 def _load_library(protocol: str) -> dict:
@@ -70,3 +70,46 @@ def test_cross_protocol_software_has_independent_rule_ids():
         rule["id"] for rule in telnet_rules if rule["name"] == "FileZilla Server"
     )
     assert ftp_id != telnet_id
+
+
+def test_xlight_ftp_server_banner_matches():
+    matcher = FingerprintMatcher.load(DEFAULT_PROTOCOL_LIBRARY_DIR)
+    result = BannerResult(
+        protocol="FTP", host="127.0.0.1", port=21, accessible=True,
+        banner="220 Xlight FTP Server 3.9 ready...",
+    )
+    matcher.match(result)
+    assert result.vendor == "xlightftpd"
+
+
+def test_windows_telnet_text_outranks_generic_iac():
+    matcher = FingerprintMatcher.load(DEFAULT_PROTOCOL_LIBRARY_DIR)
+    result = BannerResult(
+        protocol="TELNET", host="127.0.0.1", port=23, accessible=True,
+        banner="Welcome to the Windows CE Telnet Service on device",
+        banner_raw_hex="fffb01fffb03",
+    )
+    matcher.match(result)
+    assert result.vendor == "Windows telnetd"
+
+
+def test_ws_ftp_does_not_match_aws_sftp():
+    matcher = FingerprintMatcher.load(DEFAULT_PROTOCOL_LIBRARY_DIR)
+    result = BannerResult(
+        protocol="SSH", host="127.0.0.1", port=22, accessible=True,
+        banner="SSH-2.0-AWS_SFTP_1.2",
+    )
+    matcher.match(result)
+    assert result.vendor == "AWS SFTP"
+    assert all(match.vendor_name != "WS_FTP" for match in result.matched_rules)
+
+
+def test_serv_u_rule_does_not_match_core_ftp():
+    matcher = FingerprintMatcher.load(DEFAULT_PROTOCOL_LIBRARY_DIR)
+    result = BannerResult(
+        protocol="FTP", host="127.0.0.1", port=21, accessible=True,
+        banner="220 Core FTP Server Version 2.0, build 694, 64-bit Unregistered",
+    )
+    matcher.match(result)
+    assert result.vendor == "Core FTP Server"
+    assert all(match.vendor_name != "Serv-U FTP" for match in result.matched_rules)

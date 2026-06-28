@@ -1,6 +1,6 @@
 # Banner Scanner - Network Protocol Fingerprint Scanner
 
-> Probe SSH, FTP, Telnet, Redis, MySQL, and PostgreSQL endpoints, extract structured protocol fields, and classify implementations with 213 protocol-scoped banner rules plus 59 database fingerprint rules.
+> Probe SSH, FTP, Telnet, Redis, MySQL, and PostgreSQL endpoints, extract structured protocol fields, and classify implementations with 209 protocol-scoped banner rules plus 59 database fingerprint rules.
 > The project rewrites the core ideas from [protocol_scanner](https://github.com/Open-Coder-oss/protocol_scanner) in Python asyncio with zero third-party runtime dependencies.
 
 ---
@@ -264,7 +264,7 @@ banner_scanner/
 │   ├── redis.py          RESP PING + INFO server
 │   ├── mysql.py          Initial handshake parsing
 │   └── pgsql.py          SSLRequest + minimal StartupMessage
-├── fingerprints/protocols/ 55 SSH + 57 FTP + 101 Telnet isolated rules
+├── fingerprints/protocols/ 55 SSH + 52 FTP + 102 Telnet isolated rules
 ├── fingerprints/databases/ 59 validated structured rules
 ├── build_fingerprints.py Build fingerprints from SQLite
 ├── batch_scanner.py      High-concurrency batch scanner
@@ -282,7 +282,7 @@ MIT
 
 # Banner Scanner — 网络协议指纹探测与识别系统
 
-> 从 IP 地址探测 SSH / FTP / Telnet / Redis / MySQL / PostgreSQL，提取协议结构化字段，并通过 213 条协议隔离 Banner 规则和 59 条数据库指纹规则识别实现与版本。
+> 从 IP 地址探测 SSH / FTP / Telnet / Redis / MySQL / PostgreSQL，提取协议结构化字段，并通过 209 条协议隔离 Banner 规则和 59 条数据库指纹规则识别实现与版本。
 > 基于 [protocol_scanner](https://github.com/Open-Coder-oss/protocol_scanner)（C++）核心逻辑，Python asyncio 重写，零第三方依赖。
 
 ---
@@ -573,7 +573,7 @@ banner_scanner/
 │   ├── redis.py          RESP PING + INFO server
 │   ├── mysql.py          初始握手读取与解析
 │   └── pgsql.py          SSLRequest + 最小 StartupMessage
-├── fingerprints/protocols/ SSH 55条、FTP 57条、Telnet 101条独立规则
+├── fingerprints/protocols/ SSH 55条、FTP 52条、Telnet 102条独立规则
 ├── fingerprints/databases/ 59 条已验证结构化规则
 ├── build_fingerprints.py 从 SQLite 构建指纹库
 ├── batch_scanner.py      高并发批量扫描器（分块 + 断点续传）

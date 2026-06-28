@@ -37,12 +37,21 @@ DEFAULT_PROTOCOL_LIBRARY_DIR = Path(__file__).resolve().parent.parent / "fingerp
 class FingerprintRule:
     """单条指纹规则"""
 
-    def __init__(self, vendor_id: int, name: str, pattern: str, protocol: str = ""):
+    def __init__(self, vendor_id: int, name: str, pattern: str, protocol: str = "",
+                 category: str = "implementation", priority: int = 100):
         self.vendor_id = vendor_id
         self.name = name
         self.pattern = pattern
         self.protocol = protocol.upper()
+        self.category = category
+        self.priority = priority
         self._regex: Optional[re.Pattern] = None
+
+    @property
+    def specificity(self) -> int:
+        literal = re.sub(r"\\.", "x", self.pattern)
+        literal = re.sub(r"[^A-Za-z0-9]+", "", literal)
+        return len(literal)
 
     @property
     def regex(self) -> re.Pattern:
@@ -58,6 +67,8 @@ class FingerprintRule:
             "vendor_id": self.vendor_id,
             "vendor_name": self.name,
             "protocol": self.protocol,
+            "category": self.category,
+            "priority": self.priority,
             "pattern": self.pattern,
         }
 
@@ -118,6 +129,8 @@ class FingerprintLoader:
                 name=v["name"],
                 pattern=v["pattern"],
                 protocol=str(v.get("protocol") or library_protocol),
+                category=str(v.get("category") or "implementation"),
+                priority=int(v.get("priority", 100)),
             )
             for v in vendors
         ]
@@ -148,6 +161,8 @@ class FingerprintMatcher:
                 name=v["name"],
                 pattern=v["pattern"],
                 protocol=str(v.get("protocol") or library_protocol),
+                category=str(v.get("category") or "implementation"),
+                priority=int(v.get("priority", 100)),
             )
             for v in vendors
         ]
@@ -179,14 +194,15 @@ class FingerprintMatcher:
                         pattern=rule.pattern,
                         confidence=min(1.0, match_len / max(len(text), 1) * 2),
                         source=source,
+                        category=rule.category,
                     )
-                    matches.append((match_len, fm))
+                    matches.append((rule.priority, rule.specificity, match_len, fm))
 
-        # 按匹配长度降序排列（长匹配优先），同 vendor 只保留最长
-        matches.sort(key=lambda x: -x[0])
+        # 明确实现优先于设备族、状态和兜底模板；同级再比较规则特异性。
+        matches.sort(key=lambda x: (-x[0], -x[1], -x[2]))
         seen_ids = set()
         unique: list[FingerprintMatch] = []
-        for _, fm in matches:
+        for _, _, _, fm in matches:
             if fm.vendor_id not in seen_ids:
                 seen_ids.add(fm.vendor_id)
                 unique.append(fm)
