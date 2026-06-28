@@ -15,9 +15,9 @@ if _project_root not in sys.path:
 from banner_scanner.core.engine import ProbeEngine
 from banner_scanner.core.models import ProbeConfig, BannerResult
 from banner_scanner.core.log import setup_logging
-from banner_scanner.core.matcher import FingerprintMatcher
+from banner_scanner.core.matcher import DEFAULT_PROTOCOL_LIBRARY_DIR, FingerprintMatcher
 
-_DEFAULT_FINGERPRINT = str(Path(__file__).parent.parent / "vendors.json")
+_DEFAULT_FINGERPRINT = str(DEFAULT_PROTOCOL_LIBRARY_DIR)
 
 setup_logging(level="INFO")
 config = ProbeConfig()
@@ -100,7 +100,9 @@ def handle_method(method: str, params: dict):
                                "items": {"type": "string", "enum": [
                                    "ssh", "ftp", "telnet", "redis", "mysql", "pgsql"]},
                                "description": "协议列表，默认全部"},
-                 "retries": {"type": "integer", "description": "最大重试次数，默认 2"}},
+                 "retries": {"type": "integer", "description": "最大重试次数，默认 2"},
+                 "concurrency": {"type": "integer", "minimum": 1, "maximum": 100,
+                                 "description": "并发目标数，默认 1"}},
                  "required": ["hosts"]}},
             {"name": "scan_batch",
              "description": "批量扫描多个 IP",
@@ -110,7 +112,8 @@ def handle_method(method: str, params: dict):
                  "protocol": {"type": "string", "enum": [
                      "ssh", "ftp", "telnet", "redis", "mysql", "pgsql"],
                               "description": "协议，默认 SSH"},
-                 "concurrency": {"type": "integer", "description": "并发数，默认 100"}},
+                 "concurrency": {"type": "integer", "minimum": 1, "maximum": 100,
+                                 "description": "并发数，默认 100"}},
                  "required": ["hosts"]}},
             {"name": "health_check",
              "description": "引擎健康状态和指纹库信息",
@@ -123,8 +126,11 @@ def handle_method(method: str, params: dict):
             hosts = arguments.get("hosts", [])
             protocols = arguments.get("protocols")
             retries = arguments.get("retries", 2)
+            concurrency = arguments.get("concurrency", 1)
             config.max_retries = retries
-            results = asyncio.run(engine.probe_hosts(hosts, protocols=protocols))
+            results = asyncio.run(engine.probe_hosts(
+                hosts, protocols=protocols, concurrency=concurrency,
+            ))
             output = []
             for hr in results:
                 for proto, br in hr.results.items():
@@ -139,7 +145,10 @@ def handle_method(method: str, params: dict):
         elif tool_name == "scan_batch":
             hosts = arguments.get("hosts", [])
             protocol = arguments.get("protocol", "ssh")
-            results = asyncio.run(engine.probe_hosts(hosts, protocols=[protocol]))
+            concurrency = arguments.get("concurrency", 100)
+            results = asyncio.run(engine.probe_hosts(
+                hosts, protocols=[protocol], concurrency=concurrency,
+            ))
             output = []
             for hr in results:
                 br = hr.results.get(protocol)
@@ -155,6 +164,9 @@ def handle_method(method: str, params: dict):
         elif tool_name == "health_check":
             health = asyncio.run(engine.health_check())
             health["fingerprint_rules"] = matcher.rule_count if matcher else 0
+            health["fingerprint_rules_by_protocol"] = (
+                matcher.stats()["rules_by_protocol"] if matcher else {}
+            )
             health["database_fingerprint_rules"] = engine._database_matcher.rule_count
             health["fingerprint_path"] = _DEFAULT_FINGERPRINT
             text = json.dumps(health, indent=2, ensure_ascii=False)

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
 指纹库构建工具：从 fingerprint.db 的 templates 表中提取指纹规则，
-生成 vendors.json 供 FingerprintMatcher 使用。
+生成 SSH、FTP、Telnet 三个独立指纹库供 FingerprintMatcher 使用。
 
 用法:
-    python3 build_fingerprints.py [--db fingerprint.db] [--output vendors.json]
+    python3 build_fingerprints.py [--db fingerprint.db]
+        [--output-dir fingerprints/protocols]
 """
 
 import json
@@ -13,6 +14,9 @@ import sqlite3
 import sys
 from collections import OrderedDict
 from pathlib import Path
+
+
+SUPPORTED_PROTOCOLS = ("SSH", "FTP", "TELNET")
 
 
 # ==================== 厂商名提取 ====================
@@ -189,7 +193,8 @@ def build_fingerprints(db_path: str) -> list[dict]:
     3. 生成宽泛匹配模式 .*VENDOR_NAME.* （不区分大小写）
     4. 未知厂商保留原始精确模式
     """
-    conn = sqlite3.connect(db_path)
+    db_uri = f"file:{Path(db_path).resolve()}?mode=ro&immutable=1"
+    conn = sqlite3.connect(db_uri, uri=True)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
@@ -199,8 +204,8 @@ def build_fingerprints(db_path: str) -> list[dict]:
         ORDER BY id
     """)
 
-    # 收集规则：{vendor_name: {protocol, vendor_name, count, template_ids}}
-    vendor_map: dict[str, dict] = {}
+    # 协议是聚合键的一部分。同名软件出现在多个协议时，各自生成独立规则。
+    vendor_map: dict[tuple[str, str], dict] = {}
 
     next_id = 1
     for row in cursor.fetchall():
@@ -210,6 +215,9 @@ def build_fingerprints(db_path: str) -> list[dict]:
         pattern = row['pattern']
         db_vendor = row['db_vendor']
         count = row['count'] or 0
+
+        if protocol not in SUPPORTED_PROTOCOLS:
+            continue
 
         # 提取厂商名
         vendor_name = db_vendor.strip() if db_vendor else ""
@@ -235,15 +243,13 @@ def build_fingerprints(db_path: str) -> list[dict]:
             continue
 
         # 已知厂商：合并
-        if vendor_name in vendor_map:
-            entry = vendor_map[vendor_name]
+        vendor_key = (protocol, vendor_name)
+        if vendor_key in vendor_map:
+            entry = vendor_map[vendor_key]
             entry["count"] = max(entry["count"], count)
             entry["template_ids"].append(tid)
-            # 存在多协议时合并
-            if protocol not in entry["protocol"]:
-                entry["protocol"] = f"{entry['protocol']},{protocol}"
         else:
-            vendor_map[vendor_name] = {
+            vendor_map[vendor_key] = {
                 "id": next_id,
                 "name": vendor_name,
                 "protocol": protocol,
@@ -269,18 +275,69 @@ def build_fingerprints(db_path: str) -> list[dict]:
         })
 
     # 补充模板库未覆盖的常见厂商
+    seen_extra = set()
     for name, pattern in EXTRA_VENDORS:
+        protocol = extra_vendor_protocol(name)
+        extra_key = (protocol, name, pattern)
+        if extra_key in seen_extra:
+            continue
+        seen_extra.add(extra_key)
         vendors.append({
             "id": next_id,
             "name": name,
-            "protocol": "SSH,FTP,TELNET",
+            "protocol": protocol,
             "pattern": pattern,
             "count": 0,
             "template_ids": [],
         })
         next_id += 1
 
+    # Some server products expose different wire protocols. The legacy shared
+    # matcher let these rules match across protocols implicitly. Preserve that
+    # coverage with explicit, independently identified protocol copies.
+    for name, target_protocol in CROSS_PROTOCOL_COPIES:
+        if any(
+            vendor["name"] == name and vendor["protocol"] == target_protocol
+            for vendor in vendors
+        ):
+            continue
+        source = next((vendor for vendor in vendors if vendor["name"] == name), None)
+        if source is None:
+            raise RuntimeError(f"Missing source rule for protocol copy: {name}")
+        vendors.append({
+            "id": next_id,
+            "name": name,
+            "protocol": target_protocol,
+            "pattern": source["pattern"],
+            "count": 0,
+            "template_ids": [],
+            "derived_from_rule_id": source["id"],
+        })
+        next_id += 1
+
     return vendors
+
+
+def write_protocol_libraries(vendors: list[dict], output_dir: str | Path) -> dict[str, Path]:
+    """Write physically separate, self-contained protocol libraries."""
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    written = {}
+    for protocol in SUPPORTED_PROTOCOLS:
+        protocol_vendors = [v for v in vendors if v["protocol"] == protocol]
+        path = output_dir / f"{protocol.lower()}_fingerprints.json"
+        payload = {
+            "schema": "banner-scanner.protocol-fingerprints.v1",
+            "protocol": protocol,
+            "rule_count": len(protocol_vendors),
+            "vendors": protocol_vendors,
+        }
+        path.write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        written[protocol] = path
+    return written
 
 
 def build_broad_pattern(vendor_name: str) -> str:
@@ -445,13 +502,46 @@ EXTRA_VENDORS = [
 ]
 
 
+# EXTRA_VENDORS was historically appended with protocol="SSH,FTP,TELNET".
+# These explicit groups preserve the intent of each section while ensuring
+# every generated rule belongs to exactly one protocol library.
+EXTRA_SSH_NAMES = {
+    "Dropbear", "BusyBox", "RouterOS", "NetScreen", "Adtran", "MOVEit",
+    "Crestron", "RomSShell", "AsyncSSH", "WeOnlyDo SSH",
+}
+EXTRA_FTP_NAMES = {
+    "DreamHost FTP", "www.net.cn FTP", "QTCP FTP", "Eshcom FTP",
+    "OnShift FTP", "Adeptia Internal FTP", "Lumina Datamatics FTP",
+    "Phoenix Online FTP", "CoursEval FTPS", "Hindawi FTP",
+    "Axis Camera FTP", "APC Management Card", "MikroTik",
+    "Gameservers FTPD", "Arvixe FTP", "Firmware Update FTP",
+}
+
+CROSS_PROTOCOL_COPIES = (
+    ("Cerberus FTP", "FTP"),
+    ("CrushFTP", "FTP"),
+    ("SFTPGo", "FTP"),
+    ("Wing FTP", "FTP"),
+    ("xlightftpd", "FTP"),
+    ("ProFTPD", "SSH"),
+)
+
+
+def extra_vendor_protocol(name: str) -> str:
+    if name in EXTRA_SSH_NAMES:
+        return "SSH"
+    if name in EXTRA_FTP_NAMES:
+        return "FTP"
+    return "TELNET"
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="从 fingerprint.db 构建指纹库")
     parser.add_argument("--db", default="fingerprint.db",
                         help="SQLite 数据库路径")
-    parser.add_argument("--output", default="vendors.json",
-                        help="输出 JSON 文件路径")
+    parser.add_argument("--output-dir", default="fingerprints/protocols",
+                        help="三个独立协议指纹库的输出目录")
     parser.add_argument("--csv", default=None,
                         help="可选：同时从 CSV 导出")
     args = parser.parse_args()
@@ -475,13 +565,11 @@ def main():
     named_count = sum(1 for v in vendors if not v['name'].startswith(('SSH-', 'FTP-', 'TELNET-', 'UNKNOWN-')))
     print(f"Named vendors: {named_count}/{len(vendors)}")
 
-    # 写入 JSON
-    output = {"vendors": vendors}
-    with open(args.output, "w", encoding="utf-8") as f:
-        json.dump(output, f, indent=2, ensure_ascii=False)
-
-    print(f"\nFingerprint database written to: {args.output}")
-    print(f"File size: {Path(args.output).stat().st_size} bytes")
+    written = write_protocol_libraries(vendors, args.output_dir)
+    for protocol, path in written.items():
+        print(
+            f"{protocol}: {sum(v['protocol'] == protocol for v in vendors)} rules -> {path}"
+        )
 
     # 打印示例
     print("\n=== Sample rules ===")

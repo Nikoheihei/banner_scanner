@@ -1,6 +1,6 @@
 # Banner Scanner - Network Protocol Fingerprint Scanner
 
-> Probe SSH, FTP, Telnet, Redis, MySQL, and PostgreSQL endpoints, extract structured protocol fields, and classify implementations with 205 banner rules plus 59 database fingerprint rules.
+> Probe SSH, FTP, Telnet, Redis, MySQL, and PostgreSQL endpoints, extract structured protocol fields, and classify implementations with 213 protocol-scoped banner rules plus 59 database fingerprint rules.
 > The project rewrites the core ideas from [protocol_scanner](https://github.com/Open-Coder-oss/protocol_scanner) in Python asyncio with zero third-party runtime dependencies.
 
 ---
@@ -9,7 +9,7 @@
 
 ```bash
 # Single-IP probing with fingerprint matching
-python3 -m banner_scanner 192.168.1.1 --fingerprint vendors.json
+python3 -m banner_scanner 192.168.1.1
 
 # Probe database protocols only and return structured JSON
 python3 -m banner_scanner 192.168.1.1 -p redis,mysql,pgsql --json
@@ -18,7 +18,7 @@ python3 -m banner_scanner 192.168.1.1 -p redis,mysql,pgsql --json
 python3 batch_scanner.py -c 300 --random --limit 10000 --protocol SSH --output result.txt
 
 # Build a fingerprint database from SQLite
-python3 build_fingerprints.py --db fingerprint.db --output vendors.json
+python3 build_fingerprints.py --db fingerprint.db --output-dir fingerprints/protocols
 ```
 
 ## Protocol Probing Flow
@@ -153,17 +153,17 @@ print(f'Total classification: {total}/{len(has_b)} ({total/len(has_b)*100:.1f}%)
 Build a JSON fingerprint library from a SQLite database:
 
 ```bash
-python3 build_fingerprints.py --db fingerprint.db --output vendors.json
+python3 build_fingerprints.py --db fingerprint.db --output-dir fingerprints/protocols
 ```
 
-Example format:
+Each output file contains rules for exactly one protocol. Example format:
 
 ```json
 {
+  "protocol": "SSH",
+  "rule_count": 55,
   "vendors": [
-    {"id": 1, "name": "OpenSSH", "pattern": ".*OpenSSH.*", "count": 1923},
-    {"id": 100, "name": "Cisco IOS telnetd", "pattern": ".*ff[fb-fe]01.*ff[fb-fe]03.*ff[fb-fe]18.*ff[fb-fe]1f.*"},
-    {"id": 200, "name": "Embedded/Gateway (login)", "pattern": "(?<![A-Za-z])[Ll]ogin:"}
+    {"id": 1, "name": "OpenSSH", "protocol": "SSH", "pattern": ".*OpenSSH.*", "count": 1923}
   ]
 }
 ```
@@ -264,10 +264,11 @@ banner_scanner/
 │   ├── redis.py          RESP PING + INFO server
 │   ├── mysql.py          Initial handshake parsing
 │   └── pgsql.py          SSLRequest + minimal StartupMessage
+├── fingerprints/protocols/ 55 SSH + 57 FTP + 101 Telnet isolated rules
 ├── fingerprints/databases/ 59 validated structured rules
 ├── build_fingerprints.py Build fingerprints from SQLite
 ├── batch_scanner.py      High-concurrency batch scanner
-├── vendors.json          205 fingerprint rules
+├── vendors.json          Legacy combined migration source (not loaded by default)
 └── tests/                Unit tests
 ```
 
@@ -281,7 +282,7 @@ MIT
 
 # Banner Scanner — 网络协议指纹探测与识别系统
 
-> 从 IP 地址探测 SSH / FTP / Telnet / Redis / MySQL / PostgreSQL，提取协议结构化字段，并通过 205 条 Banner 规则和 59 条数据库指纹规则识别实现与版本。
+> 从 IP 地址探测 SSH / FTP / Telnet / Redis / MySQL / PostgreSQL，提取协议结构化字段，并通过 213 条协议隔离 Banner 规则和 59 条数据库指纹规则识别实现与版本。
 > 基于 [protocol_scanner](https://github.com/Open-Coder-oss/protocol_scanner)（C++）核心逻辑，Python asyncio 重写，零第三方依赖。
 
 ---
@@ -290,7 +291,7 @@ MIT
 
 ```bash
 # 单 IP 探测 + 指纹识别
-python3 -m banner_scanner 192.168.1.1 --fingerprint vendors.json
+python3 -m banner_scanner 192.168.1.1
 
 # 仅探测数据库协议，输出结构化 JSON
 python3 -m banner_scanner 192.168.1.1 -p redis,mysql,pgsql --json
@@ -299,7 +300,7 @@ python3 -m banner_scanner 192.168.1.1 -p redis,mysql,pgsql --json
 python3 batch_scanner.py -c 300 --random --limit 10000 --protocol SSH --output result.txt
 
 # 从 SQLite 数据库构建指纹库
-python3 build_fingerprints.py --db fingerprint.db --output vendors.json
+python3 build_fingerprints.py --db fingerprint.db --output-dir fingerprints/protocols
 ```
 
 ## 协议探测流程
@@ -347,7 +348,7 @@ TCP 连接 (port 21/990)
 ### Telnet
 
 Telnet 是三个协议中**最难指纹识别**的——服务器不发软件名，Banner 常常只是 `login:`。
-我们采用 **6 层探测 + 205 条规则** 实现 87.5% 有效命中：
+我们采用 **6 层探测 + 101 条 Telnet 专用规则** 实现多层指纹识别：
 
 ```
 TCP 连接 (port 23)
@@ -458,10 +459,10 @@ print(f'总分类:   {total}/{len(has_b)} ({total/len(has_b)*100:.1f}%)')
 
 ## 指纹库构建
 
-从 SQLite 数据库（`fingerprint.db`）提取模板，自动识别厂商名，生成 JSON 指纹库：
+从 SQLite 数据库（`fingerprint.db`）提取模板，自动识别厂商名，分别生成 SSH、FTP、Telnet JSON 指纹库：
 
 ```bash
-python3 build_fingerprints.py --db fingerprint.db --output vendors.json
+python3 build_fingerprints.py --db fingerprint.db --output-dir fingerprints/protocols
 ```
 
 指纹库格式示例：
@@ -572,11 +573,12 @@ banner_scanner/
 │   ├── redis.py          RESP PING + INFO server
 │   ├── mysql.py          初始握手读取与解析
 │   └── pgsql.py          SSLRequest + 最小 StartupMessage
+├── fingerprints/protocols/ SSH 55条、FTP 57条、Telnet 101条独立规则
 ├── fingerprints/databases/ 59 条已验证结构化规则
 ├── build_fingerprints.py 从 SQLite 构建指纹库
 ├── batch_scanner.py      高并发批量扫描器（分块 + 断点续传）
 
-├── vendors.json          205 条指纹规则
+├── vendors.json          旧版合并迁移源（默认不加载）
 └── tests/                单元测试
 ```
 

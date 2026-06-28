@@ -14,7 +14,7 @@ if _project_root not in sys.path:
 from banner_scanner.core.engine import ProbeEngine
 from banner_scanner.core.models import ProbeConfig, BannerResult, HostResult
 from banner_scanner.core.log import setup_logging
-from banner_scanner.core.matcher import FingerprintMatcher
+from banner_scanner.core.matcher import DEFAULT_PROTOCOL_LIBRARY_DIR, FingerprintMatcher
 
 try:
     from mcp.server import Server, NotificationOptions
@@ -26,8 +26,8 @@ except ImportError:
     MCP_AVAILABLE = False
 
 
-# 自动加载同级目录下的 vendors.json
-_DEFAULT_FINGERPRINT = str(Path(__file__).parent.parent / "vendors.json")
+# 默认加载 SSH/FTP/Telnet 三个物理隔离的协议库。
+_DEFAULT_FINGERPRINT = str(DEFAULT_PROTOCOL_LIBRARY_DIR)
 
 
 def _banner_to_dict(br: BannerResult) -> dict:
@@ -155,6 +155,12 @@ async def serve() -> None:
                             "type": "integer",
                             "description": "最大重试次数，默认 2",
                         },
+                        "concurrency": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "description": "并发目标数，默认 1",
+                        },
                     },
                     "required": ["hosts"],
                 },
@@ -177,6 +183,8 @@ async def serve() -> None:
                         },
                         "concurrency": {
                             "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
                             "description": "并发数，默认 100",
                         },
                     },
@@ -196,9 +204,12 @@ async def serve() -> None:
             hosts = arguments.get("hosts", [])
             protocols = arguments.get("protocols")
             retries = arguments.get("retries", 2)
+            concurrency = arguments.get("concurrency", 1)
 
             config.max_retries = retries
-            results = await engine.probe_hosts(hosts, protocols=protocols)
+            results = await engine.probe_hosts(
+                hosts, protocols=protocols, concurrency=concurrency,
+            )
 
             output = []
             for hr in results:
@@ -220,7 +231,10 @@ async def serve() -> None:
         elif name == "scan_batch":
             hosts = arguments.get("hosts", [])
             protocol = arguments.get("protocol", "ssh")
-            results = await engine.probe_hosts(hosts, protocols=[protocol])
+            concurrency = arguments.get("concurrency", 100)
+            results = await engine.probe_hosts(
+                hosts, protocols=[protocol], concurrency=concurrency,
+            )
 
             output = []
             for hr in results:
@@ -243,6 +257,9 @@ async def serve() -> None:
         elif name == "health_check":
             health = await engine.health_check()
             health["fingerprint_rules"] = matcher.rule_count if matcher else 0
+            health["fingerprint_rules_by_protocol"] = (
+                matcher.stats()["rules_by_protocol"] if matcher else {}
+            )
             health["database_fingerprint_rules"] = engine._database_matcher.rule_count
             health["fingerprint_path"] = _DEFAULT_FINGERPRINT
             return [types.TextContent(

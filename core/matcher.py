@@ -29,6 +29,7 @@ from typing import Optional
 from .models import BannerResult, FingerprintMatch
 
 logger = logging.getLogger("banner_scanner.matcher")
+DEFAULT_PROTOCOL_LIBRARY_DIR = Path(__file__).resolve().parent.parent / "fingerprints" / "protocols"
 
 
 # ==================== 指纹加载 ====================
@@ -36,10 +37,11 @@ logger = logging.getLogger("banner_scanner.matcher")
 class FingerprintRule:
     """单条指纹规则"""
 
-    def __init__(self, vendor_id: int, name: str, pattern: str):
+    def __init__(self, vendor_id: int, name: str, pattern: str, protocol: str = ""):
         self.vendor_id = vendor_id
         self.name = name
         self.pattern = pattern
+        self.protocol = protocol.upper()
         self._regex: Optional[re.Pattern] = None
 
     @property
@@ -55,6 +57,7 @@ class FingerprintRule:
         return {
             "vendor_id": self.vendor_id,
             "vendor_name": self.name,
+            "protocol": self.protocol,
             "pattern": self.pattern,
         }
 
@@ -65,6 +68,21 @@ class FingerprintLoader:
     @staticmethod
     def load(path: str | Path) -> list[FingerprintRule]:
         path = Path(path)
+
+        if path.exists() and path.is_dir():
+            files = sorted(path.glob("*_fingerprints.json"))
+            if not files:
+                raise FileNotFoundError(
+                    f"No protocol fingerprint files found in: {path}"
+                )
+            rules = []
+            for file_path in files:
+                rules.extend(FingerprintLoader._load_json(file_path))
+            logger.info(
+                "Loaded %d fingerprint rules from %d protocol libraries in %s",
+                len(rules), len(files), path,
+            )
+            return rules
 
         suffix = path.suffix.lower()
         loaders = {
@@ -93,11 +111,13 @@ class FingerprintLoader:
             data = json.load(f)
 
         vendors = data.get("vendors", [])
+        library_protocol = str(data.get("protocol") or "").upper()
         return [
             FingerprintRule(
                 vendor_id=v["id"],
                 name=v["name"],
                 pattern=v["pattern"],
+                protocol=str(v.get("protocol") or library_protocol),
             )
             for v in vendors
         ]
@@ -121,11 +141,13 @@ class FingerprintMatcher:
     def load_from_dict(cls, data: dict) -> "FingerprintMatcher":
         """从字典加载指纹库（用于测试/动态加载）"""
         vendors = data.get("vendors", [])
+        library_protocol = str(data.get("protocol") or "").upper()
         rules = [
             FingerprintRule(
                 vendor_id=v["id"],
                 name=v["name"],
                 pattern=v["pattern"],
+                protocol=str(v.get("protocol") or library_protocol),
             )
             for v in vendors
         ]
@@ -142,8 +164,11 @@ class FingerprintMatcher:
 
         candidates = self._collect_candidates(result)
         matches = []
+        result_protocol = result.protocol.upper()
 
         for rule in self._rules:
+            if rule.protocol and rule.protocol != result_protocol:
+                continue
             for source, text in candidates:
                 m = rule.regex.search(text)
                 if m:
@@ -236,8 +261,13 @@ class FingerprintMatcher:
         return len(self._rules)
 
     def stats(self) -> dict:
+        by_protocol = {}
+        for rule in self._rules:
+            protocol = rule.protocol or "UNSCOPED"
+            by_protocol[protocol] = by_protocol.get(protocol, 0) + 1
         return {
             "total_rules": len(self._rules),
+            "rules_by_protocol": by_protocol,
             "vendors": list(set(r.name for r in self._rules)),
         }
 

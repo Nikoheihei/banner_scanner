@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 from .models import BannerResult, HostResult, ProbeConfig
-from .matcher import FingerprintMatcher
+from .matcher import DEFAULT_PROTOCOL_LIBRARY_DIR, FingerprintMatcher
 from .database_matcher import DEFAULT_LIBRARY_DIR, DatabaseFingerprintMatcher
 from .retry import RetryExecutor, RetryConfig, RETRYABLE_EXCEPTIONS
 from ..probes import PROTOCOL_PROBES
@@ -32,14 +32,14 @@ class ProbeEngine:
 
         # 可选挂载指纹匹配器
         self._matcher: Optional[FingerprintMatcher] = None
-        if self.config.fingerprint_path:
-            fp_path = Path(self.config.fingerprint_path)
-            if fp_path.exists():
-                self._matcher = FingerprintMatcher.load(fp_path)
-                logger.info(
-                    "Fingerprint matcher loaded (%d rules from %s)",
-                    self._matcher.rule_count, fp_path,
-                )
+        fp_path = Path(self.config.fingerprint_path or DEFAULT_PROTOCOL_LIBRARY_DIR)
+        if fp_path.exists():
+            self._matcher = FingerprintMatcher.load(fp_path)
+            self.config.fingerprint_path = str(fp_path)
+            logger.info(
+                "Fingerprint matcher loaded (%d rules from %s)",
+                self._matcher.rule_count, fp_path,
+            )
         database_path = self.config.database_fingerprint_path or DEFAULT_LIBRARY_DIR
         self._database_matcher = DatabaseFingerprintMatcher.load_directory(database_path)
 
@@ -153,12 +153,24 @@ class ProbeEngine:
         self,
         hosts: list[str],
         protocols: Optional[list[str]] = None,
+        concurrency: int = 1,
     ) -> list[HostResult]:
-        results = []
-        for host in hosts:
-            result = await self.probe_host(host, protocols)
-            results.append(result)
-        return results
+        """Probe multiple hosts while preserving input order.
+
+        ``concurrency=1`` keeps the original sequential behavior.  Higher
+        values are bounded with a semaphore so MCP batch calls and evaluation
+        runs can make progress without creating an unbounded number of sockets.
+        """
+        if concurrency < 1:
+            raise ValueError("concurrency must be at least 1")
+
+        semaphore = asyncio.Semaphore(concurrency)
+
+        async def probe_one(host: str) -> HostResult:
+            async with semaphore:
+                return await self.probe_host(host, protocols)
+
+        return list(await asyncio.gather(*(probe_one(host) for host in hosts)))
 
     async def health_check(self) -> dict:
         return {
@@ -179,6 +191,10 @@ class ProbeEngine:
                     self.config.database_fingerprint_path or DEFAULT_LIBRARY_DIR
                 ),
             },
+            "fingerprint_rules": self._matcher.rule_count if self._matcher else 0,
+            "fingerprint_rules_by_protocol": (
+                self._matcher.stats()["rules_by_protocol"] if self._matcher else {}
+            ),
         }
 
     def _get_ports(self, proto: str) -> list[int]:
