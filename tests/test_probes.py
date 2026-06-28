@@ -1,6 +1,7 @@
 """集成测试：Mock 传输层，验证完整探测流程。"""
 
 import asyncio
+import struct
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -38,7 +39,7 @@ async def test_probe_ssh():
         reader.feed_eof()
         protocol = asyncio.StreamReaderProtocol(reader)
         writer = asyncio.StreamWriter(_MockTransport(), protocol, reader, loop)
-        return reader, writer
+        return reader, writer, {}
 
     _transport.connect_tcp = mock_connect
     try:
@@ -71,7 +72,7 @@ async def test_probe_ftp():
         asyncio.create_task(inject())
         protocol = asyncio.StreamReaderProtocol(reader)
         writer = asyncio.StreamWriter(_MockTransport(), protocol, reader, loop)
-        return reader, writer
+        return reader, writer, {}
 
     _transport.connect_tcp = mock_connect
     try:
@@ -98,7 +99,7 @@ async def test_probe_telnet():
         reader.feed_eof()
         protocol = asyncio.StreamReaderProtocol(reader)
         writer = asyncio.StreamWriter(_MockTransport(), protocol, reader, loop)
-        return reader, writer
+        return reader, writer, {}
 
     _transport.connect_tcp = mock_connect
     try:
@@ -144,16 +145,126 @@ async def test_health_check():
         reader.feed_eof()
         protocol = asyncio.StreamReaderProtocol(reader)
         writer = asyncio.StreamWriter(_MockTransport(), protocol, reader, loop)
-        return reader, writer
+        return reader, writer, {}
 
     _transport.connect_tcp = mock_connect
     try:
         config = ProbeConfig(connect_timeout=1.0, read_timeout=1.0)
         engine = ProbeEngine(config=config)
-        await engine.probe_host("10.0.0.1")
+        await engine.probe_host("10.0.0.1", protocols=["ssh"])
         health = await engine.health_check()
         assert health["healthy"] == True
         assert health["total_probes"] > 0
+    finally:
+        _transport.connect_tcp = original
+
+
+async def test_probe_redis():
+    original = _transport.connect_tcp
+
+    async def mock_connect(host, port, **kw):
+        loop = asyncio.get_running_loop()
+        reader = asyncio.StreamReader()
+        payload = b"# Server\r\nredis_version:7.2.4\r\nredis_mode:standalone\r\n"
+        reader.feed_data(b"+PONG\r\n" + f"${len(payload)}\r\n".encode() + payload + b"\r\n")
+        reader.feed_eof()
+        protocol = asyncio.StreamReaderProtocol(reader)
+        writer = asyncio.StreamWriter(_MockTransport(), protocol, reader, loop)
+        return reader, writer, {}
+
+    _transport.connect_tcp = mock_connect
+    try:
+        engine = ProbeEngine(ProbeConfig(max_retries=0))
+        br = await engine.probe_single("192.0.2.10", 6379, "redis")
+        assert br.accessible is True
+        assert br.redis.version == "7.2.4"
+        assert br.redis.mode == "standalone"
+        assert br.vendor == "Redis"
+        assert br.fingerprint_details["protocol_match"] is True
+    finally:
+        _transport.connect_tcp = original
+
+
+async def test_probe_mysql():
+    original = _transport.connect_tcp
+
+    async def mock_connect(host, port, **kw):
+        loop = asyncio.get_running_loop()
+        reader = asyncio.StreamReader()
+        version = b"10.11.6-MariaDB-0+deb12u1\x00"
+        caps = 0x00088201
+        payload = (
+            b"\x0a" + version + struct.pack("<I", 42) + b"12345678" + b"\x00" +
+            struct.pack("<H", caps & 0xFFFF) + b"\x2d" + struct.pack("<H", 2) +
+            struct.pack("<H", caps >> 16) + b"\x15" + (b"\x00" * 10) +
+            b"abcdefghijklm" + b"mysql_native_password\x00"
+        )
+        reader.feed_data(len(payload).to_bytes(3, "little") + b"\x00" + payload)
+        reader.feed_eof()
+        protocol = asyncio.StreamReaderProtocol(reader)
+        writer = asyncio.StreamWriter(_MockTransport(), protocol, reader, loop)
+        return reader, writer, {}
+
+    _transport.connect_tcp = mock_connect
+    try:
+        engine = ProbeEngine(ProbeConfig(max_retries=0))
+        br = await engine.probe_single("192.0.2.11", 3306, "mysql")
+        assert br.accessible is True
+        assert br.mysql.protocol_version == 10
+        assert br.mysql.implementation == "MariaDB"
+        assert br.vendor == "MariaDB"
+        assert br.info["service_version"].startswith("10.11.6")
+    finally:
+        _transport.connect_tcp = original
+
+
+async def test_probe_pgsql():
+    original = _transport.connect_tcp
+
+    async def mock_connect(host, port, **kw):
+        loop = asyncio.get_running_loop()
+        reader = asyncio.StreamReader()
+        payload = b"SFATAL\x00C28P01\x00Mpassword authentication failed\x00\x00"
+        reader.feed_data(b"N" + b"E" + struct.pack("!I", len(payload) + 4) + payload)
+        reader.feed_eof()
+        protocol = asyncio.StreamReaderProtocol(reader)
+        writer = asyncio.StreamWriter(_MockTransport(), protocol, reader, loop)
+        return reader, writer, {}
+
+    _transport.connect_tcp = mock_connect
+    try:
+        engine = ProbeEngine(ProbeConfig(max_retries=0))
+        br = await engine.probe_single("192.0.2.12", 5432, "pgsql")
+        assert br.accessible is True
+        assert br.pgsql.ssl_response == "N"
+        assert br.pgsql.fields["sqlstate"] == "28P01"
+        assert br.info["sqlstate"] == "28P01"
+        assert br.fingerprint_details["protocol_match"] is True
+    finally:
+        _transport.connect_tcp = original
+
+
+async def test_probe_pgsql_direct_error():
+    original = _transport.connect_tcp
+
+    async def mock_connect(host, port, **kw):
+        loop = asyncio.get_running_loop()
+        reader = asyncio.StreamReader()
+        payload = b"SFATAL\x00C08P01\x00Munsupported frontend protocol\x00\x00"
+        reader.feed_data(b"E" + struct.pack("!I", len(payload) + 4) + payload)
+        reader.feed_eof()
+        protocol = asyncio.StreamReaderProtocol(reader)
+        writer = asyncio.StreamWriter(_MockTransport(), protocol, reader, loop)
+        return reader, writer, {}
+
+    _transport.connect_tcp = mock_connect
+    try:
+        engine = ProbeEngine(ProbeConfig(max_retries=0))
+        br = await engine.probe_single("192.0.2.13", 5432, "pgsql")
+        assert br.accessible is True
+        assert br.pgsql.ssl_response == "E"
+        assert br.pgsql.fields["sqlstate"] == "08P01"
+        assert br.fingerprint_details["protocol_match"] is True
     finally:
         _transport.connect_tcp = original
 

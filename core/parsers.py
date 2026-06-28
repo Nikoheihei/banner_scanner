@@ -1,9 +1,13 @@
 """协议 Banner 解析器。提取软件名、版本号、操作系统等有效信息。"""
 
 import re
-from typing import Optional, Tuple
+import struct
+from typing import Tuple
 
-from .models import SshBanner, FtpFeatures, TelnetBanner, BannerResult
+from .models import (
+    BannerResult, FtpFeatures, MysqlInfo, PgsqlInfo, RedisInfo, SshBanner,
+    TelnetBanner,
+)
 
 
 # ==================== SSH 解析 ====================
@@ -379,6 +383,229 @@ def _detect_telnet_service(text: str) -> str:
     return ""
 
 
+# ==================== Redis 解析 ====================
+
+def decode_resp_payload(response: str) -> str:
+    """移除 RESP bulk-string 外层，保留 INFO 文本或错误响应。"""
+    if not response.startswith("$"):
+        return response
+
+    line_end = response.find("\r\n")
+    if line_end == -1:
+        return response
+    try:
+        payload_length = int(response[1:line_end])
+    except ValueError:
+        return response
+    if payload_length < 0:
+        return ""
+
+    start = line_end + 2
+    return response[start:start + payload_length]
+
+
+def parse_redis_response(ping_response: str, info_response: str) -> RedisInfo:
+    """解析 PING/INFO server 响应并提取稳定字段。"""
+    info = RedisInfo(
+        ping_response=ping_response,
+        info_response=info_response,
+    )
+    payload = decode_resp_payload(info_response)
+    for line in payload.splitlines():
+        if not line or line.startswith("#") or ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        info.fields[key.strip()] = value.strip()
+
+    versions = (
+        ("valkey_version", "Valkey"),
+        ("dragonfly_version", "Dragonfly"),
+        ("memurai_version", "Memurai"),
+        ("keydb_version", "KeyDB"),
+        ("redis_version", "Redis"),
+    )
+    for key, implementation in versions:
+        value = info.fields.get(key, "")
+        if value:
+            info.version = value
+            info.implementation = implementation
+            break
+
+    server_name = info.fields.get("server_name", "").strip().lower()
+    if server_name == "valkey":
+        info.implementation = "Valkey"
+    info.mode = info.fields.get("redis_mode") or info.fields.get("server_mode", "")
+    info.os = info.fields.get("os", "")
+    return info
+
+
+# ==================== MySQL 解析 ====================
+
+def parse_mysql_handshake(data: bytes) -> MysqlInfo:
+    """解析 MySQL 初始握手包；不发送客户端登录数据。"""
+    info = MysqlInfo()
+    if len(data) < 5:
+        return info
+
+    packet_length = int.from_bytes(data[:3], "little")
+    payload = data[4:4 + packet_length]
+    if not payload:
+        return info
+
+    if payload[0] == 0xFF:
+        if len(payload) >= 3:
+            info.error_code = struct.unpack_from("<H", payload, 1)[0]
+        message_offset = 3
+        if len(payload) >= 9 and payload[3:4] == b"#":
+            info.sqlstate = payload[4:9].decode("ascii", errors="replace")
+            message_offset = 9
+        info.error_message = payload[message_offset:].decode("utf-8", errors="replace")
+        return info
+
+    info.protocol_version = payload[0]
+    nul = payload.find(b"\x00", 1)
+    if nul == -1:
+        info.version = payload[1:].decode("utf-8", errors="replace")
+        return info
+
+    info.version = payload[1:nul].decode("utf-8", errors="replace")
+    offset = nul + 1
+    if len(payload) >= offset + 4:
+        info.connection_id = struct.unpack_from("<I", payload, offset)[0]
+
+    cap_low_offset = offset + 4 + 8 + 1
+    if len(payload) < cap_low_offset + 2:
+        return info
+    cap_low = struct.unpack_from("<H", payload, cap_low_offset)[0]
+    info.capability_flags = cap_low
+
+    character_set_offset = cap_low_offset + 2
+    if len(payload) >= character_set_offset + 1:
+        info.character_set = payload[character_set_offset]
+    if len(payload) >= character_set_offset + 3:
+        info.status_flags = struct.unpack_from("<H", payload, character_set_offset + 1)[0]
+    if len(payload) >= character_set_offset + 5:
+        cap_high = struct.unpack_from("<H", payload, character_set_offset + 3)[0]
+        info.capability_flags |= cap_high << 16
+
+    auth_length_offset = character_set_offset + 5
+    auth_plugin_data_length = payload[auth_length_offset] if len(payload) > auth_length_offset else 0
+    auth_part_2_offset = auth_length_offset + 1 + 10
+    auth_part_2_length = max(13, auth_plugin_data_length - 8) if auth_plugin_data_length else 13
+    plugin_offset = min(len(payload), auth_part_2_offset + auth_part_2_length)
+    if plugin_offset < len(payload):
+        plugin = payload[plugin_offset:].split(b"\x00", 1)[0]
+        candidate = plugin.decode("ascii", errors="ignore")
+        if re.fullmatch(r"[A-Za-z0-9_]+", candidate):
+            info.auth_plugin = candidate
+
+    version_lower = info.version.lower()
+    if "mariadb" in version_lower:
+        info.implementation = "MariaDB"
+    elif "percona" in version_lower:
+        info.implementation = "Percona Server"
+    elif "tidb" in version_lower:
+        info.implementation = "TiDB"
+    elif "oceanbase" in version_lower:
+        info.implementation = "OceanBase"
+    elif info.protocol_version == 10 and re.match(r"^(?:mysql\s*)?\d", info.version, re.IGNORECASE):
+        info.implementation = "MySQL_or_compatible"
+    return info
+
+
+# ==================== PostgreSQL 解析 ====================
+
+PG_ERROR_FIELD_NAMES = {
+    "S": "severity",
+    "V": "severity_nonlocalized",
+    "C": "sqlstate",
+    "M": "message",
+    "D": "detail",
+    "H": "hint",
+    "P": "position",
+    "p": "internal_position",
+    "q": "internal_query",
+    "W": "where",
+    "s": "schema",
+    "t": "table",
+    "c": "column",
+    "d": "data_type",
+    "n": "constraint",
+    "F": "file",
+    "L": "line",
+    "R": "routine",
+}
+
+PG_AUTH_METHODS = {
+    0: "ok",
+    2: "kerberos_v5",
+    3: "cleartext_password",
+    5: "md5_password",
+    6: "scm_credential",
+    7: "gss",
+    8: "gss_continue",
+    9: "sspi",
+    10: "sasl",
+    11: "sasl_continue",
+    12: "sasl_final",
+}
+
+
+def _parse_pg_error_fields(payload: bytes) -> dict[str, str]:
+    fields: dict[str, str] = {}
+    position = 0
+    while position < len(payload):
+        field_type = chr(payload[position])
+        if field_type == "\x00":
+            break
+        end = payload.find(b"\x00", position + 1)
+        if end == -1:
+            break
+        name = PG_ERROR_FIELD_NAMES.get(field_type, field_type)
+        fields[name] = payload[position + 1:end].decode("utf-8", errors="replace")
+        position = end + 1
+    return fields
+
+
+def parse_pgsql_messages(data: bytes, ssl_response: str = "") -> PgsqlInfo:
+    """解析 PostgreSQL Startup 阶段的 Error/Auth/ParameterStatus 消息。"""
+    info = PgsqlInfo(ssl_response=ssl_response)
+    position = 0
+    while len(data) - position >= 5:
+        message_type = chr(data[position])
+        length = struct.unpack("!I", data[position + 1:position + 5])[0]
+        message_end = position + 1 + length
+        if length < 4 or message_end > len(data):
+            break
+        payload = data[position + 5:message_end]
+        info.message_types.append(message_type)
+
+        if message_type == "E" and not info.fields:
+            info.fields = _parse_pg_error_fields(payload)
+        elif message_type == "R" and len(payload) >= 4 and info.auth_code is None:
+            info.auth_code = struct.unpack("!I", payload[:4])[0]
+            info.auth_method = PG_AUTH_METHODS.get(info.auth_code, f"unknown_{info.auth_code}")
+        elif message_type == "S":
+            parts = payload.split(b"\x00")
+            if len(parts) >= 2:
+                key = parts[0].decode("utf-8", errors="replace")
+                value = parts[1].decode("utf-8", errors="replace")
+                if key:
+                    info.parameters[key] = value
+        position = message_end
+
+    combined = " ".join(info.fields.values())
+    if re.search(r"redshift", combined, re.IGNORECASE):
+        info.implementation = "Amazon Redshift"
+    elif re.search(r"cratedb|crate", combined, re.IGNORECASE):
+        info.implementation = "CrateDB"
+    elif re.search(r"cockroach", combined, re.IGNORECASE):
+        info.implementation = "CockroachDB"
+    elif re.search(r"yugabyte", combined, re.IGNORECASE):
+        info.implementation = "YugabyteDB"
+    return info
+
+
 # ==================== 统一信息提取 ====================
 
 def extract_banner_info(result: BannerResult) -> dict:
@@ -432,11 +659,42 @@ def extract_banner_info(result: BannerResult) -> dict:
         info["has_iac_negotiation"] = t.has_iac_negotiation
         info["extracted_text"] = t.extracted_text[:500] if t.extracted_text else ""
 
+    elif result.protocol == "REDIS" and result.redis:
+        r = result.redis
+        info["service_name"] = r.implementation or "Redis-compatible"
+        info["service_version"] = r.version
+        info["os"] = r.os
+        info["deployment_mode"] = r.mode
+        info["redis_fields"] = r.fields
+
+    elif result.protocol == "MYSQL" and result.mysql:
+        m = result.mysql
+        info["service_name"] = m.implementation or "MySQL-compatible"
+        info["service_version"] = m.version
+        info["protocol_version"] = m.protocol_version
+        info["capability_flags"] = m.capability_flags
+        info["auth_plugin"] = m.auth_plugin
+        if m.sqlstate:
+            info["sqlstate"] = m.sqlstate
+
+    elif result.protocol == "PGSQL" and result.pgsql:
+        p = result.pgsql
+        info["service_name"] = p.implementation or "PostgreSQL-compatible"
+        info["service_version"] = p.parameters.get("server_version", "")
+        info["protocol_version"] = p.protocol_version
+        info["ssl_response"] = p.ssl_response
+        info["sqlstate"] = p.fields.get("sqlstate", "")
+        info["auth_method"] = p.auth_method
+        info["message_types"] = p.message_types
+        info["parameters"] = p.parameters
+
     # 指纹匹配结果也合并进来
     if result.vendor:
         if not info["service_name"]:
             info["service_name"] = result.vendor
         info["fingerprint_vendor"] = result.vendor
         info["fingerprint_vendor_id"] = result.vendor_id
+    if result.fingerprint_details:
+        info["fingerprint"] = result.fingerprint_details
 
     return info

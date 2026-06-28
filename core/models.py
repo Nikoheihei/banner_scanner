@@ -1,7 +1,7 @@
 """数据结构定义。"""
 
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Any, Optional
 
 
 @dataclass
@@ -49,12 +49,56 @@ class TelnetBanner:
 
 
 @dataclass
+class RedisInfo:
+    """Redis/RESP 主动探测结果。"""
+    ping_response: str = ""
+    info_response: str = ""
+    fields: dict[str, str] = field(default_factory=dict)
+    implementation: str = ""
+    version: str = ""
+    mode: str = ""
+    os: str = ""
+
+
+@dataclass
+class MysqlInfo:
+    """MySQL-compatible 初始握手字段。"""
+    protocol_version: int = 0
+    version: str = ""
+    connection_id: int = 0
+    capability_flags: int = 0
+    character_set: int = 0
+    status_flags: int = 0
+    auth_plugin: str = ""
+    implementation: str = ""
+    error_code: int = 0
+    sqlstate: str = ""
+    error_message: str = ""
+
+
+@dataclass
+class PgsqlInfo:
+    """PostgreSQL SSL/Startup 握手字段。"""
+    protocol_version: int = 196608
+    ssl_response: str = ""
+    fields: dict[str, str] = field(default_factory=dict)
+    auth_code: Optional[int] = None
+    auth_method: str = ""
+    parameters: dict[str, str] = field(default_factory=dict)
+    message_types: list[str] = field(default_factory=list)
+    implementation: str = ""
+
+
+@dataclass
 class FingerprintMatch:
-    vendor_id: int = 0
+    vendor_id: int | str = 0
     vendor_name: str = ""
     pattern: str = ""
     confidence: float = 1.0
     source: str = ""
+    category: str = ""
+    labels: dict[str, Any] = field(default_factory=dict)
+    extracted: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -70,11 +114,15 @@ class BannerResult:
     ssh: Optional[SshBanner] = None
     ftp: Optional[FtpFeatures] = None
     telnet: Optional[TelnetBanner] = None
+    redis: Optional[RedisInfo] = None
+    mysql: Optional[MysqlInfo] = None
+    pgsql: Optional[PgsqlInfo] = None
     banner_raw_hex: str = ""     # 原始字节 hex (用于 IAC 指纹匹配)
     vendor: str = ""
     vendor_id: int = 0
     vendor_confidence: float = 0.0
     matched_rules: list[FingerprintMatch] = field(default_factory=list)
+    fingerprint_details: dict[str, Any] = field(default_factory=dict)
     # 重试信息
     retry_count: int = 0                # 实际重试次数
     retry_attempts: int = 1             # 总尝试次数 (含首次)
@@ -96,6 +144,7 @@ class ProbeConfig:
     read_timeout: float = 4.0
     max_banner_bytes: int = 65536
     fingerprint_path: Optional[str] = None
+    database_fingerprint_path: Optional[str] = None
     protocol_config: dict[str, "ProtocolConfig"] = field(default_factory=dict)
     max_retries: int = 2         # 最大重试次数 (0 = 不重试)
     retry_base_delay: float = 1.0  # 重试基础延迟 (秒)
@@ -106,6 +155,9 @@ class ProbeConfig:
                 "ssh": ProtocolConfig(ports=[22], connect_timeout=3.0, read_timeout=4.0),
                 "ftp": ProtocolConfig(ports=[21, 990], connect_timeout=3.0, read_timeout=4.0),
                 "telnet": ProtocolConfig(ports=[23], connect_timeout=5.0, read_timeout=8.0),
+                "redis": ProtocolConfig(ports=[6379], connect_timeout=3.0, read_timeout=3.0),
+                "mysql": ProtocolConfig(ports=[3306], connect_timeout=3.0, read_timeout=3.0),
+                "pgsql": ProtocolConfig(ports=[5432], connect_timeout=3.0, read_timeout=3.0),
             }
 
 

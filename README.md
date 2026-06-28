@@ -1,6 +1,6 @@
 # Banner Scanner - Network Protocol Fingerprint Scanner
 
-> Probe SSH, FTP, and Telnet banners from IP addresses, extract vendors, versions, operating systems, and automatically classify device types with 205 fingerprint rules.
+> Probe SSH, FTP, Telnet, Redis, MySQL, and PostgreSQL endpoints, extract structured protocol fields, and classify implementations with 205 banner rules plus 59 database fingerprint rules.
 > The project rewrites the core ideas from [protocol_scanner](https://github.com/Open-Coder-oss/protocol_scanner) in Python asyncio with zero third-party runtime dependencies.
 
 ---
@@ -11,6 +11,9 @@
 # Single-IP probing with fingerprint matching
 python3 -m banner_scanner 192.168.1.1 --fingerprint vendors.json
 
+# Probe database protocols only and return structured JSON
+python3 -m banner_scanner 192.168.1.1 -p redis,mysql,pgsql --json
+
 # High-concurrency random batch scan
 python3 batch_scanner.py -c 300 --random --limit 10000 --protocol SSH --output result.txt
 
@@ -18,7 +21,7 @@ python3 batch_scanner.py -c 300 --random --limit 10000 --protocol SSH --output r
 python3 build_fingerprints.py --db fingerprint.db --output vendors.json
 ```
 
-## Three-Protocol Probing Flow
+## Protocol Probing Flow
 
 ### SSH
 
@@ -90,7 +93,32 @@ TCP connection (port 23)
 | Total classification rate | **96.9%** | Every IP receives a clear output category |
 | Timeout | connect=5s, read=8s | Telnet responses are usually slower |
 
+### Redis / MySQL / PostgreSQL
+
+| Protocol | Active probe | Structured fingerprint output | Safety boundary |
+|----------|--------------|-------------------------------|-----------------|
+| Redis | RESP `PING`, then `INFO server` | implementation, version, mode, OS and stable INFO fields | Does not authenticate or change data |
+| MySQL | Read the protocol-v10 initial server handshake | implementation, version, capabilities, charset and auth plugin | Sends no login packet and executes no SQL |
+| PostgreSQL | Send `SSLRequest`; on `N`, send a minimal protocol-v3 `StartupMessage` | SSL behavior, SQLSTATE/error fields, auth method, ParameterStatus and implementation hints | Sends no password and executes no SQL; stops after `S` instead of negotiating TLS |
+
+The structured libraries under `fingerprints/databases/` are loaded automatically. Historical validation of those libraries used independent holdouts and authorized online reprobes:
+
+| Library | Corpus / holdout | Main validation result |
+|---------|------------------|------------------------|
+| Redis | 7,338 records; random 10% online IP sample | 100% protocol match among responses; 96.64% implementation/version extraction |
+| MySQL | 422,199 records; 42,220-record holdout | 100% protocol/version extraction on holdout; 100% on 482 online responses |
+| PostgreSQL | 2,053 records; 205-record holdout | 100% protocol match; 88.78% SQLSTATE extraction on holdout |
+
+PostgreSQL SQLSTATE is present only in `ErrorResponse`. SSL-only and authentication responses can be valid PGSQL fingerprints without containing SQLSTATE.
+
 ## Testing
+
+```bash
+python3 tests/test_parsers.py
+python3 tests/test_matcher.py
+python3 tests/test_database_matcher.py
+python3 tests/test_probes.py
+```
 
 ### Batch Scan Tests
 
@@ -160,7 +188,7 @@ maximum retries: 2 by default
 python3 -m banner_scanner [hosts...] [options]
 
   hosts               Target IP addresses
-  -p, --protocols     Protocol list (default: ssh,ftp,telnet)
+  -p, --protocols     Protocol list (default: ssh,ftp,telnet,redis,mysql,pgsql)
   -t, --timeout       Connection timeout in seconds (default: 3.0)
   --read-timeout      Read timeout in seconds (default: 4.0)
   --retries           Maximum retries (default: 2)
@@ -168,6 +196,7 @@ python3 -m banner_scanner [hosts...] [options]
   --no-feat           Do not send FTP FEAT
   --health            Print engine health
   --fingerprint       Fingerprint library path
+  --database-fingerprints  Structured Redis/MySQL/PGSQL library directory
   --verbose, -v       DEBUG logging
 ```
 
@@ -204,7 +233,7 @@ Import `mcp.json` into an MCP client:
 | Tool | Description |
 |------|-------------|
 | `health_check` | Engine health and fingerprint-library status |
-| `probe_banner` | Probe SSH / FTP / Telnet banners for an IP and match fingerprints |
+| `probe_banner` | Probe SSH / FTP / Telnet / Redis / MySQL / PGSQL and match fingerprints |
 | `scan_batch` | Scan multiple IP addresses |
 
 ### Supported Transports
@@ -223,14 +252,19 @@ banner_scanner/
 ├── core/
 │   ├── engine.py         Probe engine with retry and single-port probing
 │   ├── models.py         Data structures
-│   ├── parsers.py        SSH/FTP/Telnet banner parsers
+│   ├── parsers.py        Text and database wire-protocol parsers
 │   ├── transport.py      TCP/TLS transport plus TCP metadata
 │   ├── matcher.py        Fingerprint loading and longest-match engine
+│   ├── database_matcher.py Structured database fingerprint matcher
 │   └── retry.py          Exponential-backoff retry strategy
 ├── probes/
 │   ├── ssh.py            SSH probing
 │   ├── ftp.py            FTP probing
-│   └── telnet.py         Telnet probing
+│   ├── telnet.py         Telnet probing
+│   ├── redis.py          RESP PING + INFO server
+│   ├── mysql.py          Initial handshake parsing
+│   └── pgsql.py          SSLRequest + minimal StartupMessage
+├── fingerprints/databases/ 59 validated structured rules
 ├── build_fingerprints.py Build fingerprints from SQLite
 ├── batch_scanner.py      High-concurrency batch scanner
 ├── vendors.json          205 fingerprint rules
@@ -247,7 +281,7 @@ MIT
 
 # Banner Scanner — 网络协议指纹探测与识别系统
 
-> 从 IP 地址探测 SSH / FTP / Telnet Banner，提取服务商、版本号、操作系统，并通过 205 条指纹规则自动识别设备类型。  
+> 从 IP 地址探测 SSH / FTP / Telnet / Redis / MySQL / PostgreSQL，提取协议结构化字段，并通过 205 条 Banner 规则和 59 条数据库指纹规则识别实现与版本。
 > 基于 [protocol_scanner](https://github.com/Open-Coder-oss/protocol_scanner)（C++）核心逻辑，Python asyncio 重写，零第三方依赖。
 
 ---
@@ -258,6 +292,9 @@ MIT
 # 单 IP 探测 + 指纹识别
 python3 -m banner_scanner 192.168.1.1 --fingerprint vendors.json
 
+# 仅探测数据库协议，输出结构化 JSON
+python3 -m banner_scanner 192.168.1.1 -p redis,mysql,pgsql --json
+
 # 批量随机扫描
 python3 batch_scanner.py -c 300 --random --limit 10000 --protocol SSH --output result.txt
 
@@ -265,7 +302,7 @@ python3 batch_scanner.py -c 300 --random --limit 10000 --protocol SSH --output r
 python3 build_fingerprints.py --db fingerprint.db --output vendors.json
 ```
 
-## 三协议探测流程
+## 协议探测流程
 
 ### SSH
 
@@ -340,6 +377,24 @@ TCP 连接 (port 23)
 | 超时配置 | connect=5s, read=8s | Telnet 响应较慢 |
 | 命中上限原因 | 剩余 3.1% 是真信息论不可区分的样本（单例孤立簇 + 无 IAC 无特征纯 login:） | |
 
+### Redis / MySQL / PostgreSQL
+
+| 协议 | 主动探测过程 | 结构化指纹输出 | 操作边界 |
+|------|--------------|----------------|----------|
+| Redis | RESP `PING`，随后执行 `INFO server` | 实现、版本、运行模式、OS、稳定 INFO 字段 | 不认证、不修改数据 |
+| MySQL | 仅读取 protocol-v10 初始服务端握手 | 实现、版本、能力位、字符集、认证插件 | 不发送登录包、不执行 SQL |
+| PostgreSQL | 先发 `SSLRequest`；收到 `N` 后发送最小 protocol-v3 `StartupMessage` | SSL 行为、SQLSTATE/错误字段、认证方式、ParameterStatus、实现线索 | 不发送密码、不执行 SQL；收到 `S` 后停止，不继续 TLS |
+
+`fingerprints/databases/` 下的三套结构化指纹库由引擎自动加载。其历史独立留出集与授权公网重探结果如下：
+
+| 指纹库 | 语料 / 测试集 | 主要验证结果 |
+|--------|---------------|--------------|
+| Redis | 7,338 条记录；每次随机 10% IP 在线复测 | 有响应目标协议匹配 100%；实现/版本提取 96.64% |
+| MySQL | 422,199 条记录；42,220 条留出集 | 留出集协议/版本提取 100%；482 个在线响应均匹配 |
+| PostgreSQL | 2,053 条记录；205 条留出集 | 协议匹配 100%；留出集 SQLSTATE 提取 88.78% |
+
+PostgreSQL 的 SQLSTATE 只存在于 `ErrorResponse`。SSL 响应和认证响应可以形成有效 PGSQL 指纹，但协议本身不携带 SQLSTATE。
+
 ### 命中率演进
 
 ```
@@ -365,6 +420,13 @@ Telnet 指纹命中率演进:
 | **Telnet** | 87.5% | ~90% | 已分离 9.4% 服务状态（`Connection refused` 等），剩余 3.1% 是清洗后仍无法归并的单例文本簇 |
 
 ## 测试方式
+
+```bash
+python3 tests/test_parsers.py
+python3 tests/test_matcher.py
+python3 tests/test_database_matcher.py
+python3 tests/test_probes.py
+```
 
 ### 批量扫描测试
 
@@ -434,7 +496,7 @@ python3 build_fingerprints.py --db fingerprint.db --output vendors.json
 python3 -m banner_scanner [hosts...] [options]
 
   hosts               目标 IP 地址（可多个）
-  -p, --protocols     协议列表 (默认: ssh,ftp,telnet)
+  -p, --protocols     协议列表 (默认: ssh,ftp,telnet,redis,mysql,pgsql)
   -t, --timeout       连接超时秒数 (默认: 3.0)
   --read-timeout      读取超时秒数 (默认: 4.0)
   --retries           最大重试次数 (默认: 2)
@@ -442,6 +504,7 @@ python3 -m banner_scanner [hosts...] [options]
   --no-feat           FTP 不发送 FEAT
   --health            引擎健康状态
   --fingerprint       指纹库文件路径
+  --database-fingerprints  Redis/MySQL/PGSQL 结构化指纹库目录
   --verbose, -v       DEBUG 日志
 ```
 
@@ -478,7 +541,7 @@ PYTHONPATH="$(dirname $(pwd)):$PYTHONPATH" python3 -m server.mcp_http_server
 | 工具 | 说明 |
 |------|------|
 | `health_check` | 引擎健康状态和指纹库信息 |
-| `probe_banner` | 探测 IP 的 SSH / FTP / Telnet Banner，自动指纹识别 |
+| `probe_banner` | 探测 SSH / FTP / Telnet / Redis / MySQL / PGSQL，自动指纹识别 |
 | `scan_batch` | 批量扫描多个 IP |
 
 ### 协议支持
@@ -496,15 +559,20 @@ PYTHONPATH="$(dirname $(pwd)):$PYTHONPATH" python3 -m server.mcp_http_server
 banner_scanner/
 ├── core/
 │   ├── engine.py         探测引擎（+ 重试 + 单端口探测）
-│   ├── models.py         数据结构（BannerResult, SshBanner, FtpFeatures, TelnetBanner）
-│   ├── parsers.py        Banner 解析器（SSH/OS 指纹、FTP 软件/特性、Telnet 文本）
+│   ├── models.py         文本协议与数据库协议结构化结果
+│   ├── parsers.py        Banner 与数据库线协议解析器
 │   ├── transport.py      传输层（TCP/TLS + TCP_NODELAY + TCP 元数据）
 │   ├── matcher.py        指纹加载 + 匹配长度优先引擎
+│   ├── database_matcher.py 数据库结构化规则匹配器
 │   └── retry.py          指数退避重试策略
 ├── probes/
 │   ├── ssh.py            SSH 探测（取首行 → 解析软件/OS）
 │   ├── ftp.py            FTP 探测（读 Banner → HELP/SYST → FEAT 递归）
-│   └── telnet.py         Telnet 探测（被动接收 → IAC 协商 → \r\n → 二次探测 → 微特征）
+│   ├── telnet.py         Telnet 探测（被动接收 → IAC 协商 → \r\n → 二次探测 → 微特征）
+│   ├── redis.py          RESP PING + INFO server
+│   ├── mysql.py          初始握手读取与解析
+│   └── pgsql.py          SSLRequest + 最小 StartupMessage
+├── fingerprints/databases/ 59 条已验证结构化规则
 ├── build_fingerprints.py 从 SQLite 构建指纹库
 ├── batch_scanner.py      高并发批量扫描器（分块 + 断点续传）
 
