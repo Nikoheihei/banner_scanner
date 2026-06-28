@@ -1,7 +1,7 @@
 {
   "schema": "banner-scanner.protocol-fingerprints.v1",
   "protocol": "TELNET",
-  "rule_count": 101,
+  "rule_count": 102,
   "vendors": [
     {
       "id": 80,
@@ -11,7 +11,9 @@
       "count": 1,
       "template_ids": [
         100
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 81,
@@ -21,7 +23,9 @@
       "count": 1,
       "template_ids": [
         101
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 106,
@@ -29,7 +33,9 @@
       "protocol": "TELNET",
       "pattern": ".*Ubuntu \\d+\\.\\d+.*login:.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 107,
@@ -37,7 +43,9 @@
       "protocol": "TELNET",
       "pattern": ".*login:.*Password:.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 108,
@@ -45,7 +53,9 @@
       "protocol": "TELNET",
       "pattern": ".*[Rr]ui[Jj]ie.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 109,
@@ -53,7 +63,9 @@
       "protocol": "TELNET",
       "pattern": ".*IP[Cc]amera.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 110,
@@ -61,7 +73,9 @@
       "protocol": "TELNET",
       "pattern": ".*ATP.Cli.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 111,
@@ -69,7 +83,9 @@
       "protocol": "TELNET",
       "pattern": ".*[Aa]amra.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 112,
@@ -77,7 +93,9 @@
       "protocol": "TELNET",
       "pattern": ".*Remote Management Console.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 113,
@@ -85,7 +103,9 @@
       "protocol": "TELNET",
       "pattern": ".*HD9084.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 114,
@@ -93,7 +113,9 @@
       "protocol": "TELNET",
       "pattern": ".*Synchronet BBS.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 115,
@@ -101,7 +123,9 @@
       "protocol": "TELNET",
       "pattern": ".*CP841.*Telnet.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 116,
@@ -109,7 +133,9 @@
       "protocol": "TELNET",
       "pattern": ".*AC7621.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 117,
@@ -117,7 +143,9 @@
       "protocol": "TELNET",
       "pattern": ".*YHTC.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 118,
@@ -125,7 +153,9 @@
       "protocol": "TELNET",
       "pattern": ".*sbs[- ]?ipcam.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 119,
@@ -133,7 +163,9 @@
       "protocol": "TELNET",
       "pattern": ".*[Aa]su login:.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 120,
@@ -141,7 +173,9 @@
       "protocol": "TELNET",
       "pattern": ".*[Ss]telnet.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 121,
@@ -149,7 +183,9 @@
       "protocol": "TELNET",
       "pattern": ".*Synology.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 122,
@@ -157,7 +193,9 @@
       "protocol": "TELNET",
       "pattern": ".*RT-AC\\d+.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 123,
@@ -165,7 +203,9 @@
       "protocol": "TELNET",
       "pattern": ".*DASAN.*Zhone.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 124,
@@ -173,7 +213,9 @@
       "protocol": "TELNET",
       "pattern": ".*TANDBERG.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 125,
@@ -181,7 +223,9 @@
       "protocol": "TELNET",
       "pattern": ".*DragonWave.*|.*Horizon_IDU.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 126,
@@ -189,7 +233,9 @@
       "protocol": "TELNET",
       "pattern": ".*UHP-10.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 127,
@@ -197,7 +243,9 @@
       "protocol": "TELNET",
       "pattern": ".*buildroot.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 128,
@@ -205,7 +253,9 @@
       "protocol": "TELNET",
       "pattern": ".*EdgeOS.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 129,
@@ -213,7 +263,9 @@
       "protocol": "TELNET",
       "pattern": ".*NetComm.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 130,
@@ -221,7 +273,9 @@
       "protocol": "TELNET",
       "pattern": ".*Debian GNU/Linux.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 131,
@@ -229,7 +283,9 @@
       "protocol": "TELNET",
       "pattern": ".*RTCS.*Telnet.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 132,
@@ -237,7 +293,9 @@
       "protocol": "TELNET",
       "pattern": ".*VOTER.*System.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 133,
@@ -245,7 +303,9 @@
       "protocol": "TELNET",
       "pattern": ".*Matrix[- ]NVR.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 134,
@@ -253,7 +313,9 @@
       "protocol": "TELNET",
       "pattern": ".*Adtec.*Telnet.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 135,
@@ -261,7 +323,9 @@
       "protocol": "TELNET",
       "pattern": ".*UsenetExpress.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 136,
@@ -269,7 +333,9 @@
       "protocol": "TELNET",
       "pattern": ".*FG8102.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 137,
@@ -277,7 +343,9 @@
       "protocol": "TELNET",
       "pattern": ".*DSL-500B.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 138,
@@ -285,7 +353,9 @@
       "protocol": "TELNET",
       "pattern": ".*XPON-\\d+.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 139,
@@ -293,527 +363,669 @@
       "protocol": "TELNET",
       "pattern": ".*aigoWiFi.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 142,
+      "id": 140,
+      "name": "Windows telnetd",
+      "protocol": "TELNET",
+      "pattern": ".*Windows(?:\\s+CE)?\\s+Telnet\\s+Service.*",
+      "count": 0,
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 140
+    },
+    {
+      "id": 143,
       "name": "PYNG-HUB",
       "protocol": "TELNET",
       "pattern": ".*PYNG-HUB.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 143,
+      "id": 144,
       "name": "Embedded/Gateway (login)",
       "protocol": "TELNET",
       "pattern": "(?<![A-Za-z])[Ll]ogin:",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 144,
+      "id": 145,
       "name": "Network Device (user prompt)",
       "protocol": "TELNET",
       "pattern": "(?<![A-Za-z])[Uu]ser(?:name)?:",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 145,
+      "id": 146,
       "name": "Serial Gateway (password)",
       "protocol": "TELNET",
       "pattern": "(?<![A-Za-z])[Pp]assword:",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 146,
+      "id": 147,
       "name": "Embedded (login+password)",
       "protocol": "TELNET",
       "pattern": "[Ll]ogin:\\s*[Pp]assword:",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 147,
+      "id": 148,
       "name": "[Status] Connection Refused",
       "protocol": "TELNET",
       "pattern": ".*[Cc]onnection [Rr]efused.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "status",
+      "priority": 20
     },
     {
-      "id": 148,
+      "id": 149,
       "name": "[Status] Too Many Connections",
       "protocol": "TELNET",
       "pattern": ".*[Tt]oo many connections.*|.*maximum number.*exceeded.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "status",
+      "priority": 20
     },
     {
-      "id": 149,
+      "id": 150,
       "name": "[Status] System Busy",
       "protocol": "TELNET",
       "pattern": ".*[Bb]usy.*|.*all ports.*|.*try again.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "status",
+      "priority": 20
     },
     {
-      "id": 150,
+      "id": 151,
       "name": "[Status] Access Denied",
       "protocol": "TELNET",
       "pattern": ".*[Aa]ccess [Dd]enied.*|.*[Uu]nauthorized.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "status",
+      "priority": 20
     },
     {
-      "id": 151,
+      "id": 152,
       "name": "[Status] Service Disabled",
       "protocol": "TELNET",
       "pattern": ".*[Dd]isabled.*|.*not available.*|.*[Ss]hutdown.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "status",
+      "priority": 20
     },
     {
-      "id": 152,
+      "id": 153,
       "name": "Cisco IOS telnetd",
       "protocol": "TELNET",
       "pattern": ".*ff[fb-fe]01.*ff[fb-fe]03.*ff[fb-fe]18.*ff[fb-fe]1f.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 80
     },
     {
-      "id": 153,
+      "id": 154,
       "name": "Linux telnetd",
       "protocol": "TELNET",
       "pattern": ".*ff[fb-fe]25.*ff[fb-fe]26.*ff[fb-fe]01.*ff[fb-fe]03.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 80
     },
     {
-      "id": 154,
+      "id": 155,
       "name": "BusyBox telnetd",
       "protocol": "TELNET",
       "pattern": ".*ff[fb-fe]01.*ff[fb-fe]01.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 80
     },
     {
-      "id": 155,
+      "id": 156,
       "name": "Windows telnetd",
       "protocol": "TELNET",
       "pattern": ".*ff[fb-fe]18.*ff[fb-fe]1f.*ff[fb-fe]22.*ff[fb-fe]27.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 80
     },
     {
-      "id": 156,
+      "id": 157,
       "name": "Embedded telnetd",
       "protocol": "TELNET",
       "pattern": ".*fffd01.*fffb01.*fffb03.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 157,
+      "id": 158,
       "name": "Router telnetd",
       "protocol": "TELNET",
       "pattern": ".*ff[b-fd]01.*ff[b-fd]03(?!.*ff[b-fd](?:18|1f|25|26)).*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 158,
+      "id": 159,
       "name": "Cisco Device",
       "protocol": "TELNET",
       "pattern": ".*[Uu]ser Access Verification.*|.*[Cc]isco.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 159,
+      "id": 160,
       "name": "Broadband Router",
       "protocol": "TELNET",
       "pattern": ".*[Bb]roadband [Rr]outer.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 160,
+      "id": 161,
       "name": "Cambium Networks",
       "protocol": "TELNET",
       "pattern": ".*[Cc]ambium.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 161,
+      "id": 162,
       "name": "DD-WRT",
       "protocol": "TELNET",
       "pattern": ".*DD-WRT.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 162,
+      "id": 163,
       "name": "MikroTik RouterOS",
       "protocol": "TELNET",
       "pattern": ".*[Mm]ikro[Tt]ik.*|.*RouterOS.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 163,
+      "id": 164,
       "name": "Huawei Device",
       "protocol": "TELNET",
       "pattern": ".*[Hh]uawei.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 164,
+      "id": 165,
       "name": "Ubiquiti Device",
       "protocol": "TELNET",
       "pattern": ".*[Uu]biquiti.*|.*[Aa]ir[Mm]ax.*|.*[Ee]dge[Mm]ax.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 165,
+      "id": 166,
       "name": "OpenWrt",
       "protocol": "TELNET",
       "pattern": ".*[Oo]pen[Ww]rt.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 166,
+      "id": 167,
       "name": "D-Link Router",
       "protocol": "TELNET",
       "pattern": ".*[Dd][- ]?[Ll]ink.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 167,
+      "id": 168,
       "name": "Zyxel Device",
       "protocol": "TELNET",
       "pattern": ".*[Zz]yxel.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 168,
+      "id": 169,
       "name": "DrayTek Router",
       "protocol": "TELNET",
       "pattern": ".*[Dd]ray[Tt]ek.*|.*[Vv]igor.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 169,
+      "id": 170,
       "name": "TP-Link Router",
       "protocol": "TELNET",
       "pattern": ".*[Tt][Pp][- ]?[Ll]ink.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 170,
+      "id": 171,
       "name": "Netgear Router",
       "protocol": "TELNET",
       "pattern": ".*[Nn]et[Gg]ear.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 171,
+      "id": 172,
       "name": "ARRIS Gateway",
       "protocol": "TELNET",
       "pattern": ".*[Aa][Rr][Rr][Ii][Ss].*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 172,
+      "id": 173,
       "name": "Actiontec Router",
       "protocol": "TELNET",
       "pattern": ".*[Aa]ctiontec.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 173,
+      "id": 174,
       "name": "Raspberry Pi",
       "protocol": "TELNET",
       "pattern": ".*[Rr]asp[bB]erry.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 175,
+      "id": 176,
       "name": "Juniper SSG",
       "protocol": "TELNET",
       "pattern": ".*[Ss][Ss][Gg].*[Ll]ogin.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 176,
+      "id": 177,
       "name": "Fortinet",
       "protocol": "TELNET",
       "pattern": ".*[Ff]ortinet.*|.*[Ff]orti[Gg]ate.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 177,
+      "id": 178,
       "name": "pfSense",
       "protocol": "TELNET",
       "pattern": ".*pf[Ss]ense.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 178,
+      "id": 179,
       "name": "SonicWall",
       "protocol": "TELNET",
       "pattern": ".*[Ss]onic[Ww]all.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 179,
+      "id": 180,
       "name": "Technicolor Gateway",
       "protocol": "TELNET",
       "pattern": ".*[Tt]echnicolor.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 180,
+      "id": 181,
       "name": "Belkin Router",
       "protocol": "TELNET",
       "pattern": ".*[Bb]elkin.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 181,
+      "id": 182,
       "name": "Buffalo Router",
       "protocol": "TELNET",
       "pattern": ".*[Bb]uffalo.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 182,
+      "id": 183,
       "name": "ONT Device",
       "protocol": "TELNET",
       "pattern": ".*[Oo][Nn][Tt].*[Ll]ogin.*|.*SFU.*1GE.*Micro.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 183,
+      "id": 184,
       "name": "RDK Gateway",
       "protocol": "TELNET",
       "pattern": ".*RDK.*Yocto.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 184,
+      "id": 185,
       "name": "AS400 Mainframe",
       "protocol": "TELNET",
       "pattern": ".*Sign On.*System.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 185,
+      "id": 186,
       "name": "HP JetDirect",
       "protocol": "TELNET",
       "pattern": ".*[Hh][Pp].*[Jj]et[Dd]irect.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 186,
+      "id": 187,
       "name": "APC UPS",
       "protocol": "TELNET",
       "pattern": ".*[Aa][Pp][Cc].*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 187,
+      "id": 188,
       "name": "Axis Camera",
       "protocol": "TELNET",
       "pattern": ".*[Aa][Xx][Ii][Ss].*[Cc]amera.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 188,
+      "id": 189,
       "name": "Dropbear SSH",
       "protocol": "TELNET",
       "pattern": ".*[Dd]ropbear.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 189,
+      "id": 190,
       "name": "Restricted Access Device",
       "protocol": "TELNET",
       "pattern": ".*[Rr]estricted [Aa]ccess.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "status",
+      "priority": 20
     },
     {
-      "id": 190,
+      "id": 191,
       "name": "Session Limited Device",
       "protocol": "TELNET",
       "pattern": ".*[Ss]ession.*[Ll]imit.*|.*[Mm]aximum.*[Tt]elnet.*|.*[Nn]o more connections.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "status",
+      "priority": 20
     },
     {
-      "id": 191,
+      "id": 192,
       "name": "Telnet Disabled/Error",
       "protocol": "TELNET",
       "pattern": ".*[Tt]elnet.*[Dd]isabled.*|.*[Tt]elnet.*[Nn]ot.*[Ss]et.*|.*[Ss]ervice.*disabled.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "status",
+      "priority": 20
     },
     {
-      "id": 192,
+      "id": 193,
       "name": "HTTP on Port 23",
       "protocol": "TELNET",
       "pattern": ".*HTTP/1\\.[01] 200.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 193,
+      "id": 194,
       "name": "Connection Closed",
       "protocol": "TELNET",
       "pattern": ".*connection closed.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "status",
+      "priority": 20
     },
     {
-      "id": 194,
+      "id": 195,
       "name": "Linux login (trailing space)",
       "protocol": "TELNET",
       "pattern": ".*login.*TS=1.*LE=CRLF.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 195,
+      "id": 196,
       "name": "Linux login (no space)",
       "protocol": "TELNET",
       "pattern": ".*login.*TS=0.*LE=LF.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 196,
+      "id": 197,
       "name": "Cisco-style prompt",
       "protocol": "TELNET",
       "pattern": ".*prompt_type=username.*LCRLF=2.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 197,
+      "id": 198,
       "name": "Username prompt",
       "protocol": "TELNET",
       "pattern": ".*prompt_type=username.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 198,
+      "id": 199,
       "name": "ANSI Terminal Device",
       "protocol": "TELNET",
       "pattern": ".*ANSI=1.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 199,
+      "id": 200,
       "name": "NULL-byte Device",
       "protocol": "TELNET",
       "pattern": ".*has_null.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 200,
+      "id": 201,
       "name": "Linux netkit-telnetd",
       "protocol": "TELNET",
       "pattern": ".*WILL\\(1\\).*WILL\\(3\\).*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 80
     },
     {
-      "id": 201,
+      "id": 202,
       "name": "BusyBox telnetd (iac)",
       "protocol": "TELNET",
       "pattern": ".*WILL\\(1\\).*DO\\(3\\)(?!.*DO\\(24\\)).*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 80
     },
     {
-      "id": 202,
+      "id": 203,
       "name": "Full RFC telnetd",
       "protocol": "TELNET",
       "pattern": ".*DO\\(24\\).*DO\\(31\\).*DO\\(32\\).*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 203,
+      "id": 204,
       "name": "256B Padded Device",
       "protocol": "TELNET",
       "pattern": ".*LEN=256.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 204,
+      "id": 205,
       "name": "512B Padded Device",
       "protocol": "TELNET",
       "pattern": ".*LEN=512.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 205,
+      "id": 206,
       "name": "1024B Padded Device",
       "protocol": "TELNET",
       "pattern": ".*LEN=1024.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 206,
+      "id": 207,
       "name": "NULL-padded Firmware",
       "protocol": "TELNET",
       "pattern": ".*PAD=NULL.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     },
     {
-      "id": 207,
+      "id": 208,
       "name": "SPACE-padded Firmware",
       "protocol": "TELNET",
       "pattern": ".*PAD=SPACE.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "family",
+      "priority": 60
     }
   ]
 }

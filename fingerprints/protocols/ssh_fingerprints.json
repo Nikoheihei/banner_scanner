@@ -22,7 +22,9 @@
         32,
         35,
         50
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 2,
@@ -32,7 +34,9 @@
       "count": 861,
       "template_ids": [
         3
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 3,
@@ -42,7 +46,9 @@
       "count": 65,
       "template_ids": [
         5
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 4,
@@ -54,18 +60,22 @@
         7,
         15,
         43
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 5,
       "name": "Serv-U",
       "protocol": "SSH",
-      "pattern": ".*Serv.*U.*",
+      "pattern": ".*(?:^|[^A-Za-z0-9])Serv[-_ ]?U(?:[^A-Za-z0-9]|$).*",
       "count": 6,
       "template_ids": [
         8,
         31
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 6,
@@ -75,7 +85,9 @@
       "count": 6,
       "template_ids": [
         9
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 7,
@@ -85,7 +97,9 @@
       "count": 5,
       "template_ids": [
         10
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 8,
@@ -95,7 +109,9 @@
       "count": 5,
       "template_ids": [
         11
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 9,
@@ -105,7 +121,9 @@
       "count": 5,
       "template_ids": [
         12
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 10,
@@ -115,7 +133,9 @@
       "count": 3,
       "template_ids": [
         16
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 11,
@@ -125,7 +145,9 @@
       "count": 3,
       "template_ids": [
         17
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 12,
@@ -135,7 +157,9 @@
       "count": 3,
       "template_ids": [
         19
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 13,
@@ -145,17 +169,21 @@
       "count": 2,
       "template_ids": [
         21
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 14,
       "name": "WS_FTP",
       "protocol": "SSH",
-      "pattern": ".*WS.*FTP.*",
+      "pattern": ".*(?:^|[^A-Za-z0-9])WS[_ -]?FTP(?:-SSH)?(?:[^A-Za-z0-9]|$).*",
       "count": 2,
       "template_ids": [
         22
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 15,
@@ -165,7 +193,9 @@
       "count": 2,
       "template_ids": [
         23
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 16,
@@ -175,7 +205,9 @@
       "count": 2,
       "template_ids": [
         24
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 17,
@@ -185,7 +217,9 @@
       "count": 2,
       "template_ids": [
         25
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 18,
@@ -195,7 +229,9 @@
       "count": 1,
       "template_ids": [
         27
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 19,
@@ -205,7 +241,9 @@
       "count": 1,
       "template_ids": [
         28
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 20,
@@ -215,7 +253,9 @@
       "count": 1,
       "template_ids": [
         29
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 21,
@@ -226,7 +266,9 @@
       "template_ids": [
         30,
         44
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 22,
@@ -236,7 +278,9 @@
       "count": 1,
       "template_ids": [
         33
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 23,
@@ -246,7 +290,9 @@
       "count": 1,
       "template_ids": [
         34
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 24,
@@ -256,7 +302,9 @@
       "count": 1,
       "template_ids": [
         36
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 25,
@@ -266,7 +314,9 @@
       "count": 1,
       "template_ids": [
         37
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 26,
@@ -276,7 +326,9 @@
       "count": 1,
       "template_ids": [
         38
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 27,
@@ -286,7 +338,9 @@
       "count": 1,
       "template_ids": [
         39
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 28,
@@ -296,7 +350,9 @@
       "count": 1,
       "template_ids": [
         40
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 29,
@@ -306,7 +362,9 @@
       "count": 1,
       "template_ids": [
         41
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 30,
@@ -316,7 +374,9 @@
       "count": 1,
       "template_ids": [
         42
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 31,
@@ -326,7 +386,9 @@
       "count": 1,
       "template_ids": [
         45
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 32,
@@ -336,7 +398,9 @@
       "count": 1,
       "template_ids": [
         46
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 33,
@@ -346,7 +410,9 @@
       "count": 1,
       "template_ids": [
         47
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 34,
@@ -356,7 +422,9 @@
       "count": 1,
       "template_ids": [
         48
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 35,
@@ -366,7 +434,9 @@
       "count": 1,
       "template_ids": [
         49
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 36,
@@ -376,7 +446,9 @@
       "count": 1,
       "template_ids": [
         51
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 37,
@@ -386,7 +458,9 @@
       "count": 1,
       "template_ids": [
         52
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 38,
@@ -396,7 +470,9 @@
       "count": 1,
       "template_ids": [
         53
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 39,
@@ -406,7 +482,9 @@
       "count": 1,
       "template_ids": [
         54
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 40,
@@ -416,7 +494,9 @@
       "count": 1,
       "template_ids": [
         55
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 41,
@@ -426,7 +506,9 @@
       "count": 1,
       "template_ids": [
         56
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 42,
@@ -436,7 +518,9 @@
       "count": 1,
       "template_ids": [
         57
-      ]
+      ],
+      "category": "fallback",
+      "priority": 10
     },
     {
       "id": 43,
@@ -446,7 +530,9 @@
       "count": 1,
       "template_ids": [
         58
-      ]
+      ],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 82,
@@ -454,7 +540,9 @@
       "protocol": "SSH",
       "pattern": ".*[Dd]ropbear.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 83,
@@ -462,7 +550,9 @@
       "protocol": "SSH",
       "pattern": ".*BusyBox.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 84,
@@ -470,7 +560,9 @@
       "protocol": "SSH",
       "pattern": ".*RouterOS.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 98,
@@ -478,7 +570,9 @@
       "protocol": "SSH",
       "pattern": ".*NetScreen.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 99,
@@ -486,7 +580,9 @@
       "protocol": "SSH",
       "pattern": ".*Adtran.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 100,
@@ -494,7 +590,9 @@
       "protocol": "SSH",
       "pattern": ".*MOVEit.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 101,
@@ -502,7 +600,9 @@
       "protocol": "SSH",
       "pattern": ".*Crestron.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
       "id": 102,
@@ -510,40 +610,50 @@
       "protocol": "SSH",
       "pattern": ".*RomSShell.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 140,
+      "id": 141,
       "name": "AsyncSSH",
       "protocol": "SSH",
       "pattern": ".*AsyncSSH.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 141,
+      "id": 142,
       "name": "WeOnlyDo SSH",
       "protocol": "SSH",
       "pattern": ".*WeOnlyDo.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 174,
+      "id": 175,
       "name": "BusyBox",
       "protocol": "SSH",
       "pattern": ".*[Bb]usy[Bb]ox.*",
       "count": 0,
-      "template_ids": []
+      "template_ids": [],
+      "category": "implementation",
+      "priority": 100
     },
     {
-      "id": 213,
+      "id": 214,
       "name": "ProFTPD",
       "protocol": "SSH",
       "pattern": ".*ProFTPD.*",
       "count": 0,
       "template_ids": [],
-      "derived_from_rule_id": 49
+      "derived_from_rule_id": 49,
+      "category": "implementation",
+      "priority": 100
     }
   ]
 }
