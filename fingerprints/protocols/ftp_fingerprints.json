@@ -1,0 +1,545 @@
+{
+  "schema": "banner-scanner.protocol-fingerprints.v1",
+  "protocol": "FTP",
+  "rule_count": 57,
+  "vendors": [
+    {
+      "id": 44,
+      "name": "vsFTPd",
+      "protocol": "FTP",
+      "pattern": ".*vsFTPd.*",
+      "count": 105,
+      "template_ids": [
+        59,
+        84
+      ]
+    },
+    {
+      "id": 45,
+      "name": "Unknown-FTP-45",
+      "protocol": "FTP",
+      "pattern": "220\\ Service\\ ready\\ for\\ new\\ .+?",
+      "count": 64,
+      "template_ids": [
+        60
+      ]
+    },
+    {
+      "id": 46,
+      "name": "FileZilla Server",
+      "protocol": "FTP",
+      "pattern": ".*FileZilla.*Server.*",
+      "count": 43,
+      "template_ids": [
+        61
+      ]
+    },
+    {
+      "id": 47,
+      "name": "Pure-FTPd",
+      "protocol": "FTP",
+      "pattern": ".*Pure.*FTPd.*",
+      "count": 37,
+      "template_ids": [
+        62
+      ]
+    },
+    {
+      "id": 48,
+      "name": "Microsoft FTP",
+      "protocol": "FTP",
+      "pattern": ".*Microsoft.*FTP.*",
+      "count": 35,
+      "template_ids": [
+        63
+      ]
+    },
+    {
+      "id": 49,
+      "name": "ProFTPD",
+      "protocol": "FTP",
+      "pattern": ".*ProFTPD.*",
+      "count": 22,
+      "template_ids": [
+        64,
+        65,
+        74,
+        85,
+        97
+      ]
+    },
+    {
+      "id": 50,
+      "name": "Unknown-FTP-50",
+      "protocol": "FTP",
+      "pattern": "220\\ Welcome\\ to\\ .+?",
+      "count": 7,
+      "template_ids": [
+        66
+      ]
+    },
+    {
+      "id": 51,
+      "name": "Serv-U FTP",
+      "protocol": "FTP",
+      "pattern": ".*Serv.*U.*FTP.*",
+      "count": 4,
+      "template_ids": [
+        67
+      ]
+    },
+    {
+      "id": 52,
+      "name": "Unknown-FTP-52",
+      "protocol": "FTP",
+      "pattern": "220\\ FTP\\ Server",
+      "count": 3,
+      "template_ids": [
+        68
+      ]
+    },
+    {
+      "id": 53,
+      "name": "Unknown-FTP-53",
+      "protocol": "FTP",
+      "pattern": "220\\ 'FTP\\ U2FsdGVkX1\\+49718V45bZYaAtYtFl\\+0sIqki8MgKxDY='",
+      "count": 3,
+      "template_ids": [
+        69
+      ]
+    },
+    {
+      "id": 54,
+      "name": "Unknown-FTP-54",
+      "protocol": "FTP",
+      "pattern": "220\\ Service\\ Ready",
+      "count": 3,
+      "template_ids": [
+        70
+      ]
+    },
+    {
+      "id": 55,
+      "name": "Unknown-FTP-55",
+      "protocol": "FTP",
+      "pattern": "220\\ FTP\\ Server\\ Welcome",
+      "count": 3,
+      "template_ids": [
+        71
+      ]
+    },
+    {
+      "id": 56,
+      "name": "Alpine FTP",
+      "protocol": "FTP",
+      "pattern": ".*Alpine.*FTP.*",
+      "count": 2,
+      "template_ids": [
+        72
+      ]
+    },
+    {
+      "id": 57,
+      "name": "Unknown-FTP-57",
+      "protocol": "FTP",
+      "pattern": "220\\ Welcome\\ to\\ FW\\ SFTP\\ Server",
+      "count": 2,
+      "template_ids": [
+        73
+      ]
+    },
+    {
+      "id": 58,
+      "name": "Unknown-FTP-58",
+      "protocol": "FTP",
+      "pattern": "220\\ This\\ is\\ a\\ restricted\\ .+?\\ Any\\ unauthorized\\ access\\ will\\ be\\ persecuted\\ and\\ punished\\ by\\ federal\\ .+?",
+      "count": 1,
+      "template_ids": [
+        75
+      ]
+    },
+    {
+      "id": 59,
+      "name": "Unknown-FTP-59",
+      "protocol": "FTP",
+      "pattern": "220\\ .+?2",
+      "count": 1,
+      "template_ids": [
+        76
+      ]
+    },
+    {
+      "id": 60,
+      "name": "Unknown-FTP-60",
+      "protocol": "FTP",
+      "pattern": "220\\-Welcome\\ to",
+      "count": 1,
+      "template_ids": [
+        77
+      ]
+    },
+    {
+      "id": 61,
+      "name": "FileZilla Pro Enterprise",
+      "protocol": "FTP",
+      "pattern": ".*FileZilla.*Pro.*Enterprise.*",
+      "count": 1,
+      "template_ids": [
+        78
+      ]
+    },
+    {
+      "id": 62,
+      "name": "OnShift FTP",
+      "protocol": "FTP",
+      "pattern": ".*OnShift.*FTP.*",
+      "count": 1,
+      "template_ids": [
+        79
+      ]
+    },
+    {
+      "id": 63,
+      "name": "Unknown-FTP-63",
+      "protocol": "FTP",
+      "pattern": "220\\ ESP",
+      "count": 1,
+      "template_ids": [
+        80
+      ]
+    },
+    {
+      "id": 64,
+      "name": "pyftpdlib",
+      "protocol": "FTP",
+      "pattern": ".*pyftpdlib.*",
+      "count": 1,
+      "template_ids": [
+        81
+      ]
+    },
+    {
+      "id": 65,
+      "name": "Unknown-FTP-65",
+      "protocol": "FTP",
+      "pattern": "220\\ Welcome\\ to\\ Gudgel\\ Graphix",
+      "count": 1,
+      "template_ids": [
+        82
+      ]
+    },
+    {
+      "id": 66,
+      "name": "Unknown-FTP-66",
+      "protocol": "FTP",
+      "pattern": "220\\ For\\ Previously\\ Approved\\ company\\ business\\ purposes\\ only",
+      "count": 1,
+      "template_ids": [
+        83
+      ]
+    },
+    {
+      "id": 67,
+      "name": "Unknown-FTP-67",
+      "protocol": "FTP",
+      "pattern": "220\\ Welcome\\ message",
+      "count": 1,
+      "template_ids": [
+        86
+      ]
+    },
+    {
+      "id": 68,
+      "name": "Unknown-FTP-68",
+      "protocol": "FTP",
+      "pattern": "220\\ \"Welcome\\ to\\ .+?com!\\ Check\\ out\\ .+?txt\\ for\\ .+?\"",
+      "count": 1,
+      "template_ids": [
+        87
+      ]
+    },
+    {
+      "id": 69,
+      "name": "Adeptia Internal FTP",
+      "protocol": "FTP",
+      "pattern": ".*Adeptia.*Internal.*FTP.*",
+      "count": 1,
+      "template_ids": [
+        88
+      ]
+    },
+    {
+      "id": 70,
+      "name": "Phoenix Online FTP",
+      "protocol": "FTP",
+      "pattern": ".*Phoenix.*Online.*FTP.*",
+      "count": 1,
+      "template_ids": [
+        89
+      ]
+    },
+    {
+      "id": 71,
+      "name": "CoursEval FTPS",
+      "protocol": "FTP",
+      "pattern": ".*CoursEval.*FTPS.*",
+      "count": 1,
+      "template_ids": [
+        90
+      ]
+    },
+    {
+      "id": 72,
+      "name": "Hindawi FTP",
+      "protocol": "FTP",
+      "pattern": ".*Hindawi.*FTP.*",
+      "count": 1,
+      "template_ids": [
+        91
+      ]
+    },
+    {
+      "id": 73,
+      "name": "WS_FTP",
+      "protocol": "FTP",
+      "pattern": ".*WS.*FTP.*",
+      "count": 1,
+      "template_ids": [
+        92
+      ]
+    },
+    {
+      "id": 74,
+      "name": "Unknown-FTP-74",
+      "protocol": "FTP",
+      "pattern": "220\\ Unauthorized\\ access\\ is\\ strictly\\ .+?",
+      "count": 1,
+      "template_ids": [
+        93
+      ]
+    },
+    {
+      "id": 75,
+      "name": "Unknown-FTP-75",
+      "protocol": "FTP",
+      "pattern": "220\\ Image\\ Gallery",
+      "count": 1,
+      "template_ids": [
+        94
+      ]
+    },
+    {
+      "id": 76,
+      "name": "Cisco",
+      "protocol": "FTP",
+      "pattern": ".*Cisco.*",
+      "count": 1,
+      "template_ids": [
+        95
+      ]
+    },
+    {
+      "id": 77,
+      "name": "Lumina Datamatics FTP",
+      "protocol": "FTP",
+      "pattern": ".*Lumina.*Datamatics.*FTP.*",
+      "count": 1,
+      "template_ids": [
+        96
+      ]
+    },
+    {
+      "id": 78,
+      "name": "Core FTP Server",
+      "protocol": "FTP",
+      "pattern": ".*Core.*FTP.*Server.*",
+      "count": 1,
+      "template_ids": [
+        98
+      ]
+    },
+    {
+      "id": 79,
+      "name": "Unknown-FTP-79",
+      "protocol": "FTP",
+      "pattern": "220\\ \\-\\ \\-\\ \\-",
+      "count": 1,
+      "template_ids": [
+        99
+      ]
+    },
+    {
+      "id": 85,
+      "name": "DreamHost FTP",
+      "protocol": "FTP",
+      "pattern": ".*DreamHost.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 86,
+      "name": "www.net.cn FTP",
+      "protocol": "FTP",
+      "pattern": ".*www\\.net\\.cn.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 87,
+      "name": "QTCP FTP",
+      "protocol": "FTP",
+      "pattern": ".*QTCP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 88,
+      "name": "Eshcom FTP",
+      "protocol": "FTP",
+      "pattern": ".*Eshcom.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 89,
+      "name": "OnShift FTP",
+      "protocol": "FTP",
+      "pattern": ".*OnShift.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 90,
+      "name": "Adeptia Internal FTP",
+      "protocol": "FTP",
+      "pattern": ".*Adeptia.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 91,
+      "name": "Lumina Datamatics FTP",
+      "protocol": "FTP",
+      "pattern": ".*Lumina.*Datamatics.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 92,
+      "name": "Phoenix Online FTP",
+      "protocol": "FTP",
+      "pattern": ".*Phoenix.*Online.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 93,
+      "name": "CoursEval FTPS",
+      "protocol": "FTP",
+      "pattern": ".*CoursEval.*FTPS.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 94,
+      "name": "Hindawi FTP",
+      "protocol": "FTP",
+      "pattern": ".*Hindawi.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 95,
+      "name": "Axis Camera FTP",
+      "protocol": "FTP",
+      "pattern": ".*AXIS.*Network.*Camera.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 96,
+      "name": "APC Management Card",
+      "protocol": "FTP",
+      "pattern": ".*AP.*Network.*Management.*Card.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 97,
+      "name": "MikroTik",
+      "protocol": "FTP",
+      "pattern": ".*MikroTik.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 103,
+      "name": "Gameservers FTPD",
+      "protocol": "FTP",
+      "pattern": ".*Gameservers.*FTP.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 104,
+      "name": "Arvixe FTP",
+      "protocol": "FTP",
+      "pattern": ".*Arvixe.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 105,
+      "name": "Firmware Update FTP",
+      "protocol": "FTP",
+      "pattern": ".*[Ff]irmware.*[Uu]pdate.*[Ff][Tt][Pp].*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 208,
+      "name": "Cerberus FTP",
+      "protocol": "FTP",
+      "pattern": ".*Cerberus.*FTP.*",
+      "count": 0,
+      "template_ids": [],
+      "derived_from_rule_id": 13
+    },
+    {
+      "id": 209,
+      "name": "CrushFTP",
+      "protocol": "FTP",
+      "pattern": ".*CrushFTP.*",
+      "count": 0,
+      "template_ids": [],
+      "derived_from_rule_id": 6
+    },
+    {
+      "id": 210,
+      "name": "SFTPGo",
+      "protocol": "FTP",
+      "pattern": ".*SFTPGo.*",
+      "count": 0,
+      "template_ids": [],
+      "derived_from_rule_id": 9
+    },
+    {
+      "id": 211,
+      "name": "Wing FTP",
+      "protocol": "FTP",
+      "pattern": ".*Wing.*FTP.*",
+      "count": 0,
+      "template_ids": [],
+      "derived_from_rule_id": 19
+    },
+    {
+      "id": 212,
+      "name": "xlightftpd",
+      "protocol": "FTP",
+      "pattern": ".*xlightftpd.*",
+      "count": 0,
+      "template_ids": [],
+      "derived_from_rule_id": 33
+    }
+  ]
+}

@@ -1,0 +1,819 @@
+{
+  "schema": "banner-scanner.protocol-fingerprints.v1",
+  "protocol": "TELNET",
+  "rule_count": 101,
+  "vendors": [
+    {
+      "id": 80,
+      "name": "FileZilla Server",
+      "protocol": "TELNET",
+      "pattern": ".*FileZilla.*Server.*",
+      "count": 1,
+      "template_ids": [
+        100
+      ]
+    },
+    {
+      "id": 81,
+      "name": "Unknown-TELNET-81",
+      "protocol": "TELNET",
+      "pattern": "��\u0018��\\ ��\\#��'",
+      "count": 1,
+      "template_ids": [
+        101
+      ]
+    },
+    {
+      "id": 106,
+      "name": "Ubuntu Server",
+      "protocol": "TELNET",
+      "pattern": ".*Ubuntu \\d+\\.\\d+.*login:.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 107,
+      "name": "login+Password同屏设备",
+      "protocol": "TELNET",
+      "pattern": ".*login:.*Password:.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 108,
+      "name": "Ruijie Device",
+      "protocol": "TELNET",
+      "pattern": ".*[Rr]ui[Jj]ie.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 109,
+      "name": "IPCamera Telnet",
+      "protocol": "TELNET",
+      "pattern": ".*IP[Cc]amera.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 110,
+      "name": "ATP-Cli Device",
+      "protocol": "TELNET",
+      "pattern": ".*ATP.Cli.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 111,
+      "name": "Aamra Networks",
+      "protocol": "TELNET",
+      "pattern": ".*[Aa]amra.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 112,
+      "name": "Remote Management Console",
+      "protocol": "TELNET",
+      "pattern": ".*Remote Management Console.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 113,
+      "name": "HD9084 Device",
+      "protocol": "TELNET",
+      "pattern": ".*HD9084.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 114,
+      "name": "Synchronet BBS",
+      "protocol": "TELNET",
+      "pattern": ".*Synchronet BBS.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 115,
+      "name": "CP841 Telnet",
+      "protocol": "TELNET",
+      "pattern": ".*CP841.*Telnet.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 116,
+      "name": "AC7621 Router",
+      "protocol": "TELNET",
+      "pattern": ".*AC7621.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 117,
+      "name": "YHTC Device",
+      "protocol": "TELNET",
+      "pattern": ".*YHTC.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 118,
+      "name": "sbs-ipcam",
+      "protocol": "TELNET",
+      "pattern": ".*sbs[- ]?ipcam.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 119,
+      "name": "ASUS Device",
+      "protocol": "TELNET",
+      "pattern": ".*[Aa]su login:.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 120,
+      "name": "Huawei Stelnet Warning",
+      "protocol": "TELNET",
+      "pattern": ".*[Ss]telnet.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 121,
+      "name": "Synology DiskStation",
+      "protocol": "TELNET",
+      "pattern": ".*Synology.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 122,
+      "name": "ASUS Router (RT-AC)",
+      "protocol": "TELNET",
+      "pattern": ".*RT-AC\\d+.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 123,
+      "name": "DASAN Zhone GPON",
+      "protocol": "TELNET",
+      "pattern": ".*DASAN.*Zhone.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 124,
+      "name": "TANDBERG Codec",
+      "protocol": "TELNET",
+      "pattern": ".*TANDBERG.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 125,
+      "name": "DragonWave Horizon",
+      "protocol": "TELNET",
+      "pattern": ".*DragonWave.*|.*Horizon_IDU.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 126,
+      "name": "UHP Satellite Modem",
+      "protocol": "TELNET",
+      "pattern": ".*UHP-10.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 127,
+      "name": "buildroot",
+      "protocol": "TELNET",
+      "pattern": ".*buildroot.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 128,
+      "name": "EdgeOS Router",
+      "protocol": "TELNET",
+      "pattern": ".*EdgeOS.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 129,
+      "name": "NetComm Router",
+      "protocol": "TELNET",
+      "pattern": ".*NetComm.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 130,
+      "name": "Debian Linux",
+      "protocol": "TELNET",
+      "pattern": ".*Debian GNU/Linux.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 131,
+      "name": "RTCS RTOS",
+      "protocol": "TELNET",
+      "pattern": ".*RTCS.*Telnet.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 132,
+      "name": "VOTER System",
+      "protocol": "TELNET",
+      "pattern": ".*VOTER.*System.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 133,
+      "name": "Matrix NVR",
+      "protocol": "TELNET",
+      "pattern": ".*Matrix[- ]NVR.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 134,
+      "name": "Adtec Telnet",
+      "protocol": "TELNET",
+      "pattern": ".*Adtec.*Telnet.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 135,
+      "name": "UsenetExpress NNTP",
+      "protocol": "TELNET",
+      "pattern": ".*UsenetExpress.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 136,
+      "name": "FG8102 Router",
+      "protocol": "TELNET",
+      "pattern": ".*FG8102.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 137,
+      "name": "DSL-500B Router",
+      "protocol": "TELNET",
+      "pattern": ".*DSL-500B.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 138,
+      "name": "XPON ONT",
+      "protocol": "TELNET",
+      "pattern": ".*XPON-\\d+.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 139,
+      "name": "aigoWiFi",
+      "protocol": "TELNET",
+      "pattern": ".*aigoWiFi.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 142,
+      "name": "PYNG-HUB",
+      "protocol": "TELNET",
+      "pattern": ".*PYNG-HUB.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 143,
+      "name": "Embedded/Gateway (login)",
+      "protocol": "TELNET",
+      "pattern": "(?<![A-Za-z])[Ll]ogin:",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 144,
+      "name": "Network Device (user prompt)",
+      "protocol": "TELNET",
+      "pattern": "(?<![A-Za-z])[Uu]ser(?:name)?:",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 145,
+      "name": "Serial Gateway (password)",
+      "protocol": "TELNET",
+      "pattern": "(?<![A-Za-z])[Pp]assword:",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 146,
+      "name": "Embedded (login+password)",
+      "protocol": "TELNET",
+      "pattern": "[Ll]ogin:\\s*[Pp]assword:",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 147,
+      "name": "[Status] Connection Refused",
+      "protocol": "TELNET",
+      "pattern": ".*[Cc]onnection [Rr]efused.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 148,
+      "name": "[Status] Too Many Connections",
+      "protocol": "TELNET",
+      "pattern": ".*[Tt]oo many connections.*|.*maximum number.*exceeded.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 149,
+      "name": "[Status] System Busy",
+      "protocol": "TELNET",
+      "pattern": ".*[Bb]usy.*|.*all ports.*|.*try again.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 150,
+      "name": "[Status] Access Denied",
+      "protocol": "TELNET",
+      "pattern": ".*[Aa]ccess [Dd]enied.*|.*[Uu]nauthorized.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 151,
+      "name": "[Status] Service Disabled",
+      "protocol": "TELNET",
+      "pattern": ".*[Dd]isabled.*|.*not available.*|.*[Ss]hutdown.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 152,
+      "name": "Cisco IOS telnetd",
+      "protocol": "TELNET",
+      "pattern": ".*ff[fb-fe]01.*ff[fb-fe]03.*ff[fb-fe]18.*ff[fb-fe]1f.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 153,
+      "name": "Linux telnetd",
+      "protocol": "TELNET",
+      "pattern": ".*ff[fb-fe]25.*ff[fb-fe]26.*ff[fb-fe]01.*ff[fb-fe]03.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 154,
+      "name": "BusyBox telnetd",
+      "protocol": "TELNET",
+      "pattern": ".*ff[fb-fe]01.*ff[fb-fe]01.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 155,
+      "name": "Windows telnetd",
+      "protocol": "TELNET",
+      "pattern": ".*ff[fb-fe]18.*ff[fb-fe]1f.*ff[fb-fe]22.*ff[fb-fe]27.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 156,
+      "name": "Embedded telnetd",
+      "protocol": "TELNET",
+      "pattern": ".*fffd01.*fffb01.*fffb03.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 157,
+      "name": "Router telnetd",
+      "protocol": "TELNET",
+      "pattern": ".*ff[b-fd]01.*ff[b-fd]03(?!.*ff[b-fd](?:18|1f|25|26)).*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 158,
+      "name": "Cisco Device",
+      "protocol": "TELNET",
+      "pattern": ".*[Uu]ser Access Verification.*|.*[Cc]isco.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 159,
+      "name": "Broadband Router",
+      "protocol": "TELNET",
+      "pattern": ".*[Bb]roadband [Rr]outer.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 160,
+      "name": "Cambium Networks",
+      "protocol": "TELNET",
+      "pattern": ".*[Cc]ambium.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 161,
+      "name": "DD-WRT",
+      "protocol": "TELNET",
+      "pattern": ".*DD-WRT.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 162,
+      "name": "MikroTik RouterOS",
+      "protocol": "TELNET",
+      "pattern": ".*[Mm]ikro[Tt]ik.*|.*RouterOS.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 163,
+      "name": "Huawei Device",
+      "protocol": "TELNET",
+      "pattern": ".*[Hh]uawei.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 164,
+      "name": "Ubiquiti Device",
+      "protocol": "TELNET",
+      "pattern": ".*[Uu]biquiti.*|.*[Aa]ir[Mm]ax.*|.*[Ee]dge[Mm]ax.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 165,
+      "name": "OpenWrt",
+      "protocol": "TELNET",
+      "pattern": ".*[Oo]pen[Ww]rt.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 166,
+      "name": "D-Link Router",
+      "protocol": "TELNET",
+      "pattern": ".*[Dd][- ]?[Ll]ink.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 167,
+      "name": "Zyxel Device",
+      "protocol": "TELNET",
+      "pattern": ".*[Zz]yxel.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 168,
+      "name": "DrayTek Router",
+      "protocol": "TELNET",
+      "pattern": ".*[Dd]ray[Tt]ek.*|.*[Vv]igor.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 169,
+      "name": "TP-Link Router",
+      "protocol": "TELNET",
+      "pattern": ".*[Tt][Pp][- ]?[Ll]ink.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 170,
+      "name": "Netgear Router",
+      "protocol": "TELNET",
+      "pattern": ".*[Nn]et[Gg]ear.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 171,
+      "name": "ARRIS Gateway",
+      "protocol": "TELNET",
+      "pattern": ".*[Aa][Rr][Rr][Ii][Ss].*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 172,
+      "name": "Actiontec Router",
+      "protocol": "TELNET",
+      "pattern": ".*[Aa]ctiontec.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 173,
+      "name": "Raspberry Pi",
+      "protocol": "TELNET",
+      "pattern": ".*[Rr]asp[bB]erry.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 175,
+      "name": "Juniper SSG",
+      "protocol": "TELNET",
+      "pattern": ".*[Ss][Ss][Gg].*[Ll]ogin.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 176,
+      "name": "Fortinet",
+      "protocol": "TELNET",
+      "pattern": ".*[Ff]ortinet.*|.*[Ff]orti[Gg]ate.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 177,
+      "name": "pfSense",
+      "protocol": "TELNET",
+      "pattern": ".*pf[Ss]ense.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 178,
+      "name": "SonicWall",
+      "protocol": "TELNET",
+      "pattern": ".*[Ss]onic[Ww]all.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 179,
+      "name": "Technicolor Gateway",
+      "protocol": "TELNET",
+      "pattern": ".*[Tt]echnicolor.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 180,
+      "name": "Belkin Router",
+      "protocol": "TELNET",
+      "pattern": ".*[Bb]elkin.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 181,
+      "name": "Buffalo Router",
+      "protocol": "TELNET",
+      "pattern": ".*[Bb]uffalo.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 182,
+      "name": "ONT Device",
+      "protocol": "TELNET",
+      "pattern": ".*[Oo][Nn][Tt].*[Ll]ogin.*|.*SFU.*1GE.*Micro.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 183,
+      "name": "RDK Gateway",
+      "protocol": "TELNET",
+      "pattern": ".*RDK.*Yocto.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 184,
+      "name": "AS400 Mainframe",
+      "protocol": "TELNET",
+      "pattern": ".*Sign On.*System.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 185,
+      "name": "HP JetDirect",
+      "protocol": "TELNET",
+      "pattern": ".*[Hh][Pp].*[Jj]et[Dd]irect.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 186,
+      "name": "APC UPS",
+      "protocol": "TELNET",
+      "pattern": ".*[Aa][Pp][Cc].*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 187,
+      "name": "Axis Camera",
+      "protocol": "TELNET",
+      "pattern": ".*[Aa][Xx][Ii][Ss].*[Cc]amera.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 188,
+      "name": "Dropbear SSH",
+      "protocol": "TELNET",
+      "pattern": ".*[Dd]ropbear.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 189,
+      "name": "Restricted Access Device",
+      "protocol": "TELNET",
+      "pattern": ".*[Rr]estricted [Aa]ccess.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 190,
+      "name": "Session Limited Device",
+      "protocol": "TELNET",
+      "pattern": ".*[Ss]ession.*[Ll]imit.*|.*[Mm]aximum.*[Tt]elnet.*|.*[Nn]o more connections.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 191,
+      "name": "Telnet Disabled/Error",
+      "protocol": "TELNET",
+      "pattern": ".*[Tt]elnet.*[Dd]isabled.*|.*[Tt]elnet.*[Nn]ot.*[Ss]et.*|.*[Ss]ervice.*disabled.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 192,
+      "name": "HTTP on Port 23",
+      "protocol": "TELNET",
+      "pattern": ".*HTTP/1\\.[01] 200.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 193,
+      "name": "Connection Closed",
+      "protocol": "TELNET",
+      "pattern": ".*connection closed.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 194,
+      "name": "Linux login (trailing space)",
+      "protocol": "TELNET",
+      "pattern": ".*login.*TS=1.*LE=CRLF.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 195,
+      "name": "Linux login (no space)",
+      "protocol": "TELNET",
+      "pattern": ".*login.*TS=0.*LE=LF.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 196,
+      "name": "Cisco-style prompt",
+      "protocol": "TELNET",
+      "pattern": ".*prompt_type=username.*LCRLF=2.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 197,
+      "name": "Username prompt",
+      "protocol": "TELNET",
+      "pattern": ".*prompt_type=username.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 198,
+      "name": "ANSI Terminal Device",
+      "protocol": "TELNET",
+      "pattern": ".*ANSI=1.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 199,
+      "name": "NULL-byte Device",
+      "protocol": "TELNET",
+      "pattern": ".*has_null.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 200,
+      "name": "Linux netkit-telnetd",
+      "protocol": "TELNET",
+      "pattern": ".*WILL\\(1\\).*WILL\\(3\\).*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 201,
+      "name": "BusyBox telnetd (iac)",
+      "protocol": "TELNET",
+      "pattern": ".*WILL\\(1\\).*DO\\(3\\)(?!.*DO\\(24\\)).*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 202,
+      "name": "Full RFC telnetd",
+      "protocol": "TELNET",
+      "pattern": ".*DO\\(24\\).*DO\\(31\\).*DO\\(32\\).*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 203,
+      "name": "256B Padded Device",
+      "protocol": "TELNET",
+      "pattern": ".*LEN=256.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 204,
+      "name": "512B Padded Device",
+      "protocol": "TELNET",
+      "pattern": ".*LEN=512.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 205,
+      "name": "1024B Padded Device",
+      "protocol": "TELNET",
+      "pattern": ".*LEN=1024.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 206,
+      "name": "NULL-padded Firmware",
+      "protocol": "TELNET",
+      "pattern": ".*PAD=NULL.*",
+      "count": 0,
+      "template_ids": []
+    },
+    {
+      "id": 207,
+      "name": "SPACE-padded Firmware",
+      "protocol": "TELNET",
+      "pattern": ".*PAD=SPACE.*",
+      "count": 0,
+      "template_ids": []
+    }
+  ]
+}
