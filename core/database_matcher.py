@@ -46,6 +46,7 @@ def _result_record(result: BannerResult) -> dict[str, Any]:
             "protocol_version": result.pgsql.protocol_version,
             "version": result.pgsql.parameters.get("server_version", ""),
             "ssl_response": result.pgsql.ssl_response,
+            "implementation": result.pgsql.implementation,
         }
         record["pgsql_auth"] = {
             "code": result.pgsql.auth_code,

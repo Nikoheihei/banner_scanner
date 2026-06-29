@@ -167,6 +167,26 @@ def test_matcher_multiple_matches():
     assert len(result.matched_rules) == 1  # 去重后只有一条
 
 
+def test_unknown_fallback_is_not_promoted_to_vendor():
+    matcher = FingerprintMatcher.load_from_dict({
+        "protocol": "FTP",
+        "vendors": [{
+            "id": 59,
+            "name": "Unknown-FTP-59",
+            "pattern": r"220\ .+?2",
+            "category": "fallback",
+            "priority": 10,
+        }],
+    })
+    result = BannerResult(
+        protocol="FTP", host="192.0.2.30", port=21,
+        accessible=True, banner="220 PCMan's FTP Server 2.0 Ready.",
+    )
+    matcher.match(result)
+    assert result.vendor == ""
+    assert len(result.matched_rules) == 1
+
+
 # ==================== Banner 标准化 ====================
 
 def test_normalize_banner_trims():

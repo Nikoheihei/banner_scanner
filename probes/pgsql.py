@@ -12,6 +12,10 @@ import banner_scanner.core.transport as _transport
 logger = logging.getLogger("banner_scanner.probe.pgsql")
 
 SSL_REQUEST = struct.pack("!II", 8, 80877103)
+# Matches the historical scanner corpus: a startup header encoded with the
+# wrong byte order.  Some compatible servers expose implementation-specific
+# decoder errors for it, without authentication or SQL execution.
+MALFORMED_STARTUP_HEADER = struct.pack("<II", 22, 196608)
 
 
 def build_startup_message() -> bytes:
@@ -102,6 +106,45 @@ async def _read_message_after_type(
         raise _transport.ReadTimeout(f"read timed out after {timeout}s") from exc
 
 
+async def _probe_decoder_error(
+    host: str,
+    port: int,
+    connect_timeout: float,
+    read_timeout: float,
+    max_bytes: int,
+) -> tuple[str, bytes, bool]:
+    """Use a second connection to request an implementation-specific error."""
+    writer = None
+    try:
+        reader, writer, _tcp = await _transport.connect_tcp(
+            host, port, connect_timeout=connect_timeout,
+        )
+        writer.write(SSL_REQUEST)
+        await writer.drain()
+        ssl_byte = await asyncio.wait_for(
+            reader.readexactly(1), timeout=read_timeout,
+        )
+        ssl_response = ssl_byte.decode("ascii", errors="replace")
+        if ssl_response == "S":
+            reader, writer = await _transport.upgrade_tls(
+                reader,
+                writer,
+                host,
+                handshake_timeout=max(connect_timeout, read_timeout),
+            )
+        elif ssl_response != "N":
+            return ssl_response, b"", False
+
+        writer.write(MALFORMED_STARTUP_HEADER)
+        await writer.drain()
+        data, truncated = await _read_startup_messages(
+            reader, read_timeout, max_bytes,
+        )
+        return ssl_response, data, truncated
+    finally:
+        await _transport.safe_close(writer)
+
+
 async def probe_pgsql(
     host: str,
     port: int = 5432,
@@ -128,7 +171,19 @@ async def probe_pgsql(
 
         data = b""
         truncated = False
-        if ssl_response == "N":
+        if ssl_response == "S":
+            reader, writer = await _transport.upgrade_tls(
+                reader,
+                writer,
+                host,
+                handshake_timeout=max(ct, rt),
+            )
+            writer.write(build_startup_message())
+            await writer.drain()
+            data, truncated = await _read_startup_messages(
+                reader, rt, config.max_banner_bytes,
+            )
+        elif ssl_response == "N":
             writer.write(build_startup_message())
             await writer.drain()
             data, truncated = await _read_startup_messages(
@@ -140,6 +195,30 @@ async def probe_pgsql(
             )
 
         result.pgsql = parse_pgsql_messages(data, ssl_response=ssl_response)
+        if not result.pgsql.implementation and ssl_response in {"S", "N"}:
+            try:
+                _decoder_ssl, decoder_data, decoder_truncated = (
+                    await _probe_decoder_error(
+                        host,
+                        port,
+                        ct,
+                        rt,
+                        config.max_banner_bytes,
+                    )
+                )
+                decoder_info = parse_pgsql_messages(
+                    decoder_data, ssl_response=ssl_response,
+                )
+                if decoder_info.fields:
+                    result.pgsql.fields = decoder_info.fields
+                    result.pgsql.message_types.extend(decoder_info.message_types)
+                    result.pgsql.implementation = decoder_info.implementation
+                    data = decoder_data
+                    truncated = truncated or decoder_truncated
+            except (_transport.TransportError, asyncio.TimeoutError) as exc:
+                logger.debug(
+                    "[PGSQL] %s:%d decoder probe failed: %s", host, port, exc,
+                )
         if ssl_response not in {"S", "N"} and not result.pgsql.message_types:
             result.pgsql.protocol_version = 0
         result.banner_raw_hex = (ssl_byte + data)[:64].hex()

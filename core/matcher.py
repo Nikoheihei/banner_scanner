@@ -208,8 +208,12 @@ class FingerprintMatcher:
                 unique.append(fm)
 
         result.matched_rules = unique
-        if unique:
-            primary = unique[0]
+        primary = next(
+            (match for match in unique
+             if not match.vendor_name.lower().startswith("unknown-")),
+            None,
+        )
+        if primary is not None:
             result.vendor = primary.vendor_name
             result.vendor_id = primary.vendor_id
             result.vendor_confidence = primary.confidence

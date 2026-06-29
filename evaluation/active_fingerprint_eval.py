@@ -492,6 +492,39 @@ def percentile(values: list[float], fraction: float) -> float:
     return ordered[index]
 
 
+def identification_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
+    """Split active results into reachability, abstention, and wrong matches."""
+    total = len(records)
+    reachable_records = [record for record in records if record["accessible"]]
+    reachable = len(reachable_records)
+    correct = sum(bool(record["correct"]) for record in reachable_records)
+    fingerprint_covered = sum(
+        bool(record.get("fingerprint_pred")) for record in reachable_records
+    )
+    abstained = sum(
+        not record.get("software_pred") for record in reachable_records
+    )
+    misidentified = sum(
+        bool(record.get("software_pred")) and not record["correct"]
+        for record in reachable_records
+    )
+    return {
+        "reachable": reachable,
+        "reachability_rate": round(safe_div(reachable, total), 6),
+        "post_reach_accuracy": round(safe_div(correct, reachable), 6),
+        "fingerprint_covered": fingerprint_covered,
+        "fingerprint_coverage_rate": round(
+            safe_div(fingerprint_covered, reachable), 6,
+        ),
+        "abstained": abstained,
+        "abstention_rate": round(safe_div(abstained, reachable), 6),
+        "misidentified": misidentified,
+        "misidentification_rate": round(
+            safe_div(misidentified, reachable), 6,
+        ),
+    }
+
+
 def compute_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
     by_protocol: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for record in records:
@@ -523,6 +556,7 @@ def compute_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
                 "precision": round(precision, 6), "recall": round(recall, 6),
                 "f1": round(safe_div(2 * precision * recall, precision + recall), 6),
                 "tp": tp, "fp": fp, "fn": fn, "tn": tn,
+                **identification_metrics(own),
             }
         times = [float(r.get("response_time_ms") or 0) for r in protocol_records]
         correct = sum(r["correct"] for r in protocol_records)
@@ -531,6 +565,7 @@ def compute_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
             "samples": len(protocol_records), "correct": correct,
             "accuracy": round(safe_div(correct, len(protocol_records)), 6),
             "accessible_rate": round(safe_div(accessible, len(protocol_records)), 6),
+            **identification_metrics(protocol_records),
             "mean_response_time_ms": round(safe_div(sum(times), len(times)), 3),
             "p50_response_time_ms": round(percentile(times, 0.50), 3),
             "p95_response_time_ms": round(percentile(times, 0.95), 3),
@@ -544,9 +579,24 @@ def compute_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
         }
     total = len(records)
     return {
+        "metric_definitions": {
+            "accuracy": "correct / samples",
+            "reachability_rate": "reachable / samples",
+            "post_reach_accuracy": "correct / reachable",
+            "fingerprint_coverage_rate": (
+                "reachable records with non-empty fingerprint_pred / reachable"
+            ),
+            "abstention_rate": (
+                "reachable records with empty software_pred / reachable"
+            ),
+            "misidentification_rate": (
+                "reachable records with non-empty incorrect software_pred / reachable"
+            ),
+        },
         "samples": total,
         "correct": sum(record["correct"] for record in records),
         "accuracy": round(safe_div(sum(record["correct"] for record in records), total), 6),
+        **identification_metrics(records),
         "protocols": protocol_output,
     }
 

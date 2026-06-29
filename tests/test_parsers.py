@@ -5,8 +5,9 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from banner_scanner.core.parsers import (
-    extract_ftp_features_from_lines, parse_ftp_features, parse_mysql_handshake,
-    parse_pgsql_messages, parse_redis_response, parse_ssh_banner,
+    extract_ftp_features_from_lines, parse_ftp_banner_info, parse_ftp_features,
+    parse_mysql_handshake, parse_pgsql_messages, parse_redis_response,
+    parse_ssh_banner,
 )
 
 
@@ -107,6 +108,12 @@ def test_ftp_extract_lines():
     assert "UTF8" in result
     assert "AUTH TLS" in result  # 多词特性名不会被截断
     assert "SIZE" in result
+
+
+def test_ftp_pcman_banner():
+    info = parse_ftp_banner_info("220 PCMan's FTP Server 2.0 Ready.")
+    assert info.software == "PCMan FTP Server"
+    assert info.version == "2.0"
 
 
 # ===================== Databases =====================

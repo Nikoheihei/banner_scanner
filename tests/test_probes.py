@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from banner_scanner.core.engine import ProbeEngine
 from banner_scanner.core.models import ProbeConfig
 import banner_scanner.core.transport as _transport
+import banner_scanner.probes.ftp as _ftp_probe
 
 
 class _MockTransport:
@@ -89,6 +90,36 @@ async def test_probe_ftp():
         _transport.connect_tcp = original
 
 
+async def test_probe_ftp_keeps_banner_when_feat_is_reset():
+    original_connect = _transport.connect_tcp
+    original_read_feat = _ftp_probe._read_feat_lines
+
+    async def mock_connect(host, port, **kw):
+        loop = asyncio.get_running_loop()
+        reader = asyncio.StreamReader()
+        reader.feed_data(b"220 Wing FTP Server ready...\r\n")
+        reader.feed_eof()
+        protocol = asyncio.StreamReaderProtocol(reader)
+        writer = asyncio.StreamWriter(_MockTransport(), protocol, reader, loop)
+        return reader, writer, {}
+
+    async def mock_read_feat(reader, read_timeout, max_bytes):
+        raise ConnectionResetError("reset during FEAT")
+
+    _transport.connect_tcp = mock_connect
+    _ftp_probe._read_feat_lines = mock_read_feat
+    try:
+        engine = ProbeEngine(ProbeConfig(max_retries=0))
+        br = await engine.probe_single("192.0.2.21", 21, "ftp")
+        assert br.accessible is True
+        assert br.banner == "220 Wing FTP Server ready..."
+        assert br.error == ""
+        assert br.ftp.software == "Wing FTP"
+    finally:
+        _transport.connect_tcp = original_connect
+        _ftp_probe._read_feat_lines = original_read_feat
+
+
 async def test_probe_telnet():
     original = _transport.connect_tcp
 
@@ -133,6 +164,32 @@ async def test_connection_timeout():
         assert "timed out" in br.error
     finally:
         _transport.connect_tcp = original
+
+
+async def test_implicit_tls_uses_fresh_plaintext_fallback():
+    original = asyncio.open_connection
+    calls = []
+
+    async def mock_open_connection(host, port, **kwargs):
+        calls.append(bool(kwargs.get("ssl")))
+        if kwargs.get("ssl"):
+            raise OSError("wrong version number")
+        loop = asyncio.get_running_loop()
+        reader = asyncio.StreamReader()
+        protocol = asyncio.StreamReaderProtocol(reader)
+        writer = asyncio.StreamWriter(_MockTransport(), protocol, reader, loop)
+        return reader, writer
+
+    asyncio.open_connection = mock_open_connection
+    try:
+        _reader, writer, tcp_info = await _transport.connect_tcp(
+            "192.0.2.20", 990, connect_timeout=1.0, use_tls=True,
+        )
+        assert calls == [True, False]
+        assert tcp_info["tls_mode"] == "plaintext_fallback"
+        await _transport.safe_close(writer)
+    finally:
+        asyncio.open_connection = original
 
 
 async def test_health_check():
@@ -242,6 +299,50 @@ async def test_probe_pgsql():
         assert br.fingerprint_details["protocol_match"] is True
     finally:
         _transport.connect_tcp = original
+
+
+async def test_probe_pgsql_after_tls_upgrade():
+    original_connect = _transport.connect_tcp
+    original_upgrade = _transport.upgrade_tls
+    upgrade_count = 0
+
+    async def mock_connect(host, port, **kw):
+        loop = asyncio.get_running_loop()
+        reader = asyncio.StreamReader()
+        reader.feed_data(b"S")
+        protocol = asyncio.StreamReaderProtocol(reader)
+        writer = asyncio.StreamWriter(_MockTransport(), protocol, reader, loop)
+        return reader, writer, {}
+
+    async def mock_upgrade(reader, writer, host, **kw):
+        nonlocal upgrade_count
+        upgrade_count += 1
+        if upgrade_count == 1:
+            payload = struct.pack("!I", 3)
+            reader.feed_data(b"R" + struct.pack("!I", len(payload) + 4) + payload)
+        else:
+            payload = (
+                b"SFATAL\x00CXX000\x00Merror in "
+                b"crate.protocols.postgres.PgDecoder.java\x00\x00"
+            )
+            reader.feed_data(b"E" + struct.pack("!I", len(payload) + 4) + payload)
+        reader.feed_eof()
+        return reader, writer
+
+    _transport.connect_tcp = mock_connect
+    _transport.upgrade_tls = mock_upgrade
+    try:
+        engine = ProbeEngine(ProbeConfig(max_retries=0))
+        br = await engine.probe_single("192.0.2.14", 5432, "pgsql")
+        assert br.accessible is True
+        assert br.pgsql.ssl_response == "S"
+        assert br.pgsql.auth_method == "cleartext_password"
+        assert br.pgsql.implementation == "CrateDB"
+        assert br.vendor == "CrateDB"
+        assert upgrade_count == 2
+    finally:
+        _transport.connect_tcp = original_connect
+        _transport.upgrade_tls = original_upgrade
 
 
 async def test_probe_pgsql_direct_error():
