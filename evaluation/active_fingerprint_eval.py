@@ -667,6 +667,95 @@ def build_samples(args: argparse.Namespace) -> tuple[dict, list[TargetSample], l
     return inventory, performance, flow
 
 
+def group_target_samples(samples: list[TargetSample]) -> dict[tuple[str, str], list[TargetSample]]:
+    grouped: dict[tuple[str, str], list[TargetSample]] = defaultdict(list)
+    for sample in samples:
+        grouped[(sample.protocol, sample.software_true)].append(sample)
+    return grouped
+
+
+def filter_unreachable_classes(
+    records: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for record in records:
+        grouped[(record["protocol"], record["software_true"])].append(record)
+    kept: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    for (protocol, software), group in sorted(grouped.items()):
+        reachable = sum(bool(record["accessible"]) for record in group)
+        if reachable:
+            kept.extend(group)
+            continue
+        skipped.append({
+            "protocol": protocol,
+            "software": software,
+            "samples": len(group),
+            "reason": "no reachable targets in active probe sample",
+        })
+    return kept, skipped
+
+
+def select_flow_samples(
+    flow_candidates: list[TargetSample],
+    performance_samples: list[TargetSample],
+    performance_records: list[dict[str, Any]],
+    flow_per_class: int,
+) -> tuple[list[TargetSample], list[dict[str, Any]]]:
+    perf_sample_map = {
+        (sample.protocol, sample.software_true, sample.host): sample
+        for sample in performance_samples
+    }
+    reachable_perf_by_class: dict[tuple[str, str], list[TargetSample]] = defaultdict(list)
+    for record in performance_records:
+        if not record["accessible"]:
+            continue
+        key = (record["protocol"], record["software_true"], record["host"])
+        sample = perf_sample_map.get(key)
+        if sample is None:
+            continue
+        reachable_perf_by_class[(sample.protocol, sample.software_true)].append(sample)
+
+    selected: list[TargetSample] = []
+    skipped: list[dict[str, Any]] = []
+    for key, candidates in sorted(group_target_samples(flow_candidates).items()):
+        protocol, software = key
+        target_count = min(flow_per_class, len(candidates))
+        chosen: list[TargetSample] = []
+        seen_hosts: set[str] = set()
+
+        for sample in sorted(
+            reachable_perf_by_class.get(key, []),
+            key=lambda item: (item.host, item.port),
+        ):
+            if sample.host in seen_hosts:
+                continue
+            chosen.append(sample)
+            seen_hosts.add(sample.host)
+            if len(chosen) >= target_count:
+                break
+
+        if not chosen:
+            skipped.append({
+                "protocol": protocol,
+                "software": software,
+                "samples": target_count,
+                "reason": "no reachable targets available from active performance probe",
+            })
+            continue
+
+        for sample in candidates:
+            if sample.host in seen_hosts:
+                continue
+            chosen.append(sample)
+            seen_hosts.add(sample.host)
+            if len(chosen) >= target_count:
+                break
+
+        selected.extend(chosen[:target_count])
+    return selected, skipped
+
+
 def make_engine(args: argparse.Namespace) -> ProbeEngine:
     config = ProbeConfig(
         connect_timeout=args.connect_timeout, read_timeout=args.read_timeout,
@@ -712,7 +801,6 @@ def main(argv: Optional[list[str]] = None) -> int:
     write_json(output_dir / "inventory.json", inventory)
     write_json(output_dir / "performance_manifest.json",
                [asdict(sample) for sample in performance_samples])
-    write_json(output_dir / "flow_manifest.json", [asdict(sample) for sample in flow_samples])
     if args.inventory_only:
         print(json.dumps(inventory, indent=2, ensure_ascii=False))
         return 0
@@ -731,32 +819,43 @@ def main(argv: Optional[list[str]] = None) -> int:
             if (record["protocol"], record["software_true"], record["host"])
             in selected_keys
         ]
-        if len(performance_records) != len(performance_samples):
-            raise RuntimeError(
-                "Existing active performance results do not cover the new manifest: "
-                f"{len(performance_records)}/{len(performance_samples)}"
-            )
     else:
         engine = make_engine(args)
         performance_records = asyncio.run(run_engine_samples(
             performance_samples, engine, args.concurrency,
         ))
+    performance_records, skipped_performance_classes = filter_unreachable_classes(
+        performance_records
+    )
     write_jsonl(performance_path, performance_records)
     performance_metrics = compute_metrics(performance_records)
     write_json(output_dir / "performance_metrics.json", performance_metrics)
 
+    flow_samples, skipped_flow_classes = select_flow_samples(
+        flow_samples, performance_samples, performance_records, args.flow_per_class,
+    )
+    write_json(output_dir / "flow_manifest.json", [asdict(sample) for sample in flow_samples])
     flow_records, mcp_health = run_mcp_samples(
         flow_samples, args.concurrency, args.mcp_chunk_size,
+    )
+    flow_records, additional_skipped_flow_classes = filter_unreachable_classes(
+        flow_records
     )
     write_jsonl(output_dir / "flow_mcp_results.jsonl", flow_records)
     flow_metrics = compute_metrics(flow_records)
     write_json(output_dir / "flow_metrics.json", flow_metrics)
     write_json(output_dir / "mcp_health.json", mcp_health)
+    skipped_classes = {
+        "performance": skipped_performance_classes,
+        "flow": skipped_flow_classes + additional_skipped_flow_classes,
+    }
+    write_json(output_dir / "skipped_classes.json", skipped_classes)
     summary = {
         "inventory": inventory,
         "performance": performance_metrics,
         "flow": flow_metrics,
         "mcp_health": mcp_health,
+        "skipped_classes": skipped_classes,
     }
     write_json(output_dir / "summary.json", summary)
     print(json.dumps(summary, indent=2, ensure_ascii=False))

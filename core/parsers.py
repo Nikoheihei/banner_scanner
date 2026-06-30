@@ -138,6 +138,14 @@ def _parse_ssh_software_version(sw_id: str) -> Tuple[str, str]:
     例如: OpenSSH_8.9p1 -> ('OpenSSH', '8.9p1')
           Cisco-1.25    -> ('Cisco', '1.25')
     """
+    lowered = sw_id.lower()
+    for prefix in ("mod_sftp/", "paramiko", "mocanassh", "mocanassh/"):
+        if lowered.startswith(prefix):
+            raw_soft = prefix.rstrip("/")
+            raw_ver = sw_id[len(prefix):].lstrip("_-/ ")
+            software = SSH_SOFTWARE_ALIASES.get(raw_soft.lower(), raw_soft)
+            return software, raw_ver
+
     underscore_pos = sw_id.find("_")
     if underscore_pos != -1:
         raw_soft = sw_id[:underscore_pos]

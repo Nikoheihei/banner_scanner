@@ -10,6 +10,7 @@ from banner_scanner.core.engine import ProbeEngine
 from banner_scanner.core.models import ProbeConfig
 import banner_scanner.core.transport as _transport
 import banner_scanner.probes.ftp as _ftp_probe
+import banner_scanner.probes.ssh as _ssh_probe
 
 
 class _MockTransport:
@@ -53,6 +54,40 @@ async def test_probe_ssh():
         assert br.ssh.software == "OpenSSH"
     finally:
         _transport.connect_tcp = original
+
+
+async def test_probe_ssh_sends_client_ident_after_initial_timeout():
+    original_connect = _transport.connect_tcp
+    original_read_exact = _transport.read_exact
+
+    async def mock_connect(host, port, **kw):
+        loop = asyncio.get_running_loop()
+        reader = asyncio.StreamReader()
+        protocol = asyncio.StreamReaderProtocol(reader)
+        writer = asyncio.StreamWriter(_MockTransport(), protocol, reader, loop)
+        return reader, writer, {}
+
+    calls = {"count": 0}
+
+    async def mock_read_exact(reader, max_bytes, *, read_timeout):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise _transport.ReadTimeout(f"read timed out after {read_timeout}s")
+        return b"SSH-2.0-mod_sftp/0.9.9\r\n", False
+
+    _transport.connect_tcp = mock_connect
+    _transport.read_exact = mock_read_exact
+    try:
+        config = ProbeConfig(connect_timeout=1.0, read_timeout=1.0, max_retries=0)
+        br = await _ssh_probe.probe_ssh("192.0.2.22", config=config)
+        assert br.accessible is True
+        assert br.banner == "SSH-2.0-mod_sftp/0.9.9"
+        assert br.ssh.software == "mod_sftp"
+        assert br.ssh.version == "0.9.9"
+        assert calls["count"] == 2
+    finally:
+        _transport.connect_tcp = original_connect
+        _transport.read_exact = original_read_exact
 
 
 async def test_probe_ftp():

@@ -261,7 +261,7 @@
       "id": 21,
       "name": "mod_sftp",
       "protocol": "SSH",
-      "pattern": ".*mod.*sftp.*",
+      "pattern": "^SSH\\-2\\.0\\-mod_sftp(?:[\\/_\\- ]?[0-9A-Za-z.]+)?$",
       "count": 1,
       "template_ids": [
         30,
@@ -418,7 +418,7 @@
       "id": 34,
       "name": "Paramiko",
       "protocol": "SSH",
-      "pattern": ".*Paramiko.*",
+      "pattern": "^SSH\\-2\\.0\\-paramiko(?:[\\/_\\- ]?[0-9A-Za-z.]+)?$",
       "count": 1,
       "template_ids": [
         48
