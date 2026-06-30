@@ -200,6 +200,7 @@ FTP_SOFTWARE_PATTERNS = [
     (r'Cerberus\s+FTP\s+Server\s*([\d.]+)?', 'Cerberus FTP', 1),
     (r'CrushFTP\s*([\d.]+)?', 'CrushFTP', 1),
     (r'xlight\s+FTP\s+Server\s*([\d.]+)?', 'xlight FTP', 1),
+    (r"PCMan's\s+FTP\s+Server\s*([\d.]+)?", 'PCMan FTP Server', 1),
     (r'MikroTik', 'MikroTik', 0),
     # 从扫描结果发现的新厂商
     (r'DreamHost\s+FTP', 'DreamHost FTP', 0),

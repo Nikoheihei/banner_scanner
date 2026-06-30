@@ -373,6 +373,18 @@
           {
             "field": "banner",
             "regex": "PgDecoder\\.java"
+          },
+          {
+            "field": "pgsql.implementation",
+            "regex": "^CrateDB$"
+          },
+          {
+            "field": "pgsql_fields.file",
+            "regex": "^PgDecoder\\.java$"
+          },
+          {
+            "field": "pgsql_fields.where",
+            "regex": "crate\\.protocols\\.postgres"
           }
         ]
       },

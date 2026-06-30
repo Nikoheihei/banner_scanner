@@ -101,7 +101,7 @@ def _result_to_dict(result: Any) -> dict:
 def _format_text(results: list) -> str:
     lines = []
     for host_result in results:
-        if isinstance(host_result, dict):
+        if not isinstance(host_result, dict):
             host_result = _result_to_dict(host_result)
         host = host_result.get("host", "?")
         lines.append(f"\n{'#'*54}")

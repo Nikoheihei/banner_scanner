@@ -83,7 +83,7 @@ async def probe_ftp(
                     result.ftp.full_banner = full_text
                 else:
                     result.ftp = ftp_info
-            except (_transport.ReadTimeout, _transport.TransportError) as e:
+            except (_transport.ReadTimeout, _transport.TransportError, OSError) as e:
                 logger.debug("[FTP] %s:%d FEAT failed: %s", host, port, e)
                 result.ftp = ftp_info
         else:

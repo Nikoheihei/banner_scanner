@@ -71,6 +71,26 @@ def test_pgsql_implementation_hint():
     assert "pgsql.impl.redshift" in result.fingerprint_details["matched_rule_ids"]
 
 
+def test_pgsql_cratedb_structured_decoder_hint():
+    matcher = DatabaseFingerprintMatcher.load_default()
+    result = BannerResult(
+        protocol="PGSQL", host="192.0.2.5", port=5432,
+        accessible=True, banner="FATAL XX000 invalid length of startup packet",
+        pgsql=PgsqlInfo(
+            ssl_response="S",
+            implementation="CrateDB",
+            fields={
+                "message": "invalid length of startup packet",
+                "file": "PgDecoder.java",
+                "where": "io.crate.protocols.postgres.PgDecoder.decode",
+            },
+        ),
+    )
+    matcher.match(result)
+    assert result.vendor == "CrateDB"
+    assert "pgsql.impl.cratedb" in result.fingerprint_details["matched_rule_ids"]
+
+
 if __name__ == "__main__":
     tests = [(name, fn) for name, fn in globals().items() if name.startswith("test_")]
     passed = 0

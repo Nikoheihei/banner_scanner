@@ -13,35 +13,56 @@ class ConnectionTimeout(TransportError): pass
 class ReadTimeout(TransportError): pass
 
 
-async def _upgrade_tls(reader, writer, host: str) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
-    """TLS 升级，兼容不同 Python 版本"""
+def _make_tls_context() -> ssl.SSLContext:
+    """Create a scanner TLS context without trusting the remote certificate."""
     ctx = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
-    transport = writer.transport
-
-    # 优先用 loop.start_tls (Python 3.7+ 通用)
+    # Internet-facing FTP services still include legacy TLS deployments.  The
+    # lower security level is acceptable here because the scanner does not send
+    # credentials or rely on transport authenticity.
     try:
-        loop = asyncio.get_running_loop()
-        if hasattr(loop, 'start_tls'):
-            reader, writer = await loop.start_tls(
-                transport, transport.get_protocol(), ctx,
-                server_side=False, ssl_handshake_timeout=5.0,
-            )
-            return reader, writer, {}
-    except Exception:
+        ctx.minimum_version = ssl.TLSVersion.TLSv1
+        ctx.set_ciphers("DEFAULT:@SECLEVEL=0")
+    except (AttributeError, ssl.SSLError):
         pass
+    return ctx
 
-    # 备选: asyncio.start_tls (Python 3.11+)
-    if hasattr(asyncio, 'start_tls'):
-        reader, writer = await asyncio.start_tls(
-            transport, transport.get_protocol(), ctx,
-            server_side=False, server_hostname=host,
+
+async def upgrade_tls(
+    reader: asyncio.StreamReader,
+    writer: asyncio.StreamWriter,
+    host: str,
+    *,
+    handshake_timeout: float = 5.0,
+) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+    """Upgrade an established stream after a protocol-level TLS negotiation."""
+    ctx = _make_tls_context()
+    try:
+        writer_start_tls = getattr(writer, "start_tls", None)
+        if callable(writer_start_tls):
+            await writer_start_tls(
+                ctx,
+                server_hostname=host,
+                ssl_handshake_timeout=handshake_timeout,
+            )
+            return reader, writer
+
+        loop = asyncio.get_running_loop()
+        transport = writer.transport
+        protocol = transport.get_protocol()
+        new_transport = await loop.start_tls(
+            transport,
+            protocol,
+            ctx,
+            server_side=False,
+            server_hostname=host,
+            ssl_handshake_timeout=handshake_timeout,
         )
-        return reader, writer, {}
-
-    logger.warning("TLS upgrade not supported on this Python version, using plain connection")
-    return reader, writer, {}
+        new_writer = asyncio.StreamWriter(new_transport, protocol, reader, loop)
+        return reader, new_writer
+    except (asyncio.TimeoutError, OSError, ssl.SSLError) as exc:
+        raise TransportError(f"TLS handshake with {host} failed: {exc}") from exc
 
 
 async def connect_tcp(
@@ -50,9 +71,33 @@ async def connect_tcp(
     """返回 (reader, writer, tcp_info) 其中 tcp_info 含 TCP 层元数据"""
     tcp_info = {}
     try:
-        reader, writer = await asyncio.wait_for(
-            asyncio.open_connection(host, port), timeout=connect_timeout,
-        )
+        if use_tls:
+            try:
+                connection = asyncio.open_connection(
+                    host,
+                    port,
+                    ssl=_make_tls_context(),
+                    server_hostname=host,
+                    ssl_handshake_timeout=connect_timeout,
+                )
+                reader, writer = await asyncio.wait_for(
+                    connection, timeout=connect_timeout,
+                )
+                tcp_info["tls_mode"] = "implicit"
+            except (asyncio.TimeoutError, OSError, ssl.SSLError) as exc:
+                logger.debug(
+                    "Implicit TLS failed for %s:%d: %s; retrying plaintext",
+                    host, port, exc,
+                )
+                reader, writer = await asyncio.wait_for(
+                    asyncio.open_connection(host, port),
+                    timeout=connect_timeout,
+                )
+                tcp_info["tls_mode"] = "plaintext_fallback"
+        else:
+            reader, writer = await asyncio.wait_for(
+                asyncio.open_connection(host, port), timeout=connect_timeout,
+            )
         # TCP_NODELAY: 关闭 Nagle 算法，减少小包延迟（C++ 原版优化）
         try:
             transport = writer.transport
@@ -68,14 +113,6 @@ async def connect_tcp(
                 except: pass
         except Exception:
             pass
-        if use_tls and port == 990:
-            try:
-                reader, writer = await asyncio.wait_for(
-                    _upgrade_tls(reader, writer, host),
-                    timeout=connect_timeout * 0.5,
-                )
-            except Exception as e:
-                logger.debug("TLS upgrade failed for %s:%d: %s, using plain", host, port, e)
         return reader, writer, tcp_info
     except asyncio.TimeoutError:
         raise ConnectionTimeout(f"connect to {host}:{port} timed out")
