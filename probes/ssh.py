@@ -10,6 +10,34 @@ import banner_scanner.core.transport as _transport
 
 logger = logging.getLogger("banner_scanner.probe.ssh")
 
+_CLIENT_VERSION_LINE = b"SSH-2.0-banner_scanner\r\n"
+
+
+async def _read_server_banner(
+    reader,
+    writer,
+    *,
+    max_bytes: int,
+    read_timeout: float,
+) -> tuple[bytes, bool]:
+    try:
+        return await _transport.read_exact(
+            reader,
+            max_bytes=max_bytes,
+            read_timeout=read_timeout,
+        )
+    except _transport.ReadTimeout:
+        # Some SSH stacks stay silent until the client sends its own version
+        # string. Reuse the existing socket and try once more after a harmless
+        # identification line.
+        writer.write(_CLIENT_VERSION_LINE)
+        await writer.drain()
+        return await _transport.read_exact(
+            reader,
+            max_bytes=max_bytes,
+            read_timeout=read_timeout,
+        )
+
 
 async def probe_ssh(
     host: str,
@@ -30,14 +58,18 @@ async def probe_ssh(
             connect_timeout=ct,
         )
 
-        data, truncated = await _transport.read_exact(
+        data, truncated = await _read_server_banner(
             reader,
+            writer,
             max_bytes=config.max_banner_bytes,
             read_timeout=rt,
         )
 
         elapsed = (asyncio.get_event_loop().time() - start) * 1000
         result.response_time_ms = elapsed
+
+        if not data:
+            raise _transport.TransportError("connection closed before SSH banner")
 
         banner_bytes = data.split(b"\n")[0]
         banner = banner_bytes.decode("utf-8", errors="replace").rstrip("\r")

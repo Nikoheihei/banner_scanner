@@ -53,6 +53,18 @@ def test_ssh_extra_dashes():
     assert info.version == "7.12"
 
 
+def test_ssh_paramiko_without_separator():
+    info = parse_ssh_banner("SSH-2.0-paramiko2.12.0")
+    assert info.software == "Paramiko"
+    assert info.version == "2.12.0"
+
+
+def test_ssh_mod_sftp_slash_version():
+    info = parse_ssh_banner("SSH-2.0-mod_sftp/0.9.9")
+    assert info.software == "mod_sftp"
+    assert info.version == "0.9.9"
+
+
 # ===================== FTP =====================
 
 def test_ftp_vsftpd():
