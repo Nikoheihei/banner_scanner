@@ -44,17 +44,29 @@ def _banner_to_dict(br: BannerResult) -> dict:
         "response_time_ms": round(br.response_time_ms, 1), "error": br.error,
     }
     if br.ssh:
-        d["ssh"] = {"software": br.ssh.software, "version": br.ssh.version,
+        d["ssh"] = {"version_string": br.ssh.version_string,
+                    "software": br.ssh.software, "version": br.ssh.version,
                     "protocol_version": br.ssh.protocol_version,
-                    "os": br.ssh.os_type, "os_version": br.ssh.os_version}
+                    "os": br.ssh.os_type, "os_version": br.ssh.os_version,
+                    "os_distro": br.ssh.os_distro,
+                    "comments": br.ssh.comments}
     if br.ftp:
         d["ftp"] = {"software": br.ftp.software, "version": br.ftp.version,
                     "features": br.ftp.features, "utf8": br.ftp.utf8,
-                    "auth_tls": br.ftp.auth_tls, "mldst": br.ftp.mldst}
+                    "auth_tls": br.ftp.auth_tls, "auth_ssl": br.ftp.auth_ssl,
+                    "size_cmd": br.ftp.size_cmd, "mdtm": br.ftp.mdtm,
+                    "mldst": br.ftp.mldst, "tvfs": br.ftp.tvfs,
+                    "xcrc": br.ftp.xcrc, "xcup": br.ftp.xcup,
+                    "full_banner": br.ftp.full_banner}
     if br.telnet:
         d["telnet"] = {"detected_service": br.telnet.detected_service,
                        "has_login_prompt": br.telnet.has_login_prompt,
-                       "has_iac": br.telnet.has_iac_negotiation}
+                       "has_iac": br.telnet.has_iac_negotiation,
+                       "banner": br.telnet.banner,
+                       "extracted_text": br.telnet.extracted_text,
+                       "banner_raw_hex": br.telnet.banner_raw_hex}
+    if br.protocol.upper() == "TELNET" and br.banner_raw_hex:
+        d["banner_raw_hex"] = br.banner_raw_hex
     if br.redis:
         d["redis"] = {"implementation": br.redis.implementation,
                       "version": br.redis.version, "mode": br.redis.mode,
@@ -77,6 +89,12 @@ def _banner_to_dict(br: BannerResult) -> dict:
         d["fingerprint"] = br.vendor
         d["fingerprint_id"] = br.vendor_id
         d["confidence"] = br.vendor_confidence
+    if br.matched_rules:
+        matches_by_category: dict[str, list[str]] = {}
+        for match in br.matched_rules:
+            category = match.category or "uncategorized"
+            matches_by_category.setdefault(category, []).append(match.vendor_name)
+        d["matches_by_category"] = matches_by_category
     if br.info:
         d["info"] = br.info
     if br.fingerprint_details:
