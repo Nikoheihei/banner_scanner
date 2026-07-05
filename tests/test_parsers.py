@@ -65,6 +65,18 @@ def test_ssh_mod_sftp_slash_version():
     assert info.version == "0.9.9"
 
 
+def test_ssh_weonlydo_wodftpd_uses_comment_version():
+    info = parse_ssh_banner("SSH-2.0-WeOnlyDo-wodFTPD 3.3.0.424")
+    assert info.software == "wodFTPD"
+    assert info.version == "3.3.0.424"
+
+
+def test_ssh_bitvise_legacy_alias_and_component_version():
+    info = parse_ssh_banner("SSH-2.0-1.82 sshlib: WinSSHD 4.21")
+    assert info.software == "Bitvise SSH Server"
+    assert info.version == "4.21"
+
+
 # ===================== FTP =====================
 
 def test_ftp_vsftpd():

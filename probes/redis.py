@@ -5,6 +5,7 @@ import logging
 from typing import Optional
 
 from ..core.models import BannerResult, ProbeConfig, get_effective_timeout
+from ..core.evidence import captured_response_sha256
 from ..core.parsers import decode_resp_payload, extract_banner_info, parse_redis_response
 import banner_scanner.core.transport as _transport
 
@@ -83,6 +84,7 @@ async def probe_redis(
         else:
             result.banner = "".join(filter(None, (ping_response, info_response)))
         result.banner_raw_hex = (ping_bytes + info_bytes)[:64].hex()
+        result.response_sha256 = captured_response_sha256(ping_bytes, info_bytes)
         result.banner_truncated = ping_truncated or info_truncated
         result.accessible = True
         if not result.banner:

@@ -1,6 +1,7 @@
 """集成测试：Mock 传输层，验证完整探测流程。"""
 
 import asyncio
+import hashlib
 import struct
 import sys
 import os
@@ -52,6 +53,9 @@ async def test_probe_ssh():
         assert br is not None
         assert br.accessible == True
         assert br.ssh.software == "OpenSSH"
+        assert br.response_sha256 == hashlib.sha256(
+            b"SSH-2.0-OpenSSH_8.9p1 Ubuntu-3\n"
+        ).hexdigest()
     finally:
         _transport.connect_tcp = original
 

@@ -1,5 +1,5 @@
 {
-  "schema": "database-fingerprint-library-v1",
+  "schema": "banner-scanner.database-fingerprints.v2",
   "library_id": "pgsql-fingerprints",
   "version": "0.1.0",
   "generated_at": "2026-06-25T03:23:52.893729+00:00",
@@ -32,13 +32,17 @@
         "protocol": "PGSQL",
         "protocol_version": "3.0"
       },
-      "confidence": 0.9,
       "evidence": [
         "protocol",
         "pgsql.protocol_version"
       ],
       "notes": "",
-      "sample_count": 2053
+      "sample_count": 2053,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.protocol.error-response",
@@ -62,12 +66,16 @@
         "protocol": "PGSQL",
         "response_type": "ErrorResponse"
       },
-      "confidence": 0.98,
       "evidence": [
         "banner ErrorResponse fields"
       ],
       "notes": "",
-      "sample_count": 1771
+      "sample_count": 1771,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "conclusive",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.protocol.authentication",
@@ -84,12 +92,16 @@
         "protocol": "PGSQL",
         "response_type": "Authentication"
       },
-      "confidence": 0.9,
       "evidence": [
         "banner"
       ],
       "notes": "",
-      "sample_count": 14
+      "sample_count": 14,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.protocol.ssl-request-response",
@@ -106,12 +118,16 @@
         "protocol": "PGSQL",
         "response_type": "SSLRequest"
       },
-      "confidence": 0.92,
       "evidence": [
         "SSLRequest response"
       ],
       "notes": "This rule is expected for online reprobe output and may have zero count in offline corpora.",
-      "sample_count": 0
+      "sample_count": 0,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.auth.method.ok",
@@ -134,12 +150,16 @@
       "labels": {
         "auth_method": "ok"
       },
-      "confidence": 0.92,
       "evidence": [
         "AuthenticationOk"
       ],
       "notes": "Useful as an online low-level fingerprint when a server accepts the minimal StartupMessage.",
-      "sample_count": 6
+      "sample_count": 6,
+      "result_type": "authentication",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.auth.method.cleartext-password",
@@ -162,12 +182,16 @@
       "labels": {
         "auth_method": "cleartext_password"
       },
-      "confidence": 0.92,
       "evidence": [
         "AuthenticationCleartextPassword"
       ],
       "notes": "",
-      "sample_count": 4
+      "sample_count": 4,
+      "result_type": "authentication",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.auth.method.md5-password",
@@ -190,12 +214,16 @@
       "labels": {
         "auth_method": "md5_password"
       },
-      "confidence": 0.92,
       "evidence": [
         "AuthenticationMD5Password"
       ],
       "notes": "",
-      "sample_count": 1
+      "sample_count": 1,
+      "result_type": "authentication",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.auth.method.sasl",
@@ -218,12 +246,16 @@
       "labels": {
         "auth_method": "sasl"
       },
-      "confidence": 0.9,
       "evidence": [
         "AuthenticationSASL"
       ],
       "notes": "Expected in online reprobe output for PostgreSQL 10+ SCRAM deployments.",
-      "sample_count": 0
+      "sample_count": 0,
+      "result_type": "authentication",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.auth.method.nonstandard-code",
@@ -246,12 +278,16 @@
       "labels": {
         "auth_method": "nonstandard_or_misparsed"
       },
-      "confidence": 0.55,
       "evidence": [
         "Authentication code"
       ],
       "notes": "Treat as parser/anomaly evidence, not a PostgreSQL implementation label.",
-      "sample_count": 3
+      "sample_count": 3,
+      "result_type": "authentication",
+      "match_level": "status_fact",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.extract.sqlstate",
@@ -272,12 +308,16 @@
       "labels": {
         "field": "sqlstate"
       },
-      "confidence": 0.98,
       "evidence": [
         "pgsql_fields.sqlstate"
       ],
       "notes": "",
-      "sample_count": 1759
+      "sample_count": 1759,
+      "result_type": "service_status",
+      "match_level": "status_fact",
+      "evidence_strength": "conclusive",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.extract.message",
@@ -298,12 +338,16 @@
       "labels": {
         "field": "message"
       },
-      "confidence": 0.95,
       "evidence": [
         "pgsql_fields.message"
       ],
       "notes": "",
-      "sample_count": 1778
+      "sample_count": 1778,
+      "result_type": "service_status",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.extract.server-version",
@@ -324,12 +368,16 @@
       "labels": {
         "field": "server_version"
       },
-      "confidence": 0.95,
       "evidence": [
         "ParameterStatus server_version"
       ],
       "notes": "Only available after AuthenticationOk or on permissive/proxy paths; absent in most unauthenticated scans.",
-      "sample_count": 0
+      "sample_count": 0,
+      "result_type": "service_status",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.impl.redshift",
@@ -352,12 +400,16 @@
       "labels": {
         "implementation_hint": "Amazon Redshift"
       },
-      "confidence": 0.95,
       "evidence": [
         "message"
       ],
       "notes": "",
-      "sample_count": 351
+      "sample_count": 351,
+      "result_type": "software",
+      "match_level": "implementation_hint",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.impl.cratedb",
@@ -392,12 +444,16 @@
       "labels": {
         "implementation_hint": "CrateDB"
       },
-      "confidence": 0.95,
       "evidence": [
         "banner stack marker"
       ],
       "notes": "",
-      "sample_count": 50
+      "sample_count": 50,
+      "result_type": "software",
+      "match_level": "implementation_hint",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.impl.tenant-proxy",
@@ -413,12 +469,16 @@
       "labels": {
         "implementation_hint": "tenant-aware-proxy"
       },
-      "confidence": 0.82,
       "evidence": [
         "message"
       ],
       "notes": "Provider name is intentionally not asserted from this message alone.",
-      "sample_count": 130
+      "sample_count": 130,
+      "result_type": "software",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": true,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.err.bad-packet-header",
@@ -434,13 +494,17 @@
       "labels": {
         "error_class": "protocol_violation_bad_packet_header"
       },
-      "confidence": 0.95,
       "evidence": [
         "sqlstate",
         "message"
       ],
       "notes": "",
-      "sample_count": 933
+      "sample_count": 933,
+      "result_type": "service_status",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.err.invalid-startup",
@@ -456,12 +520,16 @@
       "labels": {
         "error_class": "invalid_startup_packet"
       },
-      "confidence": 0.9,
       "evidence": [
         "banner"
       ],
       "notes": "",
-      "sample_count": 92
+      "sample_count": 92,
+      "result_type": "service_status",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.security.ssl-required",
@@ -477,12 +545,16 @@
       "labels": {
         "security_requirement": "tls_required"
       },
-      "confidence": 0.95,
       "evidence": [
         "message"
       ],
       "notes": "",
-      "sample_count": 204
+      "sample_count": 204,
+      "result_type": "authentication",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.auth.invalid-auth",
@@ -505,13 +577,17 @@
       "labels": {
         "auth_state": "rejected"
       },
-      "confidence": 0.88,
       "evidence": [
         "sqlstate",
         "message"
       ],
       "notes": "",
-      "sample_count": 194
+      "sample_count": 194,
+      "result_type": "authentication",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.availability.starting-or-paused",
@@ -534,13 +610,17 @@
       "labels": {
         "availability_state": "temporarily_unavailable"
       },
-      "confidence": 0.9,
       "evidence": [
         "sqlstate",
         "message"
       ],
       "notes": "",
-      "sample_count": 400
+      "sample_count": 400,
+      "result_type": "service_status",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "pgsql.resource.memory",
@@ -556,12 +636,16 @@
       "labels": {
         "availability_state": "resource_exhausted"
       },
-      "confidence": 0.85,
       "evidence": [
         "banner"
       ],
       "notes": "",
-      "sample_count": 13
+      "sample_count": 13,
+      "result_type": "service_status",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     }
   ]
 }

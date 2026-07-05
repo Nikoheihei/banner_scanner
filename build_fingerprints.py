@@ -8,6 +8,7 @@
         [--output-dir fingerprints/protocols]
 """
 
+import hashlib
 import json
 import re
 import sqlite3
@@ -28,7 +29,7 @@ SSH_SOFTWARE_PATTERNS = [
     (r'AWS_SFTP', 'AWS SFTP'),
     (r'Dropbear', 'Dropbear'),
     (r'Cisco', 'Cisco'),
-    (r'FlowSsh|Bitvise|WinSSHD', 'Bitvise'),
+    (r'FlowSsh|Bitvise|WinSSHD', 'Bitvise SSH Server'),
     (r'Serv-U', 'Serv-U'),
     (r'CrushFTPSSHD', 'CrushFTP'),
     (r'SFTPGo', 'SFTPGo'),
@@ -36,10 +37,11 @@ SSH_SOFTWARE_PATTERNS = [
     (r'CerberusFTPServer', 'Cerberus FTP'),
     (r'WS_FTP-SSH|WS_FTP', 'WS_FTP'),
     (r'GitLab-SSHD', 'GitLab SSHD'),
-    (r'Maverick_SSHD', 'Maverick SSHD'),
+    (r'Maverick(?:_SSHD|Synergy)', 'Maverick SSHD'),
     (r'mod_sftp', 'mod_sftp'),
+    (r'SFTPPlus', 'SFTPPlus'),
     (r'WingFTPServer', 'Wing FTP'),
-    (r'WeOnlyDo-wodFTPD', 'WeOnlyDo wodFTPD'),
+    (r'WeOnlyDo-wodFTPD', 'wodFTPD'),
     (r'xlightftpd', 'xlightftpd'),
     (r'paramiko', 'Paramiko'),
     (r'VShell', 'VShell'),
@@ -223,6 +225,7 @@ def build_fingerprints(db_path: str) -> list[dict]:
         vendor_name = db_vendor.strip() if db_vendor else ""
         if not vendor_name:
             vendor_name = extract_vendor(template, protocol)
+        vendor_name = CANONICAL_VENDOR_NAMES.get((protocol, vendor_name), vendor_name)
         # 过滤纯数字/版本号伪厂商名 (如 "9.8.1.0", "-9.8.1.0")
         if vendor_name and re.match(r'^-?[\d.]+$', vendor_name):
             vendor_name = ""
@@ -286,7 +289,7 @@ def build_fingerprints(db_path: str) -> list[dict]:
             "id": next_id,
             "name": name,
             "protocol": protocol,
-            "pattern": pattern,
+            "pattern": pattern_for_vendor(name, protocol, pattern),
             "count": 0,
             "template_ids": [],
         })
@@ -315,6 +318,24 @@ def build_fingerprints(db_path: str) -> list[dict]:
         })
         next_id += 1
 
+    for related in RELATED_FACT_RULES:
+        vendors.append({
+            "id": next_id,
+            "name": related["name"],
+            "protocol": related["protocol"],
+            "pattern": related["pattern"],
+            "count": 0,
+            "template_ids": [],
+            "category": related["category"],
+            "result_type": related["result_type"],
+            "match_level": related["match_level"],
+            "evidence_strength": related["evidence_strength"],
+            "primary_eligible": related.get("primary_eligible", False),
+            "tie_breaker": 0,
+            "explanation": related["explanation"],
+        })
+        next_id += 1
+
     deduplicated = {}
     for vendor in vendors:
         key = (vendor["protocol"], vendor["name"], vendor["pattern"])
@@ -328,10 +349,26 @@ def build_fingerprints(db_path: str) -> list[dict]:
         ))
 
     vendors = list(deduplicated.values())
+    stable_ids = set()
     for vendor in vendors:
         category, priority = rule_metadata(vendor["name"], vendor["pattern"])
-        vendor["category"] = category
-        vendor["priority"] = priority
+        vendor.setdefault("category", category)
+        for key, value in v2_text_metadata(category, priority).items():
+            vendor.setdefault(key, value)
+        vendor.update(VENDOR_RULE_OVERRIDES.get(
+            (vendor["protocol"], vendor["name"]), {}
+        ))
+        vendor.pop("category", None)
+        legacy_id = vendor["id"]
+        vendor["legacy_id"] = legacy_id
+        stable_id = stable_text_rule_id(
+            vendor["protocol"], vendor["result_type"], vendor["name"],
+        )
+        if stable_id in stable_ids:
+            digest = hashlib.sha1(vendor["pattern"].encode("utf-8")).hexdigest()[:8]
+            stable_id = f"{stable_id}.{digest}"
+        stable_ids.add(stable_id)
+        vendor["id"] = stable_id
     return vendors
 
 
@@ -344,7 +381,7 @@ def write_protocol_libraries(vendors: list[dict], output_dir: str | Path) -> dic
         protocol_vendors = [v for v in vendors if v["protocol"] == protocol]
         path = output_dir / f"{protocol.lower()}_fingerprints.json"
         payload = {
-            "schema": "banner-scanner.protocol-fingerprints.v1",
+            "schema": "banner-scanner.protocol-fingerprints.v2",
             "protocol": protocol,
             "rule_count": len(protocol_vendors),
             "vendors": protocol_vendors,
@@ -373,12 +410,110 @@ def build_broad_pattern(vendor_name: str, protocol: str = "") -> str:
 
 
 VENDOR_PATTERN_OVERRIDES = {
+    ("SSH", "Bitvise SSH Server"): (
+        r"^SSH\-[12]\.[0-9]+\-(?:[0-9.]+\s+)?"
+        r"(?:(?P<component>FlowSsh|sshlib):\s*)?"
+        r"(?:Bitvise\s+SSH\s+Server|WinSSHD)\b[^\r\n]*(?=\r?\n|\r|$)"
+    ),
+    ("SSH", "Maverick SSHD"): (
+        r"^SSH\-[12]\.[0-9]+\-Maverick(?:[_-]?SSHD|Synergy)(?=\r?\n|\r|$)"
+    ),
+    ("SSH", "Paramiko"): (
+        r"^SSH\-2\.0\-paramiko(?:[\/_\-]?[0-9][0-9A-Za-z.]*)?"
+        r"(?:[ \t]+[^\r\n]*)?(?=\r?\n|\r|$)"
+    ),
+    ("SSH", "mod_sftp"): (
+        r"^SSH\-2\.0\-mod_sftp(?:[\/_\- ]?[0-9A-Za-z.]+)?(?=\r?\n|\r|$)"
+    ),
+    ("SSH", "SFTPPlus"): (
+        r"^SSH\-2\.0\-SFTPPlus(?:\s+TRIAL)?(?=\r?\n|\r|$)"
+    ),
+    ("SSH", "WeOnlyDo SSH"): (
+        r"^SSH\-[12]\.[0-9]+\-WeOnlyDo(?![-_ ]?(?:wodFTPD|WingFTP))"
+        r"(?:\s+[^\r\n]+)?(?=\r?\n|\r|$)"
+    ),
+    ("SSH", "wodFTPD"): (
+        r"^SSH\-[12]\.[0-9]+\-WeOnlyDo-wodFTPD(?:\s+[^\r\n]+)?(?=\r?\n|\r|$)"
+    ),
+    ("SSH", "Wing FTP"): (
+        r"^SSH\-[12]\.[0-9]+\-[^\r\n]*WingFTP(?:Server)?[^\r\n]*(?=\r?\n|\r|$)"
+    ),
     ("SSH", "WS_FTP"): r".*(?:^|[^A-Za-z0-9])WS[_ -]?FTP(?:-SSH)?(?:[^A-Za-z0-9]|$).*",
     ("FTP", "WS_FTP"): r".*(?:^|[^A-Za-z0-9])WS[_ -]?FTP(?:[^A-Za-z0-9]|$).*",
     ("SSH", "Serv-U"): r".*(?:^|[^A-Za-z0-9])Serv[-_ ]?U(?:[^A-Za-z0-9]|$).*",
     ("FTP", "Serv-U FTP"): r".*(?:^|[^A-Za-z0-9])Serv[-_ ]?U(?:\s+FTP(?:-Server|\s+Server)?)?(?:[^A-Za-z0-9]|$).*",
-    ("FTP", "xlightftpd"): r".*(?:Xlight(?:\s+FTP)?\s+Server|xlightftpd).*",
+    ("FTP", "Core FTP Server"): (
+        r"^(?:120|220)[- ][^\r\n]*Core\s+FTP\s+Server\s+Version[^\r\n]*"
+    ),
+    ("FTP", "FileZilla Server"): (
+        r"^(?:120|220)[- ][^\r\n]*FileZilla\s+Server\b[^\r\n]*"
+    ),
+    ("FTP", "FileZilla Pro Enterprise"): (
+        r"^(?:120|220)[- ][^\r\n]*FileZilla\s+Pro\s+Enterprise\s+Server\b[^\r\n]*"
+    ),
+    ("FTP", "Wing FTP"): (
+        r"^(?:120|220)[- ][^\r\n]*Wing\s+FTP\s+Server\b[^\r\n]*"
+    ),
+    ("FTP", "xlightftpd"): (
+        r"^(?:120|220)[- ][^\r\n]*(?:\bXlight\b|xlightftpd)[^\r\n]*"
+    ),
 }
+
+
+CANONICAL_VENDOR_NAMES = {
+    ("SSH", "Bitvise"): "Bitvise SSH Server",
+    ("SSH", "WeOnlyDo wodFTPD"): "wodFTPD",
+}
+
+
+VENDOR_RULE_OVERRIDES = {
+    ("SSH", "Bitvise SSH Server"): {
+        "labels": {
+            "aliases": ["WinSSHD"],
+            "provider": "Bitvise",
+        },
+        "extract": [{"field": "component", "group": "component"}],
+        "explanation": (
+            "The SSH identification line names Bitvise SSH Server or its "
+            "WinSSHD alias."
+        ),
+    },
+}
+
+
+RELATED_FACT_RULES = (
+    {
+        "protocol": "FTP",
+        "name": "FileZilla",
+        "pattern": r"^(?:120|220)[- ][^\r\n]*FileZilla\b[^\r\n]*",
+        "category": "software_family",
+        "result_type": "software_family",
+        "match_level": "software_family",
+        "evidence_strength": "strong",
+        "explanation": "The FTP greeting explicitly contains the FileZilla product family.",
+    },
+    {
+        "protocol": "SSH",
+        "name": "WeOnlyDo",
+        "pattern": r"^SSH\-[12]\.[0-9]+\-WeOnlyDo[^\r\n]*(?=\r?\n|\r|$)",
+        "category": "provider",
+        "result_type": "provider",
+        "match_level": "provider_name",
+        "evidence_strength": "strong",
+        "explanation": "The SSH identification line explicitly names WeOnlyDo.",
+    },
+    {
+        "protocol": "TELNET",
+        "name": "Cisco IOS telnetd",
+        "pattern": r"(?i).*\bIOS\s+version\s+[0-9][^\r\n]*",
+        "category": "implementation",
+        "result_type": "software",
+        "match_level": "software_version",
+        "evidence_strength": "strong",
+        "primary_eligible": True,
+        "explanation": "The Telnet response explicitly contains a Cisco IOS version marker.",
+    },
+)
 
 
 def pattern_for_vendor(name: str, protocol: str, fallback: str) -> str:
@@ -410,6 +545,55 @@ def rule_metadata(name: str, pattern: str) -> tuple[str, int]:
     if "telnetd" in name.lower() and ("ff" in pattern.lower() or "WILL" in pattern):
         return "implementation", 80
     return "implementation", 100
+
+
+def v2_text_metadata(category: str, legacy_priority: int) -> dict:
+    """Translate the old category/priority pair into explicit v2 semantics."""
+    if category == "fallback":
+        return {
+            "result_type": "protocol_identity",
+            "match_level": "protocol_only",
+            "evidence_strength": "weak",
+            "primary_eligible": False,
+            "tie_breaker": 0,
+        }
+    if category == "family":
+        return {
+            "result_type": "device_family",
+            "match_level": "device_family",
+            "evidence_strength": "moderate",
+            "primary_eligible": False,
+            "tie_breaker": 0,
+        }
+    if category == "status":
+        return {
+            "result_type": "service_status",
+            "match_level": "status_fact",
+            "evidence_strength": "moderate",
+            "primary_eligible": False,
+            "tie_breaker": 0,
+        }
+    if legacy_priority >= 140:
+        strength = "conclusive"
+        level = "software_name"
+    elif legacy_priority < 100:
+        strength = "moderate"
+        level = "implementation_hint"
+    else:
+        strength = "strong"
+        level = "software_name"
+    return {
+        "result_type": "software",
+        "match_level": level,
+        "evidence_strength": strength,
+        "primary_eligible": True,
+        "tie_breaker": 0,
+    }
+
+
+def stable_text_rule_id(protocol: str, result_type: str, name: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", name.casefold()).strip("-") or "unnamed"
+    return f"{protocol.casefold()}.{result_type.replace('_', '-')}.{slug}"
 
 
 # 模板库中未覆盖但常见的厂商（手动补充）
@@ -635,7 +819,10 @@ def main():
     # 打印示例
     print("\n=== Sample rules ===")
     for v in vendors[:5]:
-        print(f"  ID={v['id']:3d}  {v['protocol']:6s}  {v['name']:25s}  count={v['count']:5d}")
+        print(
+            f"  ID={str(v['id']):36s}  {v['protocol']:6s}  "
+            f"{v['name']:25s}  count={v['count']:5d}"
+        )
 
 
 if __name__ == "__main__":

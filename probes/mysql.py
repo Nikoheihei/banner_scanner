@@ -5,6 +5,7 @@ import logging
 from typing import Optional
 
 from ..core.models import BannerResult, ProbeConfig, get_effective_timeout
+from ..core.evidence import captured_response_sha256
 from ..core.parsers import extract_banner_info, parse_mysql_handshake
 import banner_scanner.core.transport as _transport
 
@@ -46,6 +47,7 @@ async def probe_mysql(
         data, truncated = await _read_packet(reader, rt, config.max_banner_bytes)
         result.mysql = parse_mysql_handshake(data)
         result.banner_raw_hex = data[:64].hex()
+        result.response_sha256 = captured_response_sha256(data)
         result.banner_truncated = truncated
         result.accessible = True
 

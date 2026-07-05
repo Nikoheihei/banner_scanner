@@ -1,5 +1,5 @@
 {
-  "schema": "protocol-fingerprint-library-v1",
+  "schema": "banner-scanner.database-fingerprints.v2",
   "library_id": "redis-compatible-fingerprints",
   "version": "0.1.0",
   "generated_at": "2026-06-23T15:23:13.808382+00:00",
@@ -76,12 +76,16 @@
         "protocol": "REDIS",
         "service_family": "redis-compatible"
       },
-      "confidence": 0.99,
       "evidence": [
         "redis_version|valkey_version|dragonfly_version|memurai_version"
       ],
       "notes": "",
-      "sample_count": 7323
+      "sample_count": 7323,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "conclusive",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.protocol.resp-bulk-info",
@@ -99,13 +103,17 @@
         "wire_format": "RESP",
         "response": "INFO"
       },
-      "confidence": 0.98,
       "evidence": [
         "RESP bulk prefix",
         "# Server"
       ],
       "notes": "",
-      "sample_count": 7208
+      "sample_count": 7208,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "conclusive",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.protocol.pong",
@@ -123,12 +131,16 @@
         "wire_format": "RESP",
         "response": "PING"
       },
-      "confidence": 0.95,
       "evidence": [
         "+PONG"
       ],
       "notes": "",
-      "sample_count": 1
+      "sample_count": 1,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.protocol.info-error-context",
@@ -149,13 +161,17 @@
         "protocol": "REDIS",
         "response": "INFO_ERROR"
       },
-      "confidence": 0.65,
       "evidence": [
         "INFO error",
         "scanner context"
       ],
       "notes": "Do not use this rule against arbitrary passive banners without probe context.",
-      "sample_count": 7
+      "sample_count": 7,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.protocol.ok-context",
@@ -175,13 +191,17 @@
         "protocol": "REDIS",
         "response": "OK"
       },
-      "confidence": 0.55,
       "evidence": [
         "+OK",
         "scanner context"
       ],
       "notes": "A bare +OK is not unique to Redis; require active probe context.",
-      "sample_count": 6
+      "sample_count": 6,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.protocol.scanner-pong-ok-context",
@@ -201,13 +221,17 @@
         "protocol": "REDIS",
         "response": "SCANNER_PONG_OK"
       },
-      "confidence": 0.6,
       "evidence": [
         "scanner fallback",
         "PING OK"
       ],
       "notes": "This is scanner-output text, not a Redis wire banner.",
-      "sample_count": 1
+      "sample_count": 1,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.protocol.auth-required",
@@ -226,12 +250,16 @@
         "protocol": "REDIS",
         "response": "AUTH_REQUIRED_OR_DENIED"
       },
-      "confidence": 0.92,
       "evidence": [
         "NOAUTH|WRONGPASS|NOPERM"
       ],
       "notes": "Strongest when produced by an active Redis command probe.",
-      "sample_count": 0
+      "sample_count": 0,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.impl.redis-server",
@@ -254,13 +282,17 @@
         "implementation": "Redis",
         "service_family": "redis-compatible"
       },
-      "confidence": 0.9,
       "evidence": [
         "redis_version",
         "absence of known alternate implementation markers"
       ],
       "notes": "Some compatible products may only expose redis_version, so this is high-confidence but not absolute.",
-      "sample_count": 7211
+      "sample_count": 7211,
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0
     },
     {
       "id": "redis.impl.valkey",
@@ -284,13 +316,17 @@
         "implementation": "Valkey",
         "service_family": "redis-compatible"
       },
-      "confidence": 0.99,
       "evidence": [
         "valkey_version",
         "server_name"
       ],
       "notes": "",
-      "sample_count": 90
+      "sample_count": 90,
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "conclusive",
+      "primary_eligible": true,
+      "tie_breaker": 0
     },
     {
       "id": "redis.impl.dragonfly",
@@ -313,12 +349,16 @@
         "implementation": "Dragonfly",
         "service_family": "redis-compatible"
       },
-      "confidence": 0.99,
       "evidence": [
         "dragonfly_version"
       ],
       "notes": "",
-      "sample_count": 20
+      "sample_count": 20,
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "conclusive",
+      "primary_eligible": true,
+      "tie_breaker": 0
     },
     {
       "id": "redis.impl.memurai",
@@ -341,12 +381,16 @@
         "implementation": "Memurai",
         "service_family": "redis-compatible"
       },
-      "confidence": 0.99,
       "evidence": [
         "memurai_version"
       ],
       "notes": "",
-      "sample_count": 2
+      "sample_count": 2,
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "conclusive",
+      "primary_eligible": true,
+      "tie_breaker": 0
     },
     {
       "id": "redis.extract.redis-version",
@@ -368,12 +412,16 @@
       "labels": {
         "version_field": "redis_version"
       },
-      "confidence": 0.99,
       "evidence": [
         "redis_version"
       ],
       "notes": "",
-      "sample_count": 7323
+      "sample_count": 7323,
+      "result_type": "software",
+      "match_level": "software_version",
+      "evidence_strength": "conclusive",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.mode.standalone",
@@ -390,12 +438,16 @@
       "labels": {
         "mode": "standalone"
       },
-      "confidence": 0.98,
       "evidence": [
         "redis_mode|server_mode"
       ],
       "notes": "",
-      "sample_count": 7284
+      "sample_count": 7284,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "conclusive",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.mode.cluster",
@@ -412,12 +464,16 @@
       "labels": {
         "mode": "cluster"
       },
-      "confidence": 0.98,
       "evidence": [
         "redis_mode|server_mode"
       ],
       "notes": "",
-      "sample_count": 31
+      "sample_count": 31,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "conclusive",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.info.full",
@@ -435,14 +491,18 @@
       "labels": {
         "info_scope": "full_or_multi_section"
       },
-      "confidence": 0.95,
       "evidence": [
         "# Server",
         "# Clients",
         "# Memory"
       ],
       "notes": "",
-      "sample_count": 3584
+      "sample_count": 3584,
+      "result_type": "capability",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.info.server-section",
@@ -458,12 +518,16 @@
       "labels": {
         "info_scope": "server_section"
       },
-      "confidence": 0.95,
       "evidence": [
         "# Server"
       ],
       "notes": "",
-      "sample_count": 7209
+      "sample_count": 7209,
+      "result_type": "capability",
+      "match_level": "status_fact",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.deploy.redis-stack",
@@ -480,13 +544,17 @@
       "labels": {
         "distribution": "redis-stack"
       },
-      "confidence": 0.9,
       "evidence": [
         "executable",
         "config_file"
       ],
       "notes": "",
-      "sample_count": 110
+      "sample_count": 110,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.deploy.container-path",
@@ -503,13 +571,17 @@
       "labels": {
         "deployment_hint": "container-like"
       },
-      "confidence": 0.8,
       "evidence": [
         "executable",
         "config_file"
       ],
       "notes": "",
-      "sample_count": 2438
+      "sample_count": 2438,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.deploy.linux-package",
@@ -526,13 +598,17 @@
       "labels": {
         "deployment_hint": "linux-package"
       },
-      "confidence": 0.82,
       "evidence": [
         "executable",
         "config_file"
       ],
       "notes": "",
-      "sample_count": 4133
+      "sample_count": 4133,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.deploy.usr-local",
@@ -548,12 +624,16 @@
       "labels": {
         "deployment_hint": "custom-usr-local"
       },
-      "confidence": 0.78,
       "evidence": [
         "executable"
       ],
       "notes": "",
-      "sample_count": 20
+      "sample_count": 20,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.runtime.linux",
@@ -575,12 +655,16 @@
       "labels": {
         "os_family": "Linux"
       },
-      "confidence": 0.95,
       "evidence": [
         "os"
       ],
       "notes": "",
-      "sample_count": 7125
+      "sample_count": 7125,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.runtime.epoll",
@@ -596,12 +680,16 @@
       "labels": {
         "multiplexing_api": "epoll"
       },
-      "confidence": 0.9,
       "evidence": [
         "multiplexing_api"
       ],
       "notes": "",
-      "sample_count": 7130
+      "sample_count": 7130,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.supervised.systemd",
@@ -617,12 +705,16 @@
       "labels": {
         "process_supervised": "systemd"
       },
-      "confidence": 0.9,
       "evidence": [
         "process_supervised"
       ],
       "notes": "",
-      "sample_count": 376
+      "sample_count": 376,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "redis.metadata.availability-zone",
@@ -644,12 +736,16 @@
       "labels": {
         "metadata": "availability_zone"
       },
-      "confidence": 0.85,
       "evidence": [
         "availability_zone"
       ],
       "notes": "",
-      "sample_count": 81
+      "sample_count": 81,
+      "result_type": "provider",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     }
   ]
 }

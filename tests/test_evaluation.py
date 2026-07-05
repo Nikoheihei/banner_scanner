@@ -45,7 +45,7 @@ def test_normalize_prediction_aliases():
     assert normalize_label("REDIS", "Redis 7.2.4") == "Redis"
 
 
-def test_compute_metrics_counts_unreachable_as_e2e_failure():
+def test_compute_metrics_excludes_unreachable_from_recall():
     records = [
         {"protocol": "MYSQL", "software_true": "MariaDB",
          "software_pred": "MariaDB", "correct": True,
@@ -62,7 +62,9 @@ def test_compute_metrics_counts_unreachable_as_e2e_failure():
     ]
     metrics = compute_metrics(records)
     mariadb = metrics["protocols"]["MYSQL"]["software"]["MariaDB"]
-    assert mariadb["accuracy_e2e"] == 0.5
-    assert mariadb["accuracy_valid"] == 1.0
+    assert mariadb["connection_rate"] == 0.5
     assert mariadb["precision"] == 0.5
-    assert mariadb["recall"] == 0.5
+    assert mariadb["recall"] == 1.0
+    assert metrics["connection_rate"] == 0.666667
+    assert "post_reach_accuracy" not in metrics
+    assert "accuracy_e2e" not in mariadb

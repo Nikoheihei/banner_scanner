@@ -120,6 +120,21 @@ def parse_ssh_banner(banner: str) -> SshBanner:
 
     # --- 软件名和版本 ---
     software, version = _parse_ssh_software_version(sw_id)
+    bitvise = re.search(
+        r"(?:Bitvise\s+SSH\s+Server(?:\s+\(WinSSHD\))?|WinSSHD)"
+        r"(?:\s+([0-9][0-9A-Za-z.]*))?",
+        rest,
+        re.IGNORECASE,
+    )
+    if bitvise:
+        software = "Bitvise SSH Server"
+        version = bitvise.group(1) or (
+            sw_id if re.fullmatch(r"[0-9]+(?:\.[0-9]+)+", sw_id) else ""
+        )
+    if not version and software in {"wodFTPD", "WeOnlyDo", "Wing FTP"}:
+        comment_version = re.match(r"([0-9]+(?:\.[0-9A-Za-z]+)+)", info.comments)
+        if comment_version:
+            version = comment_version.group(1)
     info.software = software
     info.version = version
 
@@ -139,6 +154,8 @@ def _parse_ssh_software_version(sw_id: str) -> Tuple[str, str]:
           Cisco-1.25    -> ('Cisco', '1.25')
     """
     lowered = sw_id.lower()
+    if lowered == "weonlydo-wodftpd":
+        return "wodFTPD", ""
     for prefix in ("mod_sftp/", "paramiko", "mocanassh", "mocanassh/"):
         if lowered.startswith(prefix):
             raw_soft = prefix.rstrip("/")

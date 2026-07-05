@@ -5,6 +5,7 @@ import logging
 from typing import Optional
 
 from ..core.models import BannerResult, ProbeConfig, get_effective_timeout
+from ..core.evidence import captured_response_sha256
 from ..core.parsers import parse_telnet_banner, extract_banner_info
 import banner_scanner.core.transport as _transport
 
@@ -93,6 +94,7 @@ async def probe_telnet(
         result.info = extract_banner_info(result)
         # 保留原始 hex + IAC 签名用于指纹匹配
         result.banner_raw_hex = raw[:128].hex() if raw else ""
+        result.response_sha256 = captured_response_sha256(raw)
         result.info["iac_signature"] = iac_sig
         result.info["micro_features"] = micro
         # TCP 层元数据 + 长度填充指纹

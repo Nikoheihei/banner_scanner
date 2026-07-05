@@ -1,9 +1,11 @@
 """MCP output exposes parsed evidence without per-rule match details."""
 
+from banner_scanner.core.identification import finalize_identification
 from banner_scanner.core.models import (
     BannerResult,
     FingerprintMatch,
     FtpFeatures,
+    RedisInfo,
     SshBanner,
     TelnetBanner,
 )
@@ -29,6 +31,11 @@ def _matches() -> list[FingerprintMatch]:
             category="implementation",
             labels={"implementation": "OpenSSH"},
             extracted={"version": "8.9"},
+            result_type="software",
+            match_level="software_version",
+            evidence_strength="conclusive",
+            primary_eligible=True,
+            explanation="Explicit OpenSSH version marker.",
         ),
         FingerprintMatch(
             vendor_id=490,
@@ -37,6 +44,10 @@ def _matches() -> list[FingerprintMatch]:
             confidence=0.55,
             source="banner",
             category="fallback",
+            result_type="protocol_identity",
+            match_level="protocol_only",
+            evidence_strength="weak",
+            primary_eligible=False,
         ),
     ]
 
@@ -64,16 +75,17 @@ def test_ssh_mcp_output_contains_parsed_information_without_matched_rules():
         matched_rules=_matches(),
     )
 
+    finalize_identification(result)
     payload, _ = _serialize_with_both(result)
 
-    assert payload["ssh"]["version_string"] == result.ssh.version_string
-    assert payload["ssh"]["os_distro"] == "Ubuntu-3ubuntu0.10"
-    assert payload["ssh"]["comments"] == "Ubuntu-3ubuntu0.10"
+    assert payload["observations"]["ssh"]["version_string"] == result.ssh.version_string
+    assert payload["observations"]["ssh"]["os_distro"] == "Ubuntu-3ubuntu0.10"
+    assert payload["observations"]["ssh"]["comments"] == "Ubuntu-3ubuntu0.10"
+    assert payload["primary_identification"]["name"] == "OpenSSH"
+    assert payload["primary_identification"]["evidence_strength"] == "conclusive"
     assert "matched_rules" not in payload
-    assert payload["matches_by_category"] == {
-        "implementation": ["OpenSSH"],
-        "fallback": ["SSH-Generic"],
-    }
+    assert "matched_rule_ids" not in str(payload)
+    assert payload["findings"]["protocol_identity"][0]["name"] == "SSH-Generic"
 
 
 def test_ftp_mcp_output_contains_all_feature_flags_and_full_banner():
@@ -98,14 +110,13 @@ def test_ftp_mcp_output_contains_all_feature_flags_and_full_banner():
             version="1.7.3",
             full_banner="220 FileZilla Server 1.7.3\r\n211-Features...",
         ),
-        matched_rules=_matches(),
     )
 
     payload, _ = _serialize_with_both(result)
 
     for field in ("auth_ssl", "size_cmd", "mdtm", "mldst", "tvfs", "xcrc", "xcup"):
-        assert payload["ftp"][field] is True
-    assert payload["ftp"]["full_banner"].startswith("220 FileZilla")
+        assert payload["observations"]["ftp"][field] is True
+    assert payload["observations"]["ftp"]["full_banner"].startswith("220 FileZilla")
     assert "matched_rules" not in payload
 
 
@@ -125,15 +136,14 @@ def test_telnet_mcp_output_contains_text_raw_bytes_and_all_matches():
             extracted_text="User Access Verification\nUsername:",
             detected_service="Cisco IOS telnetd",
         ),
-        matched_rules=_matches(),
     )
 
     payload, _ = _serialize_with_both(result)
 
-    assert payload["banner_raw_hex"] == "fffb01fffb03"
-    assert payload["telnet"]["banner_raw_hex"] == "fffb01fffb03"
-    assert payload["telnet"]["extracted_text"].endswith("Username:")
-    assert payload["telnet"]["has_iac"] is True
+    assert payload["observations"]["raw_hex_preview"] == "fffb01fffb03"
+    assert payload["observations"]["telnet"]["banner_raw_hex"] == "fffb01fffb03"
+    assert payload["observations"]["telnet"]["extracted_text"].endswith("Username:")
+    assert payload["observations"]["telnet"]["has_iac_negotiation"] is True
     assert "matched_rules" not in payload
 
 
@@ -148,3 +158,32 @@ def test_no_protocol_returns_matched_rules():
         )
         payload, _ = _serialize_with_both(result)
         assert "matched_rules" not in payload
+        serialized = str(payload)
+        assert "matched_rule_ids" not in serialized
+        assert "pattern" not in serialized
+
+
+def test_summary_output_omits_large_protocol_payloads():
+    result = BannerResult(
+        protocol="REDIS",
+        host="192.0.2.41",
+        port=6379,
+        accessible=True,
+        redis=RedisInfo(
+            implementation="Redis",
+            version="7.2.4",
+            mode="standalone",
+            os="Linux",
+            info_response="x" * 10000,
+            fields={"large": "y" * 10000},
+        ),
+    )
+
+    payload = stdio_banner_to_dict(result, detail_level="summary")
+    redis = payload["observations"]["redis"]
+    assert redis == {
+        "implementation": "Redis",
+        "version": "7.2.4",
+        "mode": "standalone",
+        "os": "Linux",
+    }

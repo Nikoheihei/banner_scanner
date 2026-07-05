@@ -9,9 +9,10 @@ from banner_scanner.core.matcher import (
     FingerprintMatcher,
 )
 from banner_scanner.core.models import BannerResult
+from banner_scanner.core.models import EVIDENCE_STRENGTHS, RESULT_TYPES
 
 
-EXPECTED_RULE_COUNTS = {"SSH": 55, "FTP": 52, "TELNET": 102}
+EXPECTED_RULE_COUNTS = {"SSH": 56, "FTP": 53, "TELNET": 103}
 
 
 def _load_library(protocol: str) -> dict:
@@ -33,6 +34,16 @@ def test_protocol_library_ids_are_globally_unique():
     for protocol in EXPECTED_RULE_COUNTS:
         ids.extend(rule["id"] for rule in _load_library(protocol)["vendors"])
     assert len(ids) == len(set(ids))
+
+
+def test_text_v2_rules_do_not_contain_legacy_ranking_fields():
+    for protocol in EXPECTED_RULE_COUNTS:
+        for rule in _load_library(protocol)["vendors"]:
+            assert "priority" not in rule
+            assert "confidence" not in rule
+            assert "category" not in rule
+            assert rule["result_type"] in RESULT_TYPES
+            assert rule["evidence_strength"] in EVIDENCE_STRENGTHS
 
 
 def test_directory_loader_reports_protocol_counts():

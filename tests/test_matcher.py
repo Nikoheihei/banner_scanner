@@ -10,7 +10,7 @@ from banner_scanner.core.matcher import (
     FingerprintLoader, FingerprintMatcher, FingerprintRule,
     normalize_banner, extract_banner_key, match_banner,
 )
-from banner_scanner.core.models import BannerResult, FingerprintMatch
+from banner_scanner.core.models import BannerResult, FingerprintMatch, SshBanner
 
 
 # ==================== 指纹加载 ====================
@@ -60,6 +60,19 @@ def test_loader_unsupported_format():
         assert "Unsupported" in str(e)
 
 
+def test_duplicate_rule_ids_fail_during_loading():
+    try:
+        FingerprintMatcher.load_from_dict({
+            "vendors": [
+                {"id": "duplicate", "name": "A", "pattern": "A"},
+                {"id": "duplicate", "name": "B", "pattern": "B"},
+            ],
+        })
+        assert False, "Expected duplicate rule validation failure"
+    except ValueError as exc:
+        assert "Duplicate" in str(exc)
+
+
 # ==================== 正则匹配 ====================
 
 def test_rule_match():
@@ -87,8 +100,34 @@ def test_matcher_match_ssh():
 
     assert result.vendor == "OpenSSH"
     assert result.vendor_id == 401
-    assert result.vendor_confidence == 1.0
+    assert result.vendor_confidence == 0.85
     assert len(result.matched_rules) >= 1
+
+
+def test_ssh_matcher_uses_banner_and_normalized_software_only():
+    matcher = FingerprintMatcher.load_from_dict({
+        "protocol": "SSH",
+        "vendors": [
+            {"id": 401, "name": "OpenSSH", "pattern": ".*OpenSSH.*"},
+            {"id": 402, "name": "Bitvise", "pattern": ".*Bitvise.*"},
+        ],
+    })
+    result = BannerResult(
+        protocol="SSH",
+        host="10.0.0.2",
+        port=22,
+        accessible=True,
+        banner="SSH-2.0-winsshd_8.0",
+        ssh=SshBanner(
+            version_string="SSH-2.0-OpenSSH_9.0",
+            software="Bitvise",
+        ),
+    )
+
+    matcher.match(result)
+
+    assert result.vendor == "Bitvise"
+    assert [match.source for match in result.matched_rules] == ["ssh.software"]
 
 
 def test_matcher_match_ftp():
@@ -147,11 +186,11 @@ def test_matcher_not_accessible():
 
 
 def test_matcher_multiple_matches():
-    """多个规则匹配时去重"""
+    """同一规则在多个候选字段命中时去重"""
     fingerprints = {
+        "protocol": "SSH",
         "vendors": [
             {"id": 401, "name": "OpenSSH", "pattern": ".*OpenSSH.*"},
-            {"id": 401, "name": "OpenSSH", "pattern": ".*ssh.*"},  # 同 ID 重复
             {"id": 402, "name": "Dropbear", "pattern": ".*dropbear.*"},
         ]
     }
@@ -160,6 +199,7 @@ def test_matcher_multiple_matches():
     result = BannerResult(
         protocol="SSH", host="10.0.0.1", port=22,
         accessible=True, banner="SSH-2.0-OpenSSH_8.9p1",
+        ssh=SshBanner(software="OpenSSH"),
     )
     result = matcher.match(result)
 
@@ -185,6 +225,78 @@ def test_unknown_fallback_is_not_promoted_to_vendor():
     matcher.match(result)
     assert result.vendor == ""
     assert len(result.matched_rules) == 1
+
+
+def test_equal_software_evidence_is_reported_as_conflict():
+    matcher = FingerprintMatcher.load_from_dict({
+        "protocol": "SSH",
+        "vendors": [
+            {
+                "id": "ssh.impl.openssh",
+                "name": "OpenSSH",
+                "pattern": "OpenSSH",
+                "result_type": "software",
+                "match_level": "software_name",
+                "evidence_strength": "strong",
+                "primary_eligible": True,
+            },
+            {
+                "id": "ssh.impl.dropbear",
+                "name": "Dropbear",
+                "pattern": "Dropbear",
+                "result_type": "software",
+                "match_level": "software_name",
+                "evidence_strength": "strong",
+                "primary_eligible": True,
+            },
+        ],
+    })
+    result = BannerResult(
+        protocol="SSH", host="192.0.2.50", port=22, accessible=True,
+        banner="SSH-2.0-OpenSSH_8.9 Dropbear compatibility",
+    )
+    matcher.match(result)
+
+    assert result.identification_status == "conflict"
+    assert result.primary_identification is None
+    assert {candidate.name for candidate in result.identification_candidates} == {
+        "OpenSSH", "Dropbear",
+    }
+    assert result.vendor == ""
+
+
+def test_match_level_ranks_only_software_candidates():
+    matcher = FingerprintMatcher.load_from_dict({
+        "protocol": "SSH",
+        "vendors": [
+            {
+                "id": "ssh.family.cisco",
+                "name": "Cisco",
+                "pattern": "Cisco",
+                "result_type": "device_family",
+                "match_level": "exact_model",
+                "evidence_strength": "conclusive",
+                "primary_eligible": False,
+            },
+            {
+                "id": "ssh.impl.openssh",
+                "name": "OpenSSH",
+                "pattern": "OpenSSH",
+                "result_type": "software",
+                "match_level": "software_name",
+                "evidence_strength": "strong",
+                "primary_eligible": True,
+            },
+        ],
+    })
+    result = BannerResult(
+        protocol="SSH", host="192.0.2.51", port=22, accessible=True,
+        banner="Cisco appliance SSH-2.0-OpenSSH_8.9",
+    )
+    matcher.match(result)
+
+    assert result.vendor == "OpenSSH"
+    assert result.findings["device_family"][0]["name"] == "Cisco"
 
 
 # ==================== Banner 标准化 ====================

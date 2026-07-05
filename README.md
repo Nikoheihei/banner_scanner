@@ -1,587 +1,283 @@
-# Banner Scanner - Network Protocol Fingerprint Scanner
+# Banner Scanner MCP
 
-> Probe SSH, FTP, Telnet, Redis, MySQL, and PostgreSQL endpoints, extract structured protocol fields, and classify implementations with 209 protocol-scoped banner rules plus 59 database fingerprint rules.
-> The project rewrites the core ideas from [protocol_scanner](https://github.com/Open-Coder-oss/protocol_scanner) in Python asyncio with zero third-party runtime dependencies.
+面向已授权目标的六协议主动 Banner 探测与指纹识别服务。项目以 MCP 为主要入口，支持 SSH、FTP、Telnet、Redis、MySQL 和 PostgreSQL，并保留 CLI 作为本地调试入口。
 
----
+## 安装
 
-## Quick Start
-
-```bash
-# Single-IP probing with fingerprint matching
-python3 -m banner_scanner 192.168.1.1
-
-# Probe database protocols only and return structured JSON
-python3 -m banner_scanner 192.168.1.1 -p redis,mysql,pgsql --json
-
-# High-concurrency random batch scan
-python3 batch_scanner.py -c 300 --random --limit 10000 --protocol SSH --output result.txt
-
-# Build a fingerprint database from SQLite
-python3 build_fingerprints.py --db fingerprint.db --output-dir fingerprints/protocols
-```
-
-## Protocol Probing Flow
-
-### SSH
-
-```
-TCP connection (port 22)
-    |
-    `-> async_read_some -> read the first line
-            |
-            +- Extract software: OpenSSH, Dropbear, Cisco, AWS_SFTP ...
-            +- Extract version: 8.9p1, 7.6p1 ...
-            +- Extract OS: Ubuntu, Debian, FreeBSD, Windows ...
-            `- Fingerprint match -> vendor
-```
-
-| Metric | Value | Notes |
-|--------|-------|-------|
-| Banner acquisition rate | 99.1% | SSH servers usually send the version line immediately after TCP handshake |
-| Fingerprint hit rate | **97.1%** | Text banners naturally include vendor/software identifiers |
-| Timeout | connect=3s, read=4s | |
-
-### FTP
-
-```
-TCP connection (port 21/990)
-    |
-    +- Stage 1: read welcome banner, such as "220 ProFTPD 1.3.5 Server"
-    |       `-> Extract software and version
-    |
-    +- Stage 2: send HELP/SYST if the banner is empty
-    |
-    `- Stage 3: send FEAT\r\n and recursively read until the "211 " terminator
-            `-> Parse UTF8, AUTH TLS, MLSD, SIZE, MDTM, and other features
-```
-
-| Metric | Value | Notes |
-|--------|-------|-------|
-| Banner acquisition rate | 99.4% | |
-| Fingerprint hit rate | **94.9%** | Text banner plus recursive FEAT reads |
-| Timeout | connect=3s, read=4s | Uses TCP_NODELAY, following the C++ reference behavior |
-| Upper-bound reason | The remaining 5.1% are generic greetings such as `220 Welcome.` without vendor signals | |
-
-### Telnet
-
-Telnet is the hardest of the three protocols to fingerprint because many servers expose only a `login:` prompt instead of a software name. This project uses six probing and matching layers plus 205 rules to reach an 87.5% effective hit rate:
-
-```
-TCP connection (port 23)
-    |
-    +- Stage 1: passive receive
-    +- Stage 2: IAC negotiation, replying WONT/DONT to trigger more data
-    +- Stage 3: send \r\n to refresh bare login prompts
-    +- Stage 4: second probe; if only login: appears, send admin\r\n to trigger password prompts
-    `- Fingerprint matching: six rule layers
-            +- Layer 1: IAC bytes in hex
-            +- Layer 2: normalized IAC signatures
-            +- Layer 3: text device names
-            +- Layer 4: micro-features such as whitespace, line endings, and ANSI sequences
-            +- Layer 5: fallback families such as "Embedded/Gateway"
-            `- Layer 6: service status such as connection refused
-```
-
-| Metric | Value | Notes |
-|--------|-------|-------|
-| Banner acquisition rate | 91% | |
-| Device identification | 84.6% | Specific vendor/model classes |
-| Fallback family | 2.9% | Generic but useful device families |
-| Service status | 9.4% | Classified separately and not treated as failed device identification |
-| Effective hit rate | **87.5%** | Device plus fallback family |
-| Total classification rate | **96.9%** | Every IP receives a clear output category |
-| Timeout | connect=5s, read=8s | Telnet responses are usually slower |
-
-### Redis / MySQL / PostgreSQL
-
-| Protocol | Active probe | Structured fingerprint output | Safety boundary |
-|----------|--------------|-------------------------------|-----------------|
-| Redis | RESP `PING`, then `INFO server` | implementation, version, mode, OS and stable INFO fields | Does not authenticate or change data |
-| MySQL | Read the protocol-v10 initial server handshake | implementation, version, capabilities, charset and auth plugin | Sends no login packet and executes no SQL |
-| PostgreSQL | Send `SSLRequest`; on `N`, send a minimal protocol-v3 `StartupMessage` | SSL behavior, SQLSTATE/error fields, auth method, ParameterStatus and implementation hints | Sends no password and executes no SQL; stops after `S` instead of negotiating TLS |
-
-The structured libraries under `fingerprints/databases/` are loaded automatically. Historical validation of those libraries used independent holdouts and authorized online reprobes:
-
-| Library | Corpus / holdout | Main validation result |
-|---------|------------------|------------------------|
-| Redis | 7,338 records; random 10% online IP sample | 100% protocol match among responses; 96.64% implementation/version extraction |
-| MySQL | 422,199 records; 42,220-record holdout | 100% protocol/version extraction on holdout; 100% on 482 online responses |
-| PostgreSQL | 2,053 records; 205-record holdout | 100% protocol match; 88.78% SQLSTATE extraction on holdout |
-
-PostgreSQL SQLSTATE is present only in `ErrorResponse`. SSL-only and authentication responses can be valid PGSQL fingerprints without containing SQLSTATE.
-
-## Testing
+项目固定使用 MCP Python SDK `1.28.1`，避免传输行为随依赖升级变化。
 
 ```bash
-python3 tests/test_parsers.py
-python3 tests/test_matcher.py
-python3 tests/test_database_matcher.py
-python3 tests/test_probes.py
+python3 -m pip install -e .
 ```
 
-### Batch Scan Tests
+需要 Python 3.10 或更高版本。依赖声明位于 `pyproject.toml`。
+
+## 启动 MCP
+
+### stdio
 
 ```bash
-# 100k random SSH targets
-python3 batch_scanner.py -c 300 --random --limit 100000 --protocol SSH --timeout 3.0 --output ssh_output.txt
-
-# 100k random FTP targets
-python3 batch_scanner.py -c 300 --random --limit 100000 --protocol FTP --timeout 3.0 --output ftp_output.txt
-
-# 50k random Telnet targets
-python3 batch_scanner.py -c 200 --random --limit 50000 --protocol TELNET --timeout 5.0 --output telnet_output.txt
+banner-scanner-mcp
 ```
 
-### Success-Rate Analysis
+### Streamable HTTP
 
 ```bash
-python3 -c "
-import json
-with open('telnet_final.txt') as f:
-    rows = [json.loads(l) for l in f if l.strip()]
-has_b = [r for r in rows if r['accessible']==1 and (r['banner'].strip() or r.get('banner_raw_hex',''))]
-device = sum(1 for r in has_b if r.get('fingerprint_vendor','') and not r['fingerprint_vendor'].startswith('[Status]'))
-total = sum(1 for r in has_b if r.get('fingerprint_vendor','') or r['fingerprint_vendor'].startswith('[Status]') or r.get('fingerprint_vendor',''))
-print(f'Device identification: {device}/{len(has_b)} ({device/len(has_b)*100:.1f}%)')
-print(f'Total classification: {total}/{len(has_b)} ({total/len(has_b)*100:.1f}%)')
-"
+banner-scanner-mcp-http --host 127.0.0.1 --port 8877
 ```
 
-## Fingerprint Library
+默认 MCP 地址为 `http://127.0.0.1:8877/mcp`，可直接使用仓库中的 `mcp.json`。
 
-Build a JSON fingerprint library from a SQLite database:
+### SSE 兼容入口
 
 ```bash
-python3 build_fingerprints.py --db fingerprint.db --output-dir fingerprints/protocols
+banner-scanner-mcp-http --transport sse --host 127.0.0.1 --port 8877
 ```
 
-Each output file contains rules for exactly one protocol. Example format:
+SSE 地址为 `/sse`，仅用于 legacy compatibility 和教学验收；新的客户端应优先使用 Streamable HTTP。三种传输共用同一套参数校验、探测、匹配和输出代码。
+
+## MCP 工具
+
+三个工具是并列关系：
+
+| 工具 | 用途 | 主要限制 |
+|---|---|---|
+| `probe_banner` | 少量目标、多协议探测，默认返回证据详情 | 最多 20 个目标；默认并发 5，上限 20 |
+| `scan_batch` | 较多目标、单协议筛查，默认返回摘要 | 最多 100 个目标；默认并发 20，上限 50 |
+| `health_check` | 查看服务状态、六协议规则数、传输和运行上限 | 不建立外部连接 |
+
+`probe_banner` 的 `protocols` 可省略。省略时依次探测六种协议，因此只传 IP 或域名即可；指定 `protocols` 可以减少无关连接。`scan_batch` 必须传一个 `protocol`。
+
+### `probe_banner`
 
 ```json
 {
+  "hosts": ["192.0.2.10"],
+  "protocols": ["ssh", "redis"],
+  "retries": 2,
+  "concurrency": 5,
+  "detail_level": "evidence",
+  "authorization_confirmed": true
+}
+```
+
+### `scan_batch`
+
+```json
+{
+  "hosts": ["192.0.2.10", "192.0.2.11"],
+  "protocol": "mysql",
+  "retries": 1,
+  "concurrency": 20,
+  "detail_level": "summary",
+  "authorization_confirmed": true
+}
+```
+
+`authorization_confirmed` 只记录调用者已确认授权范围，不是唯一安全机制。目标范围和运行上限仍由服务端强制执行。
+
+## 结果解释
+
+单个探测结果的主要结构如下：
+
+```json
+{
+  "network_status": "connected",
+  "protocol_status": "confirmed",
+  "identification_status": "identified",
+  "endpoint": {"host": "192.0.2.10", "port": 22, "protocol": "SSH"},
+  "primary_identification": {
+    "result_type": "software",
+    "name": "OpenSSH",
+    "version": "8.9p1",
+    "evidence_strength": "conclusive",
+    "explanation": "Matched software name evidence for OpenSSH."
+  },
+  "observations": {},
+  "findings": {}
+}
+```
+
+- `network_status` 表示连接结果，包括 `connected`、`timeout`、`refused`、`dns_error`、`cancelled` 和 `unreachable`。
+- `protocol_status` 表示响应是否符合预期协议。端口返回其他明确协议时为 `mismatch`，并同时返回 `expected_protocol` 和 `observed_protocol`。
+- `identification_status` 为 `identified`、`unidentified` 或 `conflict`。
+- `primary_identification` 是便于调用方直接读取的具体软件结论。
+- `findings` 并列保留软件家族、设备族、提供商、认证、能力、部署方式、服务状态和协议身份等其他事实，不会覆盖主要软件结论。
+- `observations` 是协议解析得到的事实字段。`evidence` 模式还包含截断后的 Banner、原始字节预览和探测步骤；`summary` 模式只保留关键字段。
+
+`evidence_strength` 的顺序为 `conclusive > strong > moderate > weak`。它是规则预设的证据强弱，用于同一结果类型内排序，不代表统计准确率或运行时概率。
+
+父产品和具体软件不是冲突。例如 FileZilla Pro Enterprise 可以作为主要软件，同时在 `findings.software_family` 中保留 FileZilla。只有同一层级出现互斥软件证据，例如同时指向 OpenSSH 和 Dropbear，才返回：
+
+```json
+{
+  "identification_status": "conflict",
+  "primary_identification": null,
+  "candidates": [
+    {"result_type": "software", "name": "OpenSSH", "evidence_strength": "strong"},
+    {"result_type": "software", "name": "Dropbear", "evidence_strength": "strong"}
+  ]
+}
+```
+
+MCP 输出不暴露规则编号、正则表达式、`matched_rules` 或全部内部候选。内部离线识别入口仅用于规则回归和冲突审查，不注册为 MCP 工具。
+
+## 探测与识别流程
+
+```text
+MCP request
+  -> authorization and target policy
+  -> runtime limits and global concurrency budget
+  -> protocol-specific active probe
+  -> protocol parser
+  -> protocol mismatch detection
+  -> isolated fingerprint library
+  -> primary identification + parallel findings
+  -> shared MCP serializer
+```
+
+| 协议 | 主动交互 | 识别输入 | 不执行的操作 |
+|---|---|---|---|
+| SSH | 读取 SSH identification line | 版本行、解析的软件名、首包特征 | 不认证、不执行命令 |
+| FTP | 读取欢迎语，必要时请求 `HELP/SYST/FEAT` | 欢迎语、功能列表、解析字段 | 不登录、不上传下载 |
+| Telnet | 被动读取并处理 IAC 协商 | 文本、IAC、提示符和微特征 | 不提交口令 |
+| Redis | `PING`，随后读取 `INFO server` | RESP 文本和 INFO 字段 | 不认证、不修改数据 |
+| MySQL | 读取 protocol-v10 初始握手 | 版本、能力位、字符集、认证插件 | 不发送登录包、不执行 SQL |
+| PostgreSQL | `SSLRequest`，必要时发送最小 StartupMessage | SSL 行为、认证消息、错误字段和参数 | 不发送密码、不执行 SQL；收到 `S` 后不继续 TLS 握手 |
+
+## 指纹库
+
+六种协议严格使用独立文件：
+
+| 协议 | 文件 | 规则数 |
+|---|---|---:|
+| SSH | `fingerprints/protocols/ssh_fingerprints.json` | 56 |
+| FTP | `fingerprints/protocols/ftp_fingerprints.json` | 53 |
+| Telnet | `fingerprints/protocols/telnet_fingerprints.json` | 103 |
+| Redis | `fingerprints/databases/redis_fingerprints.json` | 24 |
+| MySQL | `fingerprints/databases/mysql_fingerprints.json` | 14 |
+| PostgreSQL | `fingerprints/databases/pgsql_fingerprints.json` | 21 |
+
+文本协议规则直接对协议限定的 Banner 和解析文本执行正则匹配。规则可以附带静态标签和正则分组提取：
+
+```json
+{
+  "id": "ssh.software.bitvise-ssh-server",
+  "name": "Bitvise SSH Server",
   "protocol": "SSH",
-  "rule_count": 55,
-  "vendors": [
-    {"id": 1, "name": "OpenSSH", "protocol": "SSH", "pattern": ".*OpenSSH.*", "count": 1923}
-  ]
+  "pattern": "^SSH\\-[12]\\.[0-9]+\\-(?:[0-9.]+\\s+)?(?:(?P<component>FlowSsh|sshlib):\\s*)?(?:Bitvise\\s+SSH\\s+Server|WinSSHD)\\b[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+  "result_type": "software",
+  "match_level": "software_name",
+  "evidence_strength": "strong",
+  "primary_eligible": true,
+  "tie_breaker": 0,
+  "labels": {"aliases": ["WinSSHD"], "provider": "Bitvise"},
+  "extract": [{"field": "component", "group": "component"}]
 }
 ```
 
-## Retry Strategy
-
-All probes include exponential-backoff retries:
-
-```
-connection timeout / read timeout -> wait base_delay * 2^attempt -> retry
-maximum retries: 2 by default
-```
-
-## TCP-Level Optimizations
-
-- `TCP_NODELAY`: disables Nagle's algorithm to reduce small-packet latency.
-- MSS/SNDBUF/RCVBUF metadata collection: used for cross-layer fingerprinting.
-
-## CLI Options
-
-```bash
-python3 -m banner_scanner [hosts...] [options]
-
-  hosts               Target IP addresses
-  -p, --protocols     Protocol list (default: ssh,ftp,telnet,redis,mysql,pgsql)
-  -t, --timeout       Connection timeout in seconds (default: 3.0)
-  --read-timeout      Read timeout in seconds (default: 4.0)
-  --retries           Maximum retries (default: 2)
-  --json              Output JSON
-  --no-feat           Do not send FTP FEAT
-  --health            Print engine health
-  --fingerprint       Fingerprint library path
-  --database-fingerprints  Structured Redis/MySQL/PGSQL library directory
-  --verbose, -v       DEBUG logging
-```
-
-## MCP Service
-
-The scanner can be exposed as an MCP service so AI clients such as Cherry Studio or Claude Desktop can call the scanning tools directly.
-
-### Start the Service
-
-```bash
-cd banner_scanner
-PYTHONPATH="$(dirname $(pwd)):$PYTHONPATH" python3 -m server.mcp_http_server
-```
-
-The service listens on `http://127.0.0.1:8877` by default. Change it with `MCP_PORT`.
-
-### Client Configuration
-
-Import `mcp.json` into an MCP client:
+Redis、MySQL 和 PostgreSQL 规则组合 Banner 与协议字段。`all`、`any` 和 `none` 可以递归嵌套；嵌套只表达布尔逻辑，不改变证据强度。
 
 ```json
 {
-  "mcpServers": {
-    "banner-scanner": {
-      "type": "streamableHttp",
-      "url": "http://127.0.0.1:8877"
-    }
-  }
+  "id": "mysql.impl.mariadb",
+  "name": "MariaDB",
+  "description": "Identifies MariaDB by version marker.",
+  "match": {"field_regex": {"mysql.version": "MariaDB"}},
+  "extract": [{"field": "version", "source": "mysql.version"}],
+  "labels": {"implementation": "MariaDB"},
+  "result_type": "software",
+  "match_level": "software_name",
+  "evidence_strength": "conclusive",
+  "primary_eligible": true,
+  "tie_breaker": 0
 }
 ```
 
-### Available Tools
+`tie_breaker` 只在结果类型、匹配层级和证据强度都相同时处理确有必要的例外，不作为主要优先级。数据库规则不再使用容易被误解为概率的 `confidence` 字段。
 
-| Tool | Description |
-|------|-------------|
-| `health_check` | Engine health and fingerprint-library status |
-| `probe_banner` | Probe SSH / FTP / Telnet / Redis / MySQL / PGSQL and match fingerprints |
-| `scan_batch` | Scan multiple IP addresses |
+从原始 SQLite 模板重建三个文本库：
 
-### Supported Transports
-
-| Transport | Endpoint | Description |
-|-----------|----------|-------------|
-| POST `/message` | JSON-RPC 2.0 | Tool calls |
-| GET `/sse` | Server-Sent Events | Session setup |
-
-Some models may respond with text instead of invoking MCP tools. That is a client/model tool-calling limitation, not a server-side issue. Function-calling-capable models are recommended.
-
-## Project Structure
-
+```bash
+python3 build_fingerprints.py \
+  --db /path/to/fingerprint.db \
+  --output-dir fingerprints/protocols
 ```
+
+## 安全配置
+
+默认只监听本机。可通过环境变量设置服务端策略：
+
+| 变量 | 含义 |
+|---|---|
+| `BANNER_SCANNER_ALLOWLIST` | 允许的 IP/CIDR，逗号分隔 |
+| `BANNER_SCANNER_DENYLIST` | 禁止的 IP/CIDR，逗号分隔 |
+| `BANNER_SCANNER_ALLOWED_DOMAINS` | 允许的域名后缀 |
+| `BANNER_SCANNER_PRIVATE_NETWORK_POLICY` | `allow`、`deny` 或 `allowlist_only` |
+| `BANNER_SCANNER_AUTH_TOKEN` | HTTP Bearer token |
+| `BANNER_SCANNER_CORS_ORIGINS` | 明确允许的浏览器 Origin，不支持通配符 |
+
+非回环地址监听还必须设置 `BANNER_SCANNER_ALLOW_REMOTE_BIND=1`、Bearer token 和目标 allowlist。服务同时限制请求体、目标数、重试、单请求并发、全局并发、请求频率和总执行时间。
+
+审计日志不默认记录完整 Banner，只记录截断预览和完整已捕获响应的 SHA-256 `banner_hash`。
+
+## 验证
+
+运行不依赖外网的单元测试：
+
+```bash
+python3 -m banner_scanner.tests.run_tests
+```
+
+使用六种协议的原始 Banner 做离线规则回归：
+
+```bash
+python3 -m banner_scanner.evaluation.validate_fingerprint_corpora \
+  --fingerprint-db /path/to/fingerprint.db \
+  --redis /path/to/scan_results.jsonl \
+  --mysql /path/to/mysql_results.jsonl \
+  --pgsql /path/to/pgsql_results.jsonl \
+  --per-class 384 \
+  --output validation.json
+```
+
+当前规则对 13,355 条分层历史样本的构建回归结果为 13,355/13,355，冲突和拒识均为 0。该结果只验证规则覆盖与冲突行为，不是公网主动探测性能。
+
+主动性能测试和 MCP 流程测试必须重新连接目标：
+
+```bash
+python3 -m banner_scanner.evaluation.active_fingerprint_eval \
+  --fingerprint-db /path/to/fingerprint.db \
+  --redis-results /path/to/scan_results.jsonl \
+  --mysql-results /path/to/mysql_results.jsonl \
+  --pgsql-results /path/to/pgsql_results.jsonl \
+  --output-dir evaluation/run \
+  --confirm-authorized
+```
+
+性能统计保留所有类别，不会删除 0% 连接类别。连接率按全部样本计算；Precision、Recall 和 F1 只在已连接样本上计算，因此不可连接目标不会进入 Recall 分母。流程测试通过官方 MCP Streamable HTTP 客户端调用 `scan_batch`，不绕过 MCP 服务。
+
+## 代码结构
+
+```text
 banner_scanner/
-├── core/
-│   ├── engine.py         Probe engine with retry and single-port probing
-│   ├── models.py         Data structures
-│   ├── parsers.py        Text and database wire-protocol parsers
-│   ├── transport.py      TCP/TLS transport plus TCP metadata
-│   ├── matcher.py        Fingerprint loading and longest-match engine
-│   ├── database_matcher.py Structured database fingerprint matcher
-│   └── retry.py          Exponential-backoff retry strategy
-├── probes/
-│   ├── ssh.py            SSH probing
-│   ├── ftp.py            FTP probing
-│   ├── telnet.py         Telnet probing
-│   ├── redis.py          RESP PING + INFO server
-│   ├── mysql.py          Initial handshake parsing
-│   └── pgsql.py          SSLRequest + minimal StartupMessage
-├── fingerprints/protocols/ 55 SSH + 52 FTP + 102 Telnet isolated rules
-├── fingerprints/databases/ 59 validated structured rules
-├── build_fingerprints.py Build fingerprints from SQLite
-├── batch_scanner.py      High-concurrency batch scanner
-├── vendors.json          Legacy combined migration source (not loaded by default)
-└── tests/                Unit tests
+├── core/                     探测编排、解析结果、协议识别和两类匹配器
+├── probes/                   六种协议的主动探测实现
+├── fingerprints/protocols/   SSH、FTP、Telnet 独立文本规则
+├── fingerprints/databases/   Redis、MySQL、PostgreSQL 独立结构化规则
+├── server/                   MCP 工具、策略、审计、序列化和传输入口
+├── evaluation/               原始样本回归与主动性能/流程测试
+├── tests/                    单元和回归测试
+├── build_fingerprints.py     文本指纹库重建工具
+├── migrate_fingerprints_v2.py 规则 v2 迁移工具
+├── mcp.json                  Streamable HTTP 客户端配置示例
+└── pyproject.toml            包信息、SDK 锁定和命令入口
 ```
 
-## License
-
-MIT
-
----
-
-# 中文版
-
-# Banner Scanner — 网络协议指纹探测与识别系统
-
-> 从 IP 地址探测 SSH / FTP / Telnet / Redis / MySQL / PostgreSQL，提取协议结构化字段，并通过 209 条协议隔离 Banner 规则和 59 条数据库指纹规则识别实现与版本。
-> 基于 [protocol_scanner](https://github.com/Open-Coder-oss/protocol_scanner)（C++）核心逻辑，Python asyncio 重写，零第三方依赖。
-
----
-
-## 快速开始
-
-```bash
-# 单 IP 探测 + 指纹识别
-python3 -m banner_scanner 192.168.1.1
-
-# 仅探测数据库协议，输出结构化 JSON
-python3 -m banner_scanner 192.168.1.1 -p redis,mysql,pgsql --json
-
-# 批量随机扫描
-python3 batch_scanner.py -c 300 --random --limit 10000 --protocol SSH --output result.txt
-
-# 从 SQLite 数据库构建指纹库
-python3 build_fingerprints.py --db fingerprint.db --output-dir fingerprints/protocols
-```
-
-## 协议探测流程
-
-### SSH
-
-```
-TCP 连接 (port 22)
-    │
-    └─→ async_read_some → 取第一行
-            │
-            ├─ 提取软件名: OpenSSH, Dropbear, Cisco, AWS_SFTP …
-            ├─ 提取版本号: 8.9p1, 7.6p1 …
-            ├─ 提取 OS: Ubuntu, Debian, FreeBSD, Windows …
-            └─ 指纹匹配 → 输出 vendor
-```
-
-| 指标 | 数值 | 说明 |
-|------|------|------|
-| Banner 获取率 | 99.1% | SSH 服务端在 TCP 握手后立即主动发送版本行 |
-| 指纹命中率 | **97.1%** | 文本 Banner 天然携带厂商标识 |
-| 超时配置 | connect=3s, read=4s | |
-
-### FTP
-
-```
-TCP 连接 (port 21/990)
-    │
-    ├─→ 阶段①: 读取欢迎 Banner (首行), 如 "220 ProFTPD 1.3.5 Server"
-    │       └─→ 提取软件名 + 版本号
-    │
-    ├─→ 阶段②: 若 Banner 为空, 主动发送 HELP/SYST 触发响应
-    │
-    └─→ 阶段③: 发送 FEAT\r\n → 递归逐行读取至 "211 " 结束标记
-            └─→ 解析 UTF8, AUTH TLS, MLSD, SIZE, MDTM 等特性
-```
-
-| 指标 | 数值 | 说明 |
-|------|------|------|
-| Banner 获取率 | 99.4% | |
-| 指纹命中率 | **94.9%** | 文本 Banner + FEAT 递归读取 |
-| 超时配置 | connect=3s, read=4s | TCP_NODELAY 优化（参照 C++ 原版） |
-| 命中上限原因 | 剩余 5.1% 是 `220 Welcome.` 等 **无厂商标识的通用欢迎语** | |
-
-### Telnet
-
-Telnet 是三个协议中**最难指纹识别**的——服务器不发软件名，Banner 常常只是 `login:`。
-我们采用 **6 层探测 + 101 条 Telnet 专用规则** 实现多层指纹识别：
-
-```
-TCP 连接 (port 23)
-    │
-    ├─→ 阶段①: 被动接收 (等服务器主动发数据)
-    ├─→ 阶段②: IAC 协商 (发送 WONT/DONT 响应, 触发更多信息)
-    ├─→ 阶段③: 发送 \r\n (刺激裸 Login 设备重显 Prompt)
-    ├─→ 阶段④: 二次探测 (若只有裸 login:, 输 admin\r\n 触发 Password 提示)
-    │
-    └─→ 指纹匹配: 6 层规则
-            ├─ Layer 1: IAC 字节 hex (fffb01fffb03 → Cisco IOS)
-            ├─ Layer 2: IAC 标准化签名 (WILL(1),WILL(3) → Linux netkit)
-            ├─ Layer 3: 文本设备名 (Ubuntu, Synology, ASUS RT-AC, TANDBERG …)
-            ├─ Layer 4: 微特征 (尾部空格/换行符模式/ANSI 序列)
-            ├─ Layer 5: 兜底族 (login:/password: → "Embedded/Gateway")
-            └─ Layer 6: 服务状态 (Connection refused → "[Status]")
-```
-
-| 指标 | 数值 | 说明 |
-|------|------|------|
-| Banner 获取率 | 91% | |
-| 设备识别 | 84.6% | 具体厂商/型号 |
-| 兜底族 | 2.9% | 极简设备输出通用类别 |
-| 服务状态 | 9.4% | 独立分类（不算失败） |
-| **有效命中率** | **87.5%** | 设备+兜底 |
-| **总分类率** | **96.9%** | 每个 IP 都有明确输出 |
-| 超时配置 | connect=5s, read=8s | Telnet 响应较慢 |
-| 命中上限原因 | 剩余 3.1% 是真信息论不可区分的样本（单例孤立簇 + 无 IAC 无特征纯 login:） | |
-
-### Redis / MySQL / PostgreSQL
-
-| 协议 | 主动探测过程 | 结构化指纹输出 | 操作边界 |
-|------|--------------|----------------|----------|
-| Redis | RESP `PING`，随后执行 `INFO server` | 实现、版本、运行模式、OS、稳定 INFO 字段 | 不认证、不修改数据 |
-| MySQL | 仅读取 protocol-v10 初始服务端握手 | 实现、版本、能力位、字符集、认证插件 | 不发送登录包、不执行 SQL |
-| PostgreSQL | 先发 `SSLRequest`；收到 `N` 后发送最小 protocol-v3 `StartupMessage` | SSL 行为、SQLSTATE/错误字段、认证方式、ParameterStatus、实现线索 | 不发送密码、不执行 SQL；收到 `S` 后停止，不继续 TLS |
-
-`fingerprints/databases/` 下的三套结构化指纹库由引擎自动加载。其历史独立留出集与授权公网重探结果如下：
-
-| 指纹库 | 语料 / 测试集 | 主要验证结果 |
-|--------|---------------|--------------|
-| Redis | 7,338 条记录；每次随机 10% IP 在线复测 | 有响应目标协议匹配 100%；实现/版本提取 96.64% |
-| MySQL | 422,199 条记录；42,220 条留出集 | 留出集协议/版本提取 100%；482 个在线响应均匹配 |
-| PostgreSQL | 2,053 条记录；205 条留出集 | 协议匹配 100%；留出集 SQLSTATE 提取 88.78% |
-
-PostgreSQL 的 SQLSTATE 只存在于 `ErrorResponse`。SSL 响应和认证响应可以形成有效 PGSQL 指纹，但协议本身不携带 SQLSTATE。
-
-### 命中率演进
-
-```
-Telnet 指纹命中率演进:
-  V1 原始 (仅文本):     5.2%
-  V2 +IAC hex:         54%
-  V3 +文本设备指纹:    64.3%
-  V4 +匹配长度优先:    77.1%
-  V5 +IAC签名+微特征:  83.8%
-  V6 +TCP元数据:       82.5%
-  V7 +纯文本补漏:      88%
-  V8 +联合聚类:        89.3%
-  V9 +服务状态分离:    90.7%
-  Final +兜底族:       87.5% 有效命中 / 96.9% 总分类
-```
-
-### 三协议上限分析
-
-| 协议 | 有效命中 | 上限 | 剩余无法识别的原因 |
-|------|---------|------|--------------------|
-| **SSH** | 97.1% | ~98% | `Exceeded MaxStartups`（后台限流，非真实 Banner） |
-| **FTP** | 94.9% | ~95% | `220 Welcome.` 等完全无厂商标识的通用欢迎语 |
-| **Telnet** | 87.5% | ~90% | 已分离 9.4% 服务状态（`Connection refused` 等），剩余 3.1% 是清洗后仍无法归并的单例文本簇 |
-
-## 测试方式
-
-```bash
-python3 tests/test_parsers.py
-python3 tests/test_matcher.py
-python3 tests/test_database_matcher.py
-python3 tests/test_probes.py
-```
-
-### 批量扫描测试
-
-```bash
-# SSH 10 万随机
-python3 batch_scanner.py -c 300 --random --limit 100000 --protocol SSH --timeout 3.0 --output ssh_output.txt
-
-# FTP 10 万随机
-python3 batch_scanner.py -c 300 --random --limit 100000 --protocol FTP --timeout 3.0 --output ftp_output.txt
-
-# Telnet 5 万随机
-python3 batch_scanner.py -c 200 --random --limit 50000 --protocol TELNET --timeout 5.0 --output telnet_output.txt
-```
-
-### 成功率分析
-
-```bash
-python3 -c "
-import json
-with open('telnet_final.txt') as f:
-    rows = [json.loads(l) for l in f if l.strip()]
-has_b = [r for r in rows if r['accessible']==1 and (r['banner'].strip() or r.get('banner_raw_hex',''))]
-device = sum(1 for r in has_b if r.get('fingerprint_vendor','') and not r['fingerprint_vendor'].startswith('[Status]'))
-total = sum(1 for r in has_b if r.get('fingerprint_vendor','') or r['fingerprint_vendor'].startswith('[Status]') or r.get('fingerprint_vendor',''))
-print(f'设备识别: {device}/{len(has_b)} ({device/len(has_b)*100:.1f}%)')
-print(f'总分类:   {total}/{len(has_b)} ({total/len(has_b)*100:.1f}%)')
-"
-```
-
-## 指纹库构建
-
-从 SQLite 数据库（`fingerprint.db`）提取模板，自动识别厂商名，分别生成 SSH、FTP、Telnet JSON 指纹库：
-
-```bash
-python3 build_fingerprints.py --db fingerprint.db --output-dir fingerprints/protocols
-```
-
-指纹库格式示例：
-
-```json
-{
-  "vendors": [
-    {"id": 1, "name": "OpenSSH", "pattern": ".*OpenSSH.*", "count": 1923},
-    {"id": 100, "name": "Cisco IOS telnetd", "pattern": ".*ff[fb-fe]01.*ff[fb-fe]03.*ff[fb-fe]18.*ff[fb-fe]1f.*"},
-    {"id": 200, "name": "Embedded/Gateway (login)", "pattern": "(?<![A-Za-z])[Ll]ogin:"}
-  ]
-}
-```
-
-## 重试策略
-
-所有探测内置指数退避重试：
-
-```
-连接超时 / 读取超时 → 等待 base_delay × 2^attempt → 重试
-最大重试次数: 2 (默认)
-```
-
-## TCP 层优化
-
-- `TCP_NODELAY`：关闭 Nagle 算法，减少小包延迟（参照 C++ 原版）
-- MSS/SNDBUF/RCVBUF 元数据采集（用于跨层指纹）
-
-## CLI 参数
-
-```bash
-python3 -m banner_scanner [hosts...] [options]
-
-  hosts               目标 IP 地址（可多个）
-  -p, --protocols     协议列表 (默认: ssh,ftp,telnet,redis,mysql,pgsql)
-  -t, --timeout       连接超时秒数 (默认: 3.0)
-  --read-timeout      读取超时秒数 (默认: 4.0)
-  --retries           最大重试次数 (默认: 2)
-  --json              JSON 格式输出
-  --no-feat           FTP 不发送 FEAT
-  --health            引擎健康状态
-  --fingerprint       指纹库文件路径
-  --database-fingerprints  Redis/MySQL/PGSQL 结构化指纹库目录
-  --verbose, -v       DEBUG 日志
-```
-
-## MCP 服务
-
-支持通过 MCP（Model Context Protocol）在 AI 客户端中直接调用扫描能力，例如 Cherry Studio、Claude Desktop 等。
-
-### 启动服务
-
-```bash
-cd banner_scanner
-PYTHONPATH="$(dirname $(pwd)):$PYTHONPATH" python3 -m server.mcp_http_server
-```
-
-服务默认监听 `http://127.0.0.1:8877`，可通过环境变量 `MCP_PORT` 修改端口。
-
-### 客户端配置
-
-将 `mcp.json` 导入 MCP 客户端：
-
-```json
-{
-  "mcpServers": {
-    "banner-scanner": {
-      "type": "streamableHttp",
-      "url": "http://127.0.0.1:8877"
-    }
-  }
-}
-```
-
-### 可用工具
-
-| 工具 | 说明 |
-|------|------|
-| `health_check` | 引擎健康状态和指纹库信息 |
-| `probe_banner` | 探测 SSH / FTP / Telnet / Redis / MySQL / PGSQL，自动指纹识别 |
-| `scan_batch` | 批量扫描多个 IP |
-
-### 协议支持
-
-| 传输方式 | 端点 | 说明 |
-|----------|------|------|
-| POST `/message` | JSON-RPC 2.0 | 工具调用 |
-| GET `/sse` | Server-Sent Events | 会话建立 |
-
-> **注意**：部分模型（如 Qwen）可能不主动调用 MCP 工具，表现为只给出文字回复而非实际调用接口。这是模型能力差异，非服务端问题。推荐使用支持 function calling 的模型。
-
-## 项目结构
-
-```
-banner_scanner/
-├── core/
-│   ├── engine.py         探测引擎（+ 重试 + 单端口探测）
-│   ├── models.py         文本协议与数据库协议结构化结果
-│   ├── parsers.py        Banner 与数据库线协议解析器
-│   ├── transport.py      传输层（TCP/TLS + TCP_NODELAY + TCP 元数据）
-│   ├── matcher.py        指纹加载 + 匹配长度优先引擎
-│   ├── database_matcher.py 数据库结构化规则匹配器
-│   └── retry.py          指数退避重试策略
-├── probes/
-│   ├── ssh.py            SSH 探测（取首行 → 解析软件/OS）
-│   ├── ftp.py            FTP 探测（读 Banner → HELP/SYST → FEAT 递归）
-│   ├── telnet.py         Telnet 探测（被动接收 → IAC 协商 → \r\n → 二次探测 → 微特征）
-│   ├── redis.py          RESP PING + INFO server
-│   ├── mysql.py          初始握手读取与解析
-│   └── pgsql.py          SSLRequest + 最小 StartupMessage
-├── fingerprints/protocols/ SSH 55条、FTP 52条、Telnet 102条独立规则
-├── fingerprints/databases/ 59 条已验证结构化规则
-├── build_fingerprints.py 从 SQLite 构建指纹库
-├── batch_scanner.py      高并发批量扫描器（分块 + 断点续传）
-
-├── vendors.json          旧版合并迁移源（默认不加载）
-└── tests/                单元测试
-```
-
-## License
-
-MIT
+## 能力边界
+
+- 目标可连接不等于软件一定可识别；证据不足时返回 `unidentified`，不会用 Unknown 模板伪装成软件结论。
+- Banner 可以伪造，结果表示协议响应中的可观察证据，不是主机真实性证明。
+- 网络状态和公网资产会变化，历史 IP 只能用于抽样，正式指标必须来自本次主动连接。
+- PostgreSQL 未认证路径通常不暴露版本，代理、连接池和云服务也可能重写错误消息。
+- SSE 是兼容入口，不是新的首选传输。
