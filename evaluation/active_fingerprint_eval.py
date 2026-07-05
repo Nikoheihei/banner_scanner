@@ -20,9 +20,6 @@ import socket
 import sqlite3
 import subprocess
 import sys
-import time
-import urllib.error
-import urllib.request
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -31,6 +28,7 @@ from typing import Any, Iterable, Iterator, Optional
 from ..core.engine import ProbeEngine
 from ..core.matcher import DEFAULT_PROTOCOL_LIBRARY_DIR, FingerprintMatcher
 from ..core.models import BannerResult, ProbeConfig
+from ..core.protocol_detection import FTP_MARKER
 
 
 @dataclass(frozen=True)
@@ -47,7 +45,7 @@ TRUTH_PATTERNS: dict[str, list[tuple[re.Pattern[str], str]]] = {
     "SSH": [
         (re.compile(r"OpenSSH", re.I), "OpenSSH"),
         (re.compile(r"Dropbear", re.I), "Dropbear"),
-        (re.compile(r"FlowSsh|WinSSHD|Bitvise", re.I), "Bitvise"),
+        (re.compile(r"FlowSsh|WinSSHD|Bitvise", re.I), "Bitvise SSH Server"),
         (re.compile(r"AWS_SFTP", re.I), "AWS SFTP"),
         (re.compile(r"FILES\.COM", re.I), "FILES.COM"),
         (re.compile(r"Nielsen", re.I), "Nielsen SFTP"),
@@ -62,7 +60,8 @@ TRUTH_PATTERNS: dict[str, list[tuple[re.Pattern[str], str]]] = {
         (re.compile(r"CrushFTP", re.I), "CrushFTP"),
         (re.compile(r"WingFTP", re.I), "Wing FTP"),
         (re.compile(r"VShell", re.I), "VShell"),
-        (re.compile(r"WeOnlyDo|wodFTPD", re.I), "WeOnlyDo SSH"),
+        (re.compile(r"wodFTPD", re.I), "wodFTPD"),
+        (re.compile(r"WeOnlyDo", re.I), "WeOnlyDo SSH"),
         (re.compile(r"Cisco", re.I), "Cisco"),
         (re.compile(r"SSHPiper", re.I), "SSHPiper"),
         (re.compile(r"AsyncSSH", re.I), "AsyncSSH"),
@@ -71,14 +70,15 @@ TRUTH_PATTERNS: dict[str, list[tuple[re.Pattern[str], str]]] = {
         (re.compile(r"vsFTPd", re.I), "vsFTPd"),
         (re.compile(r"Pure-FTPd", re.I), "Pure-FTPd"),
         (re.compile(r"ProFTPD", re.I), "ProFTPD"),
-        (re.compile(r"FileZilla", re.I), "FileZilla Server"),
+        (re.compile(r"FileZilla\s+Pro\s+Enterprise", re.I), "FileZilla Pro Enterprise"),
+        (re.compile(r"FileZilla\s+Server", re.I), "FileZilla Server"),
         (re.compile(r"Microsoft FTP", re.I), "Microsoft FTP"),
         (re.compile(r"Serv-U", re.I), "Serv-U FTP"),
-        (re.compile(r"Core FTP", re.I), "Core FTP Server"),
+        (re.compile(r"Core\s+FTP\s+Server\s+Version", re.I), "Core FTP Server"),
         (re.compile(r"pyftpdlib", re.I), "pyftpdlib"),
         (re.compile(r"Cerberus", re.I), "Cerberus FTP"),
         (re.compile(r"CrushFTP", re.I), "CrushFTP"),
-        (re.compile(r"Wing FTP", re.I), "Wing FTP"),
+        (re.compile(r"\bWing\s+FTP\s+Server\b", re.I), "Wing FTP"),
         (re.compile(r"WS_FTP", re.I), "WS_FTP"),
         (re.compile(r"SFTPGo", re.I), "SFTPGo"),
         (re.compile(r"CoursEval", re.I), "CoursEval FTPS"),
@@ -90,7 +90,7 @@ TRUTH_PATTERNS: dict[str, list[tuple[re.Pattern[str], str]]] = {
         (re.compile(r"BusyBox", re.I), "BusyBox telnetd"),
         (re.compile(r"Cisco|IOS", re.I), "Cisco IOS telnetd"),
         (re.compile(r"RouterOS|MikroTik", re.I), "RouterOS"),
-        (re.compile(r"Windows|Microsoft", re.I), "Windows telnetd"),
+        (re.compile(r"Windows(?:\s+CE)?\s+Telnet\s+Service", re.I), "Windows telnetd"),
         (re.compile(r"JetDirect", re.I), "HP JetDirect"),
         (re.compile(r"FileZilla", re.I), "FileZilla Server"),
     ],
@@ -140,6 +140,17 @@ def truth_label(protocol: str, banner: str, record: Optional[dict[str, Any]] = N
     protocol = protocol.upper()
     record = record or {}
     text = banner or ""
+    if protocol == "SSH" and not re.match(r"^SSH-[12]\.[0-9]+-", text):
+        return ""
+    if protocol == "FTP" and (
+        re.match(r"^SSH-[12]\.[0-9]+-", text)
+        or not re.match(r"^(?:120|220)[- ]", text)
+    ):
+        return ""
+    if protocol == "TELNET" and (
+        re.match(r"^SSH-[12]\.[0-9]+-", text) or FTP_MARKER.search(text)
+    ):
+        return ""
     if protocol == "REDIS":
         for key, label in (
             ("valkey_version", "Valkey"),
@@ -182,6 +193,8 @@ def normalize_label(protocol: str, label: str) -> str:
         "mysql-compatible": "MySQL_or_compatible",
         "mysql or compatible": "MySQL_or_compatible",
         "tenant-aware-proxy": "tenant-aware-proxy",
+        "bitvise": "Bitvise SSH Server",
+        "weonlydo wodftpd": "wodFTPD",
     }
     if lowered in aliases:
         return aliases[lowered]
@@ -308,15 +321,18 @@ def final_prediction_from_banner_result(result: BannerResult) -> tuple[str, str,
 
 
 def final_prediction_from_mcp(result: dict[str, Any]) -> tuple[str, str, str]:
-    protocol = str(result.get("protocol", ""))
-    fingerprint = normalize_label(protocol, str(result.get("fingerprint") or ""))
+    endpoint = result.get("endpoint") or {}
+    protocol = str(endpoint.get("protocol") or "")
+    primary = result.get("primary_identification") or {}
+    fingerprint = normalize_label(protocol, str(primary.get("name") or ""))
     parsed = ""
+    observations = result.get("observations") or {}
     for field, key in (("ssh", "software"), ("ftp", "software"),
                        ("telnet", "detected_service"),
                        ("redis", "implementation"), ("mysql", "implementation"),
                        ("pgsql", "implementation")):
-        if result.get(field):
-            parsed = str(result[field].get(key) or "")
+        if observations.get(field):
+            parsed = str(observations[field].get(key) or "")
             break
     parsed = normalize_label(protocol, parsed)
     return fingerprint or parsed, fingerprint, parsed
@@ -347,9 +363,15 @@ def active_record(sample: TargetSample, result: BannerResult, channel: str) -> d
 
 def mcp_record(sample: TargetSample, result: dict[str, Any]) -> dict[str, Any]:
     predicted, fingerprint, parsed = final_prediction_from_mcp(result)
-    details = result.get("fingerprint_details") or {}
+    endpoint = result.get("endpoint") or {}
+    observations = result.get("observations") or {}
+    error = result.get("error") or {}
+    connected = result.get("network_status") == "connected"
+    protocol_matches = result.get("protocol_status") != "mismatch"
+    if not protocol_matches:
+        predicted = fingerprint = parsed = ""
     return {
-        "channel": "mcp_http",
+        "channel": "mcp_streamable_http",
         "protocol": sample.protocol,
         "software_true": sample.software_true,
         "software_pred": predicted,
@@ -358,13 +380,13 @@ def mcp_record(sample: TargetSample, result: dict[str, Any]) -> dict[str, Any]:
         "correct": predicted == sample.software_true,
         "fingerprint_correct": fingerprint == sample.software_true,
         "host": sample.host,
-        "port": result.get("port", sample.port),
-        "accessible": bool(result.get("accessible")),
-        "banner": result.get("banner", ""),
-        "error": result.get("error", ""),
+        "port": endpoint.get("port", sample.port),
+        "accessible": connected,
+        "protocol_status": result.get("protocol_status", "not_observed"),
+        "banner": observations.get("banner", ""),
+        "error": error.get("message", ""),
         "response_time_ms": result.get("response_time_ms", 0),
-        "matched_rule_ids": details.get("matched_rule_ids", []),
-        "fingerprint_details": details,
+        "identification_status": result.get("identification_status", "unidentified"),
         "source": sample.source,
     }
 
@@ -395,30 +417,91 @@ def free_local_port() -> int:
         return int(sock.getsockname()[1])
 
 
-def json_rpc(url: str, method: str, params: dict[str, Any], request_id: int,
-             timeout: float) -> dict[str, Any]:
-    payload = json.dumps({"jsonrpc": "2.0", "id": request_id,
-                          "method": method, "params": params}).encode()
-    request = urllib.request.Request(
-        url, data=payload, headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(request, timeout=timeout) as response:
-        value = json.loads(response.read().decode())
-    if "error" in value:
-        raise RuntimeError(value["error"].get("message", str(value["error"])))
-    return value["result"]
+def _tool_payload(result: Any) -> dict[str, Any]:
+    structured = getattr(result, "structuredContent", None)
+    if isinstance(structured, dict):
+        return structured
+    for content in getattr(result, "content", []):
+        text = getattr(content, "text", "")
+        if text:
+            value = json.loads(text)
+            if isinstance(value, dict):
+                return value
+    raise RuntimeError("MCP tool returned no JSON object")
 
 
-def wait_for_server(url: str, timeout: float = 15.0) -> None:
-    deadline = time.time() + timeout
-    while time.time() < deadline:
-        try:
-            with urllib.request.urlopen(url.rsplit("/", 1)[0] + "/", timeout=1):
+async def _call_mcp_samples(url: str, samples: list[TargetSample],
+                            concurrency: int, chunk_size: int
+                            ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    try:
+        from mcp import ClientSession
+        from mcp.client.streamable_http import streamable_http_client
+    except ImportError as exc:
+        raise RuntimeError(
+            'Active MCP flow tests require: pip install "mcp[cli]==1.28.1"'
+        ) from exc
+
+    records: list[dict[str, Any]] = []
+    async with streamable_http_client(url) as (read_stream, write_stream, _):
+        async with ClientSession(read_stream, write_stream) as session:
+            await session.initialize()
+            health = _tool_payload(await session.call_tool("health_check", arguments={}))
+
+            grouped: dict[tuple[str, str], list[TargetSample]] = defaultdict(list)
+            for sample in samples:
+                grouped[(sample.protocol, sample.software_true)].append(sample)
+            for (protocol, _software), group in sorted(grouped.items()):
+                for start in range(0, len(group), chunk_size):
+                    chunk = group[start:start + chunk_size]
+                    response = await asyncio.wait_for(
+                        session.call_tool("scan_batch", arguments={
+                            "hosts": [sample.host for sample in chunk],
+                            "protocol": protocol.lower(),
+                            "retries": 0,
+                            "concurrency": min(concurrency, 50),
+                            "detail_level": "evidence",
+                            "authorization_confirmed": True,
+                        }),
+                        timeout=max(60.0, len(chunk) * 10.0),
+                    )
+                    payload = _tool_payload(response)
+                    by_host = {
+                        str((item.get("endpoint") or {}).get("host")): item
+                        for item in payload.get("results", [])
+                    }
+                    for sample in chunk:
+                        item = by_host.get(sample.host, {
+                            "endpoint": {
+                                "host": sample.host,
+                                "port": sample.port,
+                                "protocol": protocol,
+                            },
+                            "network_status": "unreachable",
+                            "protocol_status": "not_observed",
+                            "error": {"message": "missing MCP result"},
+                        })
+                        records.append(mcp_record(sample, item))
+    return records, health
+
+
+def wait_for_server(process: subprocess.Popen, host: str, port: int,
+                    timeout: float = 15.0) -> None:
+    async def wait() -> None:
+        deadline = asyncio.get_running_loop().time() + timeout
+        while asyncio.get_running_loop().time() < deadline:
+            if process.poll() is not None:
+                stderr = process.stderr.read() if process.stderr else ""
+                raise RuntimeError(f"MCP HTTP server exited before startup: {stderr.strip()}")
+            try:
+                reader, writer = await asyncio.open_connection(host, port)
+                writer.close()
+                await writer.wait_closed()
                 return
-        except (urllib.error.URLError, TimeoutError):
-            time.sleep(0.2)
-    raise TimeoutError("MCP HTTP server did not start")
+            except OSError:
+                await asyncio.sleep(0.2)
+        raise TimeoutError("MCP HTTP server did not start")
+
+    asyncio.run(wait())
 
 
 def run_mcp_samples(samples: list[TargetSample], concurrency: int,
@@ -433,43 +516,12 @@ def run_mcp_samples(samples: list[TargetSample], concurrency: int,
         cwd=package_parent, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         text=True,
     )
-    url = f"http://127.0.0.1:{port}/message"
-    records: list[dict[str, Any]] = []
-    request_id = 1
-    health: dict[str, Any] = {}
+    url = f"http://127.0.0.1:{port}/mcp"
     try:
-        wait_for_server(url)
-        health_result = json_rpc(
-            url, "tools/call", {"name": "health_check", "arguments": {}},
-            request_id, 30,
+        wait_for_server(process, "127.0.0.1", port)
+        records, health = asyncio.run(
+            _call_mcp_samples(url, samples, concurrency, chunk_size)
         )
-        request_id += 1
-        health = json.loads(health_result["content"][0]["text"])
-
-        grouped: dict[tuple[str, str], list[TargetSample]] = defaultdict(list)
-        for sample in samples:
-            grouped[(sample.protocol, sample.software_true)].append(sample)
-        for (protocol, _software), group in sorted(grouped.items()):
-            for start in range(0, len(group), chunk_size):
-                chunk = group[start:start + chunk_size]
-                result = json_rpc(
-                    url, "tools/call",
-                    {"name": "probe_banner", "arguments": {
-                        "hosts": [sample.host for sample in chunk],
-                        "protocols": [protocol.lower()], "retries": 0,
-                        "concurrency": concurrency,
-                    }},
-                    request_id, max(60.0, len(chunk) * 10.0),
-                )
-                request_id += 1
-                payload = json.loads(result["content"][0]["text"])
-                by_host = {str(item.get("host")): item for item in payload.get("results", [])}
-                for sample in chunk:
-                    item = by_host.get(sample.host, {
-                        "protocol": protocol, "host": sample.host,
-                        "accessible": False, "error": "missing MCP result",
-                    })
-                    records.append(mcp_record(sample, item))
     finally:
         process.terminate()
         try:
@@ -510,8 +562,7 @@ def identification_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
     )
     return {
         "reachable": reachable,
-        "reachability_rate": round(safe_div(reachable, total), 6),
-        "post_reach_accuracy": round(safe_div(correct, reachable), 6),
+        "connection_rate": round(safe_div(reachable, total), 6),
         "fingerprint_covered": fingerprint_covered,
         "fingerprint_coverage_rate": round(
             safe_div(fingerprint_covered, reachable), 6,
@@ -532,27 +583,26 @@ def compute_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
     protocol_output: dict[str, Any] = {}
     for protocol, protocol_records in sorted(by_protocol.items()):
         labels = sorted({record["software_true"] for record in protocol_records})
+        reachable_protocol_records = [
+            record for record in protocol_records if record["accessible"]
+        ]
         software_output = {}
         for label in labels:
             tp = sum(r["software_true"] == label and r["software_pred"] == label
-                     for r in protocol_records)
+                     for r in reachable_protocol_records)
             fp = sum(r["software_true"] != label and r["software_pred"] == label
-                     for r in protocol_records)
+                     for r in reachable_protocol_records)
             fn = sum(r["software_true"] == label and r["software_pred"] != label
-                     for r in protocol_records)
-            tn = len(protocol_records) - tp - fp - fn
+                     for r in reachable_protocol_records)
+            tn = len(reachable_protocol_records) - tp - fp - fn
             own = [r for r in protocol_records if r["software_true"] == label]
             accessible = [r for r in own if r["accessible"]]
-            fingerprint_correct = sum(r.get("fingerprint_correct", False) for r in own)
             precision = safe_div(tp, tp + fp)
             recall = safe_div(tp, tp + fn)
             software_output[label] = {
                 "samples": len(own), "correct": tp,
-                "accuracy_e2e": round(safe_div(tp, len(own)), 6),
-                "accuracy_valid": round(safe_div(
-                    sum(r["correct"] for r in accessible), len(accessible)), 6),
-                "fingerprint_only_accuracy": round(safe_div(fingerprint_correct, len(own)), 6),
-                "accessible_rate": round(safe_div(len(accessible), len(own)), 6),
+                "reachable_samples": len(accessible),
+                "connection_rate": round(safe_div(len(accessible), len(own)), 6),
                 "precision": round(precision, 6), "recall": round(recall, 6),
                 "f1": round(safe_div(2 * precision * recall, precision + recall), 6),
                 "tp": tp, "fp": fp, "fn": fn, "tn": tn,
@@ -560,11 +610,8 @@ def compute_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
             }
         times = [float(r.get("response_time_ms") or 0) for r in protocol_records]
         correct = sum(r["correct"] for r in protocol_records)
-        accessible = sum(r["accessible"] for r in protocol_records)
         protocol_output[protocol] = {
             "samples": len(protocol_records), "correct": correct,
-            "accuracy": round(safe_div(correct, len(protocol_records)), 6),
-            "accessible_rate": round(safe_div(accessible, len(protocol_records)), 6),
             **identification_metrics(protocol_records),
             "mean_response_time_ms": round(safe_div(sum(times), len(times)), 3),
             "p50_response_time_ms": round(percentile(times, 0.50), 3),
@@ -580,9 +627,10 @@ def compute_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
     total = len(records)
     return {
         "metric_definitions": {
-            "accuracy": "correct / samples",
-            "reachability_rate": "reachable / samples",
-            "post_reach_accuracy": "correct / reachable",
+            "connection_rate": "reachable / samples",
+            "precision": "TP / (TP + FP), calculated over reachable samples",
+            "recall": "TP / (TP + FN), calculated over reachable samples",
+            "f1": "2 * precision * recall / (precision + recall)",
             "fingerprint_coverage_rate": (
                 "reachable records with non-empty fingerprint_pred / reachable"
             ),
@@ -595,7 +643,6 @@ def compute_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
         },
         "samples": total,
         "correct": sum(record["correct"] for record in records),
-        "accuracy": round(safe_div(sum(record["correct"] for record in records), total), 6),
         **identification_metrics(records),
         "protocols": protocol_output,
     }
@@ -677,23 +724,38 @@ def group_target_samples(samples: list[TargetSample]) -> dict[tuple[str, str], l
 def filter_unreachable_classes(
     records: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Compatibility wrapper that reports, but never removes, zero-connection classes."""
     grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
     for record in records:
         grouped[(record["protocol"], record["software_true"])].append(record)
-    kept: list[dict[str, Any]] = []
-    skipped: list[dict[str, Any]] = []
+    diagnostics: list[dict[str, Any]] = []
     for (protocol, software), group in sorted(grouped.items()):
         reachable = sum(bool(record["accessible"]) for record in group)
-        if reachable:
-            kept.extend(group)
-            continue
-        skipped.append({
+        if not reachable:
+            diagnostics.append({
             "protocol": protocol,
             "software": software,
             "samples": len(group),
-            "reason": "no reachable targets in active probe sample",
-        })
-    return kept, skipped
+            "reason": "zero connections in active probe sample; records retained",
+            })
+    return list(records), diagnostics
+
+
+def zero_connection_classes(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Report zero-connection classes without deleting them from metrics."""
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for record in records:
+        grouped[(record["protocol"], record["software_true"])].append(record)
+    return [
+        {
+            "protocol": protocol,
+            "software": software,
+            "samples": len(group),
+            "connection_rate": 0.0,
+        }
+        for (protocol, software), group in sorted(grouped.items())
+        if not any(record["accessible"] for record in group)
+    ]
 
 
 def select_flow_samples(
@@ -734,15 +796,6 @@ def select_flow_samples(
             seen_hosts.add(sample.host)
             if len(chosen) >= target_count:
                 break
-
-        if not chosen:
-            skipped.append({
-                "protocol": protocol,
-                "software": software,
-                "samples": target_count,
-                "reason": "no reachable targets available from active performance probe",
-            })
-            continue
 
         for sample in candidates:
             if sample.host in seen_hosts:
@@ -788,8 +841,10 @@ def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     parser.add_argument("--connect-timeout", type=float, default=2.5)
     parser.add_argument("--read-timeout", type=float, default=2.5)
     parser.add_argument("--inventory-only", action="store_true")
+    parser.add_argument("--performance-only", action="store_true",
+                        help="Run active ProbeEngine performance evaluation without MCP flow")
     parser.add_argument("--flow-only", action="store_true",
-                        help="Reuse and filter existing active performance results")
+                        help="Reuse existing active performance results")
     parser.add_argument("--confirm-authorized", action="store_true")
     return parser.parse_args(argv)
 
@@ -824,38 +879,43 @@ def main(argv: Optional[list[str]] = None) -> int:
         performance_records = asyncio.run(run_engine_samples(
             performance_samples, engine, args.concurrency,
         ))
-    performance_records, skipped_performance_classes = filter_unreachable_classes(
-        performance_records
-    )
     write_jsonl(performance_path, performance_records)
     performance_metrics = compute_metrics(performance_records)
     write_json(output_dir / "performance_metrics.json", performance_metrics)
+    if args.performance_only:
+        summary = {
+            "inventory": inventory,
+            "performance": performance_metrics,
+            "zero_connection_classes": {
+                "performance": zero_connection_classes(performance_records),
+            },
+        }
+        write_json(output_dir / "summary.json", summary)
+        print(json.dumps(summary, indent=2, ensure_ascii=False))
+        return 0
 
-    flow_samples, skipped_flow_classes = select_flow_samples(
+    flow_samples, _selection_diagnostics = select_flow_samples(
         flow_samples, performance_samples, performance_records, args.flow_per_class,
     )
     write_json(output_dir / "flow_manifest.json", [asdict(sample) for sample in flow_samples])
     flow_records, mcp_health = run_mcp_samples(
         flow_samples, args.concurrency, args.mcp_chunk_size,
     )
-    flow_records, additional_skipped_flow_classes = filter_unreachable_classes(
-        flow_records
-    )
     write_jsonl(output_dir / "flow_mcp_results.jsonl", flow_records)
     flow_metrics = compute_metrics(flow_records)
     write_json(output_dir / "flow_metrics.json", flow_metrics)
     write_json(output_dir / "mcp_health.json", mcp_health)
-    skipped_classes = {
-        "performance": skipped_performance_classes,
-        "flow": skipped_flow_classes + additional_skipped_flow_classes,
+    zero_connection = {
+        "performance": zero_connection_classes(performance_records),
+        "flow": zero_connection_classes(flow_records),
     }
-    write_json(output_dir / "skipped_classes.json", skipped_classes)
+    write_json(output_dir / "zero_connection_classes.json", zero_connection)
     summary = {
         "inventory": inventory,
         "performance": performance_metrics,
         "flow": flow_metrics,
         "mcp_health": mcp_health,
-        "skipped_classes": skipped_classes,
+        "zero_connection_classes": zero_connection,
     }
     write_json(output_dir / "summary.json", summary)
     print(json.dumps(summary, indent=2, ensure_ascii=False))

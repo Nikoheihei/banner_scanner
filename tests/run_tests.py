@@ -17,6 +17,14 @@ MODULES = (
     "banner_scanner.tests.test_database_matcher",
     "banner_scanner.tests.test_probes",
     "banner_scanner.tests.test_evaluation",
+    "banner_scanner.tests.test_identify",
+    "banner_scanner.tests.test_policy",
+    "banner_scanner.tests.test_mcp_serialization",
+    "banner_scanner.tests.test_mcp_service",
+    "banner_scanner.tests.test_mcp_app",
+    "banner_scanner.tests.test_http_middleware",
+    "banner_scanner.tests.test_audit",
+    "banner_scanner.tests.test_rule_regressions",
 )
 
 

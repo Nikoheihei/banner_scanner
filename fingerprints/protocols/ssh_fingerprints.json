@@ -1,10 +1,10 @@
 {
-  "schema": "banner-scanner.protocol-fingerprints.v1",
+  "schema": "banner-scanner.protocol-fingerprints.v2",
   "protocol": "SSH",
-  "rule_count": 55,
+  "rule_count": 56,
   "vendors": [
     {
-      "id": 1,
+      "id": "ssh.software.openssh",
       "name": "OpenSSH",
       "protocol": "SSH",
       "pattern": ".*OpenSSH.*",
@@ -23,11 +23,15 @@
         35,
         50
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 1
     },
     {
-      "id": 2,
+      "id": "ssh.software.aws-sftp",
       "name": "AWS SFTP",
       "protocol": "SSH",
       "pattern": ".*AWS.*SFTP.*",
@@ -35,11 +39,15 @@
       "template_ids": [
         3
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 2
     },
     {
-      "id": 3,
+      "id": "ssh.software.files-com",
       "name": "FILES.COM",
       "protocol": "SSH",
       "pattern": ".*FILES.*COM.*",
@@ -47,25 +55,46 @@
       "template_ids": [
         5
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 3
     },
     {
-      "id": 4,
-      "name": "Bitvise",
+      "id": "ssh.software.bitvise-ssh-server",
+      "name": "Bitvise SSH Server",
       "protocol": "SSH",
-      "pattern": ".*Bitvise.*",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-(?:[0-9.]+\\s+)?(?:(?P<component>FlowSsh|sshlib):\\s*)?(?:Bitvise\\s+SSH\\s+Server|WinSSHD)\\b[^\\r\\n]*(?=\\r?\\n|\\r|$)",
       "count": 6,
       "template_ids": [
         7,
         15,
         43
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "aliases": [
+          "WinSSHD"
+        ],
+        "provider": "Bitvise"
+      },
+      "extract": [
+        {
+          "field": "component",
+          "group": "component"
+        }
+      ],
+      "explanation": "The SSH identification line names Bitvise SSH Server or its WinSSHD alias.",
+      "legacy_id": 4
     },
     {
-      "id": 5,
+      "id": "ssh.software.serv-u",
       "name": "Serv-U",
       "protocol": "SSH",
       "pattern": ".*(?:^|[^A-Za-z0-9])Serv[-_ ]?U(?:[^A-Za-z0-9]|$).*",
@@ -74,11 +103,15 @@
         8,
         31
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 5
     },
     {
-      "id": 6,
+      "id": "ssh.software.crushftp",
       "name": "CrushFTP",
       "protocol": "SSH",
       "pattern": ".*CrushFTP.*",
@@ -86,11 +119,15 @@
       "template_ids": [
         9
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 6
     },
     {
-      "id": 7,
+      "id": "ssh.software.cisco",
       "name": "Cisco",
       "protocol": "SSH",
       "pattern": ".*Cisco.*",
@@ -98,11 +135,15 @@
       "template_ids": [
         10
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 7
     },
     {
-      "id": 8,
+      "id": "ssh.protocol-identity.unknown-ssh-8",
       "name": "Unknown-SSH-8",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-Go",
@@ -110,11 +151,15 @@
       "template_ids": [
         11
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 8
     },
     {
-      "id": 9,
+      "id": "ssh.software.sftpgo",
       "name": "SFTPGo",
       "protocol": "SSH",
       "pattern": ".*SFTPGo.*",
@@ -122,11 +167,15 @@
       "template_ids": [
         12
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 9
     },
     {
-      "id": 10,
+      "id": "ssh.software.srtsshserver",
       "name": "srtSSHServer",
       "protocol": "SSH",
       "pattern": ".*srtSSHServer.*",
@@ -134,11 +183,15 @@
       "template_ids": [
         16
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 10
     },
     {
-      "id": 11,
+      "id": "ssh.software.goanywhere",
       "name": "GoAnywhere",
       "protocol": "SSH",
       "pattern": ".*GoAnywhere.*",
@@ -146,11 +199,15 @@
       "template_ids": [
         17
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 11
     },
     {
-      "id": 12,
+      "id": "ssh.protocol-identity.unknown-ssh-12",
       "name": "Unknown-SSH-12",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-ssh2js1\\.17\\.5",
@@ -158,11 +215,15 @@
       "template_ids": [
         19
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 12
     },
     {
-      "id": 13,
+      "id": "ssh.software.cerberus-ftp",
       "name": "Cerberus FTP",
       "protocol": "SSH",
       "pattern": ".*Cerberus.*FTP.*",
@@ -170,11 +231,15 @@
       "template_ids": [
         21
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 13
     },
     {
-      "id": 14,
+      "id": "ssh.software.ws-ftp",
       "name": "WS_FTP",
       "protocol": "SSH",
       "pattern": ".*(?:^|[^A-Za-z0-9])WS[_ -]?FTP(?:-SSH)?(?:[^A-Za-z0-9]|$).*",
@@ -182,11 +247,15 @@
       "template_ids": [
         22
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 14
     },
     {
-      "id": 15,
+      "id": "ssh.software.gitlab-sshd",
       "name": "GitLab SSHD",
       "protocol": "SSH",
       "pattern": ".*GitLab.*SSHD.*",
@@ -194,11 +263,15 @@
       "template_ids": [
         23
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 15
     },
     {
-      "id": 16,
+      "id": "ssh.software.domo",
       "name": "Domo",
       "protocol": "SSH",
       "pattern": ".*Domo.*",
@@ -206,23 +279,31 @@
       "template_ids": [
         24
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 16
     },
     {
-      "id": 17,
+      "id": "ssh.software.maverick-sshd",
       "name": "Maverick SSHD",
       "protocol": "SSH",
-      "pattern": ".*Maverick.*SSHD.*",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-Maverick(?:[_-]?SSHD|Synergy)(?=\\r?\\n|\\r|$)",
       "count": 2,
       "template_ids": [
         25
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 17
     },
     {
-      "id": 18,
+      "id": "ssh.protocol-identity.unknown-ssh-18",
       "name": "Unknown-SSH-18",
       "protocol": "SSH",
       "pattern": "@RSYNCD:\\ 30\\.0",
@@ -230,23 +311,31 @@
       "template_ids": [
         27
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 18
     },
     {
-      "id": 19,
+      "id": "ssh.software.wing-ftp",
       "name": "Wing FTP",
       "protocol": "SSH",
-      "pattern": ".*Wing.*FTP.*",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*WingFTP(?:Server)?[^\\r\\n]*(?=\\r?\\n|\\r|$)",
       "count": 1,
       "template_ids": [
         28
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 19
     },
     {
-      "id": 20,
+      "id": "ssh.protocol-identity.unknown-ssh-20",
       "name": "Unknown-SSH-20",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-SSHD",
@@ -254,24 +343,32 @@
       "template_ids": [
         29
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 20
     },
     {
-      "id": 21,
+      "id": "ssh.software.mod-sftp",
       "name": "mod_sftp",
       "protocol": "SSH",
-      "pattern": "^SSH\\-2\\.0\\-mod_sftp(?:[\\/_\\- ]?[0-9A-Za-z.]+)?$",
+      "pattern": "^SSH\\-2\\.0\\-mod_sftp(?:[\\/_\\- ]?[0-9A-Za-z.]+)?(?=\\r?\\n|\\r|$)",
       "count": 1,
       "template_ids": [
         30,
         44
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 21
     },
     {
-      "id": 22,
+      "id": "ssh.protocol-identity.unknown-ssh-22",
       "name": "Unknown-SSH-22",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-onboarding\\.neustar\\.biz",
@@ -279,11 +376,15 @@
       "template_ids": [
         33
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 22
     },
     {
-      "id": 23,
+      "id": "ssh.software.nielsen-sftp",
       "name": "Nielsen SFTP",
       "protocol": "SSH",
       "pattern": ".*Nielsen.*SFTP.*",
@@ -291,11 +392,15 @@
       "template_ids": [
         34
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 23
     },
     {
-      "id": 24,
+      "id": "ssh.protocol-identity.unknown-ssh-24",
       "name": "Unknown-SSH-24",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-FTP\\ Server\\ ready\\.\\\n\u0000\u0000\u0003<\u0004\u0014��3j\u0002�\u001bW�J����\u001ff\u0000\u0000\u0000�ecdh\\-sha2\\-nistp256,ecdh\\-sha2\\-nistp384,ecdh\\-sha2\\-nistp521,diffie\\-hellman\\-group\\-exchange\\-sha256,diffie\\-hellman\\-group\\-exchange\\-sha1,diffie\\-hellman\\-group14\\-sha1,diffie\\-hellman\\-group1\\-sha1,rsa1024\\-sha1\u0000\u0000\u0000\u000fssh\\-rsa,ssh\\-dss\u0000\u0000\u0000�aes256\\-ctr,aes192\\-ctr,aes128\\-ctr,aes256\\-cbc,aes192\\-cbc,aes128\\-cbc,blowfish\\-ctr,blowfish\\-cbc,cast128\\-cbc,arcfour256,arcfour128,3des\\-ctr,3des\\-cbc\u0000\u0000\u0000�aes256\\-ctr,aes192\\-ctr,aes128\\-ctr,aes256\\-cbc,aes192\\-cbc,aes128\\-cbc,blowfish\\-ctr,blowfish\\-cbc,c",
@@ -303,23 +408,31 @@
       "template_ids": [
         36
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 24
     },
     {
-      "id": 25,
-      "name": "WeOnlyDo wodFTPD",
+      "id": "ssh.software.wodftpd",
+      "name": "wodFTPD",
       "protocol": "SSH",
-      "pattern": ".*WeOnlyDo.*wodFTPD.*",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-WeOnlyDo-wodFTPD(?:\\s+[^\\r\\n]+)?(?=\\r?\\n|\\r|$)",
       "count": 1,
       "template_ids": [
         37
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 25
     },
     {
-      "id": 26,
+      "id": "ssh.protocol-identity.unknown-ssh-26",
       "name": "Unknown-SSH-26",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-Vcz8Kd7wc",
@@ -327,11 +440,15 @@
       "template_ids": [
         38
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 26
     },
     {
-      "id": 27,
+      "id": "ssh.protocol-identity.unknown-ssh-27",
       "name": "Unknown-SSH-27",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-FTP\\ Server\\ ready\\.\\\n\u0000\u0000\u0003<\u0004\u0014u\\&I�\\.��\\+Y0�̅���\u0000\u0000\u0000�ecdh\\-sha2\\-nistp256,ecdh\\-sha2\\-nistp384,ecdh\\-sha2\\-nistp521,diffie\\-hellman\\-group\\-exchange\\-sha256,diffie\\-hellman\\-group\\-exchange\\-sha1,diffie\\-hellman\\-group14\\-sha1,diffie\\-hellman\\-group1\\-sha1,rsa1024\\-sha1\u0000\u0000\u0000\u000fssh\\-rsa,ssh\\-dss\u0000\u0000\u0000�aes256\\-ctr,aes192\\-ctr,aes128\\-ctr,aes256\\-cbc,aes192\\-cbc,aes128\\-cbc,blowfish\\-ctr,blowfish\\-cbc,cast128\\-cbc,arcfour256,arcfour128,3des\\-ctr,3des\\-cbc\u0000\u0000\u0000�aes256\\-ctr,aes192\\-ctr,aes128\\-ctr,aes256\\-cbc,aes192\\-cbc,aes128\\-cbc,blowfish\\-ctr,blowfish\\-cbc,c",
@@ -339,11 +456,15 @@
       "template_ids": [
         39
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 27
     },
     {
-      "id": 28,
+      "id": "ssh.software.sshpiper",
       "name": "SSHPiper",
       "protocol": "SSH",
       "pattern": ".*SSHPiper.*",
@@ -351,11 +472,15 @@
       "template_ids": [
         40
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 28
     },
     {
-      "id": 29,
+      "id": "ssh.software.vshell",
       "name": "VShell",
       "protocol": "SSH",
       "pattern": ".*VShell.*",
@@ -363,11 +488,15 @@
       "template_ids": [
         41
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 29
     },
     {
-      "id": 30,
+      "id": "ssh.software.platform-sh",
       "name": "Platform.sh",
       "protocol": "SSH",
       "pattern": ".*Platform.*sh.*",
@@ -375,11 +504,15 @@
       "template_ids": [
         42
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 30
     },
     {
-      "id": 31,
+      "id": "ssh.protocol-identity.unknown-ssh-31",
       "name": "Unknown-SSH-31",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-mutUr",
@@ -387,11 +520,15 @@
       "template_ids": [
         45
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 31
     },
     {
-      "id": 32,
+      "id": "ssh.protocol-identity.unknown-ssh-32",
       "name": "Unknown-SSH-32",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-FTP\\ Server\\ ready\\.\\\n\u0000\u0000\u0003<\u0004\u0014\u0003���A,�\b\u0002����\\.t�\u0000\u0000\u0000�ecdh\\-sha2\\-nistp256,ecdh\\-sha2\\-nistp384,ecdh\\-sha2\\-nistp521,diffie\\-hellman\\-group\\-exchange\\-sha256,diffie\\-hellman\\-group\\-exchange\\-sha1,diffie\\-hellman\\-group14\\-sha1,diffie\\-hellman\\-group1\\-sha1,rsa1024\\-sha1\u0000\u0000\u0000\u000fssh\\-rsa,ssh\\-dss\u0000\u0000\u0000�aes256\\-ctr,aes192\\-ctr,aes128\\-ctr,aes256\\-cbc,aes192\\-cbc,aes128\\-cbc,blowfish\\-ctr,blowfish\\-cbc,cast128\\-cbc,arcfour256,arcfour128,3des\\-ctr,3des\\-cbc\u0000\u0000\u0000�aes256\\-ctr,aes192\\-ctr,aes128\\-ctr,aes256\\-cbc,aes192\\-cbc,aes128\\-cbc,blowfish\\-ctr,blowfish\\-cbc,c",
@@ -399,11 +536,15 @@
       "template_ids": [
         46
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 32
     },
     {
-      "id": 33,
+      "id": "ssh.software.xlightftpd",
       "name": "xlightftpd",
       "protocol": "SSH",
       "pattern": ".*xlightftpd.*",
@@ -411,23 +552,31 @@
       "template_ids": [
         47
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 33
     },
     {
-      "id": 34,
+      "id": "ssh.software.paramiko",
       "name": "Paramiko",
       "protocol": "SSH",
-      "pattern": "^SSH\\-2\\.0\\-paramiko(?:[\\/_\\- ]?[0-9A-Za-z.]+)?$",
+      "pattern": "^SSH\\-2\\.0\\-paramiko(?:[\\/_\\-]?[0-9][0-9A-Za-z.]*)?(?:[ \\t]+[^\\r\\n]*)?(?=\\r?\\n|\\r|$)",
       "count": 1,
       "template_ids": [
         48
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 34
     },
     {
-      "id": 35,
+      "id": "ssh.software.babeld",
       "name": "babeld",
       "protocol": "SSH",
       "pattern": ".*babeld.*",
@@ -435,11 +584,15 @@
       "template_ids": [
         49
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 35
     },
     {
-      "id": 36,
+      "id": "ssh.software.audiocodes",
       "name": "AudioCodes",
       "protocol": "SSH",
       "pattern": ".*AudioCodes.*",
@@ -447,11 +600,15 @@
       "template_ids": [
         51
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 36
     },
     {
-      "id": 37,
+      "id": "ssh.protocol-identity.unknown-ssh-37",
       "name": "Unknown-SSH-37",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-0",
@@ -459,11 +616,15 @@
       "template_ids": [
         52
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 37
     },
     {
-      "id": 38,
+      "id": "ssh.protocol-identity.unknown-ssh-38",
       "name": "Unknown-SSH-38",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-b5935dd",
@@ -471,11 +632,15 @@
       "template_ids": [
         53
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 38
     },
     {
-      "id": 39,
+      "id": "ssh.protocol-identity.unknown-ssh-39",
       "name": "Unknown-SSH-39",
       "protocol": "SSH",
       "pattern": "220\\-FileZilla\\ Server\\ 0\\.9\\.60\\ beta\\\n220\\-written\\ by\\ Tim\\ Kosse\\ \\(tim\\.kosse@filezilla\\-project\\.org\\)\\\n220\\ Please\\ visit\\ https://filezilla\\-project\\.org/",
@@ -483,23 +648,31 @@
       "template_ids": [
         54
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 39
     },
     {
-      "id": 40,
-      "name": "Unknown-SSH-40",
+      "id": "ssh.software.sftpplus",
+      "name": "SFTPPlus",
       "protocol": "SSH",
-      "pattern": "SSH\\-2\\.0\\-SFTPPlus\\\n\u0000\u0000\u0003D\\\u000b\u0014�н�\u000e��I<�O�٣U\u001f\u0000\u0000\u0001\\-curve25519\\-sha256,curve25519\\-sha256@libssh\\.org,ecdh\\-sha2\\-nistp256,ecdh\\-sha2\\-nistp384,ecdh\\-sha2\\-nistp521,diffie\\-hellman\\-group\\-exchange\\-sha256,diffie\\-hellman\\-group18\\-sha512,diffie\\-hellman\\-group17\\-sha512,diffie\\-hellman\\-group16\\-sha512,diffie\\-hellman\\-group15\\-sha512,diffie\\-hellman\\-group14\\-sha256,ext\\-info\\-s\u0000\u0000\u0000qrsa\\-sha2\\-512,rsa\\-sha2\\-256,ssh\\-rsa,ssh\\-dss,ecdsa\\-sha2\\-nistp256,ecdsa\\-sha2\\-nistp384,ecdsa\\-sha2\\-nistp521,ssh\\-ed25519\u0000\u0000\u0000Naes256\\-gcm@openssh\\.com,aes128\\-gcm@openssh\\.com,",
+      "pattern": "^SSH\\-2\\.0\\-SFTPPlus(?:\\s+TRIAL)?(?=\\r?\\n|\\r|$)",
       "count": 1,
       "template_ids": [
         55
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 40
     },
     {
-      "id": 41,
+      "id": "ssh.protocol-identity.unknown-ssh-41",
       "name": "Unknown-SSH-41",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-SSH2\\.0GA",
@@ -507,11 +680,15 @@
       "template_ids": [
         56
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 41
     },
     {
-      "id": 42,
+      "id": "ssh.protocol-identity.unknown-ssh-42",
       "name": "Unknown-SSH-42",
       "protocol": "SSH",
       "pattern": "SSH\\-2\\.0\\-9\\.8\\.1\\.0_openssh",
@@ -519,11 +696,15 @@
       "template_ids": [
         57
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 42
     },
     {
-      "id": 43,
+      "id": "ssh.software.sshd-core",
       "name": "SSHD-CORE",
       "protocol": "SSH",
       "pattern": ".*SSHD.*CORE.*",
@@ -531,129 +712,196 @@
       "template_ids": [
         58
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 43
     },
     {
-      "id": 82,
+      "id": "ssh.software.dropbear",
       "name": "Dropbear",
       "protocol": "SSH",
       "pattern": ".*[Dd]ropbear.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 82
     },
     {
-      "id": 83,
+      "id": "ssh.software.busybox",
       "name": "BusyBox",
       "protocol": "SSH",
       "pattern": ".*BusyBox.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 83
     },
     {
-      "id": 84,
+      "id": "ssh.software.routeros",
       "name": "RouterOS",
       "protocol": "SSH",
       "pattern": ".*RouterOS.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 84
     },
     {
-      "id": 98,
+      "id": "ssh.software.netscreen",
       "name": "NetScreen",
       "protocol": "SSH",
       "pattern": ".*NetScreen.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 98
     },
     {
-      "id": 99,
+      "id": "ssh.software.adtran",
       "name": "Adtran",
       "protocol": "SSH",
       "pattern": ".*Adtran.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 99
     },
     {
-      "id": 100,
+      "id": "ssh.software.moveit",
       "name": "MOVEit",
       "protocol": "SSH",
       "pattern": ".*MOVEit.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 100
     },
     {
-      "id": 101,
+      "id": "ssh.software.crestron",
       "name": "Crestron",
       "protocol": "SSH",
       "pattern": ".*Crestron.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 101
     },
     {
-      "id": 102,
+      "id": "ssh.software.romsshell",
       "name": "RomSShell",
       "protocol": "SSH",
       "pattern": ".*RomSShell.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 102
     },
     {
-      "id": 141,
+      "id": "ssh.software.asyncssh",
       "name": "AsyncSSH",
       "protocol": "SSH",
       "pattern": ".*AsyncSSH.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 141
     },
     {
-      "id": 142,
+      "id": "ssh.software.weonlydo-ssh",
       "name": "WeOnlyDo SSH",
       "protocol": "SSH",
-      "pattern": ".*WeOnlyDo.*",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-WeOnlyDo(?![-_ ]?(?:wodFTPD|WingFTP))(?:\\s+[^\\r\\n]+)?(?=\\r?\\n|\\r|$)",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 142
     },
     {
-      "id": 175,
+      "id": "ssh.software.busybox.51089e6d",
       "name": "BusyBox",
       "protocol": "SSH",
       "pattern": ".*[Bb]usy[Bb]ox.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 175
     },
     {
-      "id": 214,
+      "id": "ssh.software.proftpd",
       "name": "ProFTPD",
       "protocol": "SSH",
       "pattern": ".*ProFTPD.*",
       "count": 0,
       "template_ids": [],
       "derived_from_rule_id": 49,
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 214
+    },
+    {
+      "id": "ssh.provider.weonlydo",
+      "name": "WeOnlyDo",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-WeOnlyDo[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "provider",
+      "match_level": "provider_name",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "explanation": "The SSH identification line explicitly names WeOnlyDo.",
+      "legacy_id": 216
     }
   ]
 }

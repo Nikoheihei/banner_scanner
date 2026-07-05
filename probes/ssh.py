@@ -5,6 +5,7 @@ import logging
 from typing import Optional
 
 from ..core.models import BannerResult, SshBanner, ProbeConfig, get_effective_timeout
+from ..core.evidence import captured_response_sha256
 from ..core.parsers import parse_ssh_banner, extract_banner_info
 import banner_scanner.core.transport as _transport
 
@@ -74,6 +75,7 @@ async def probe_ssh(
         banner_bytes = data.split(b"\n")[0]
         banner = banner_bytes.decode("utf-8", errors="replace").rstrip("\r")
         result.banner = banner
+        result.response_sha256 = captured_response_sha256(data)
         result.banner_truncated = truncated
         result.ssh = parse_ssh_banner(banner)
         result.accessible = True

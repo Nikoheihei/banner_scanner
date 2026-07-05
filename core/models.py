@@ -4,6 +4,21 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 
+RESULT_TYPES = (
+    "software",
+    "software_family",
+    "device_family",
+    "service_status",
+    "capability",
+    "authentication",
+    "deployment",
+    "provider",
+    "protocol_identity",
+)
+
+EVIDENCE_STRENGTHS = ("conclusive", "strong", "moderate", "weak")
+
+
 @dataclass
 class SshBanner:
     """SSH Banner 解析结果，含软件版本 + OS 指纹"""
@@ -99,6 +114,40 @@ class FingerprintMatch:
     category: str = ""
     labels: dict[str, Any] = field(default_factory=dict)
     extracted: dict[str, str] = field(default_factory=dict)
+    result_type: str = "software"
+    match_level: str = "software_name"
+    evidence_strength: str = "strong"
+    primary_eligible: bool = True
+    tie_breaker: int = 0
+    explanation: str = ""
+    match_length: int = 0
+    specificity: int = 0
+
+
+@dataclass
+class Identification:
+    """A semantic identification returned to MCP clients.
+
+    ``evidence_strength`` is an ordinal rule-evidence label.  It is not a
+    probability and is intentionally kept separate from evaluation metrics.
+    """
+
+    result_type: str
+    name: str
+    version: str = ""
+    evidence_strength: str = "strong"
+    explanation: str = ""
+
+
+@dataclass
+class EvidenceStep:
+    """Bounded evidence about one probe exchange step."""
+
+    operation: str
+    direction: str
+    byte_count: int
+    preview: str = ""
+    elapsed_ms: float = 0.0
 
 
 @dataclass
@@ -118,11 +167,19 @@ class BannerResult:
     mysql: Optional[MysqlInfo] = None
     pgsql: Optional[PgsqlInfo] = None
     banner_raw_hex: str = ""     # 原始字节 hex (用于 IAC 指纹匹配)
+    response_sha256: str = ""    # 完整已捕获响应的 SHA-256，不保留原始副本
     vendor: str = ""
-    vendor_id: int = 0
+    vendor_id: int | str = 0
     vendor_confidence: float = 0.0
     matched_rules: list[FingerprintMatch] = field(default_factory=list)
     fingerprint_details: dict[str, Any] = field(default_factory=dict)
+    protocol_status: str = "not_observed"
+    observed_protocol: str = ""
+    identification_status: str = "unidentified"
+    primary_identification: Optional[Identification] = None
+    identification_candidates: list[Identification] = field(default_factory=list)
+    findings: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
+    evidence_trace: list[EvidenceStep] = field(default_factory=list)
     # 重试信息
     retry_count: int = 0                # 实际重试次数
     retry_attempts: int = 1             # 总尝试次数 (含首次)

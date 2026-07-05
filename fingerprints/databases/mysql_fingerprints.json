@@ -1,5 +1,5 @@
 {
-  "schema": "database-fingerprint-library-v1",
+  "schema": "banner-scanner.database-fingerprints.v2",
   "library_id": "mysql-fingerprints",
   "version": "0.1.0",
   "generated_at": "2026-06-25T03:23:52.673549+00:00",
@@ -35,14 +35,18 @@
         "protocol": "MYSQL",
         "service_family": "mysql-compatible"
       },
-      "confidence": 0.99,
       "evidence": [
         "protocol",
         "mysql.protocol_version",
         "mysql.version"
       ],
       "notes": "",
-      "sample_count": 422199
+      "sample_count": 422199,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "conclusive",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.extract.version",
@@ -69,12 +73,16 @@
       "labels": {
         "version_field": "mysql.version"
       },
-      "confidence": 0.99,
       "evidence": [
         "mysql.version"
       ],
       "notes": "",
-      "sample_count": 422199
+      "sample_count": 422199,
+      "result_type": "software",
+      "match_level": "software_version",
+      "evidence_strength": "conclusive",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.extract.major",
@@ -97,12 +105,16 @@
       "labels": {
         "version_component": "major"
       },
-      "confidence": 0.95,
       "evidence": [
         "mysql.version"
       ],
       "notes": "",
-      "sample_count": 422198
+      "sample_count": 422198,
+      "result_type": "software",
+      "match_level": "software_version",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.impl.mariadb",
@@ -123,12 +135,16 @@
       "labels": {
         "implementation": "MariaDB"
       },
-      "confidence": 0.99,
       "evidence": [
         "mysql.version"
       ],
       "notes": "",
-      "sample_count": 105407
+      "sample_count": 105407,
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "conclusive",
+      "primary_eligible": true,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.impl.percona",
@@ -149,12 +165,16 @@
       "labels": {
         "implementation": "Percona Server"
       },
-      "confidence": 0.99,
       "evidence": [
         "mysql.version"
       ],
       "notes": "",
-      "sample_count": 2078
+      "sample_count": 2078,
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "conclusive",
+      "primary_eligible": true,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.impl.tidb",
@@ -175,12 +195,16 @@
       "labels": {
         "implementation": "TiDB"
       },
-      "confidence": 0.99,
       "evidence": [
         "mysql.version"
       ],
       "notes": "",
-      "sample_count": 24
+      "sample_count": 24,
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "conclusive",
+      "primary_eligible": true,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.impl.mysql-compatible-default",
@@ -211,13 +235,17 @@
       "labels": {
         "implementation": "MySQL_or_compatible"
       },
-      "confidence": 0.88,
       "evidence": [
         "mysql.protocol_version",
         "mysql.version"
       ],
       "notes": "Some compatible products expose only a numeric MySQL-looking version.",
-      "sample_count": 314689
+      "sample_count": 314689,
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.dist.ubuntu",
@@ -233,12 +261,16 @@
       "labels": {
         "distribution_hint": "ubuntu-package"
       },
-      "confidence": 0.85,
       "evidence": [
         "mysql.version"
       ],
       "notes": "",
-      "sample_count": 82508
+      "sample_count": 82508,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.dist.debian",
@@ -254,12 +286,16 @@
       "labels": {
         "distribution_hint": "debian-package"
       },
-      "confidence": 0.85,
       "evidence": [
         "mysql.version"
       ],
       "notes": "",
-      "sample_count": 13047
+      "sample_count": 13047,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.dist.azure",
@@ -275,12 +311,16 @@
       "labels": {
         "provider_hint": "azure"
       },
-      "confidence": 0.9,
       "evidence": [
         "mysql.version"
       ],
       "notes": "",
-      "sample_count": 12334
+      "sample_count": 12334,
+      "result_type": "provider",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.dist.cloudlinux",
@@ -296,12 +336,16 @@
       "labels": {
         "distribution_hint": "cloudlinux-lve"
       },
-      "confidence": 0.88,
       "evidence": [
         "mysql.version"
       ],
       "notes": "",
-      "sample_count": 35847
+      "sample_count": 35847,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.runtime.log-enabled",
@@ -317,12 +361,16 @@
       "labels": {
         "runtime_hint": "log-enabled"
       },
-      "confidence": 0.75,
       "evidence": [
         "mysql.version"
       ],
       "notes": "",
-      "sample_count": 47431
+      "sample_count": 47431,
+      "result_type": "deployment",
+      "match_level": "generic_device_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.auth.plugin-observed",
@@ -343,12 +391,16 @@
       "labels": {
         "metadata": "auth_plugin"
       },
-      "confidence": 0.55,
       "evidence": [
         "mysql.auth_plugin"
       ],
       "notes": "The current scanner parser appears to truncate common plugin names in many records; use as metadata, not a product fingerprint.",
-      "sample_count": 415196
+      "sample_count": 415196,
+      "result_type": "authentication",
+      "match_level": "status_fact",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0
     },
     {
       "id": "mysql.capability.flags-observed",
@@ -369,12 +421,16 @@
       "labels": {
         "metadata": "capability_flags"
       },
-      "confidence": 0.65,
       "evidence": [
         "mysql.capability_flags"
       ],
       "notes": "",
-      "sample_count": 422199
+      "sample_count": 422199,
+      "result_type": "capability",
+      "match_level": "status_fact",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
+      "tie_breaker": 0
     }
   ]
 }

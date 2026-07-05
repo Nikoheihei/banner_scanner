@@ -6,10 +6,11 @@ import time
 from pathlib import Path
 from typing import Optional
 
-from .models import BannerResult, HostResult, ProbeConfig
+from .models import BannerResult, EvidenceStep, HostResult, ProbeConfig
 from .matcher import DEFAULT_PROTOCOL_LIBRARY_DIR, FingerprintMatcher
 from .database_matcher import DEFAULT_LIBRARY_DIR, DatabaseFingerprintMatcher
 from .retry import RetryExecutor, RetryConfig, RETRYABLE_EXCEPTIONS
+from .protocol_detection import confirm_protocol_from_fingerprint, prepare_protocol_status
 from ..probes import PROTOCOL_PROBES
 from ..probes.ssh import probe_ssh as _probe_ssh
 from ..probes.ftp import probe_ftp as _probe_ftp
@@ -47,6 +48,7 @@ class ProbeEngine:
         self,
         host: str,
         protocols: Optional[list[str]] = None,
+        max_retries: Optional[int] = None,
     ) -> HostResult:
         if protocols is None:
             protocols = list(PROTOCOL_PROBES.keys())
@@ -61,7 +63,9 @@ class ProbeEngine:
             ports = self._get_ports(proto)
             for port in ports:
                 try:
-                    result = await self._probe_with_retry(probe_fn, host, port, proto)
+                    result = await self._probe_with_retry(
+                        probe_fn, host, port, proto, max_retries=max_retries,
+                    )
                     self._total_probes += 1
                     if result.accessible:
                         results[proto] = result
@@ -81,16 +85,21 @@ class ProbeEngine:
         # 指纹匹配 + 更新 info
         from .parsers import extract_banner_info
         for br in results.values():
-            if self._matcher is not None:
-                self._matcher.match(br)
-            self._database_matcher.match(br)
+            self._ensure_evidence_trace(br)
+            prepare_protocol_status(br)
+            if br.protocol_status != "mismatch":
+                if self._matcher is not None:
+                    self._matcher.match(br)
+                self._database_matcher.match(br)
+                confirm_protocol_from_fingerprint(br)
             if br.accessible:
                 br.info = extract_banner_info(br)
 
         total_time = (time.time() - start) * 1000
         return HostResult(host=host, results=results, total_time_ms=total_time)
 
-    async def probe_single(self, host: str, port: int, protocol: str) -> BannerResult:
+    async def probe_single(self, host: str, port: int, protocol: str,
+                           max_retries: Optional[int] = None) -> BannerResult:
         """探测单个 IP:端口:协议（不走端口遍历，直接对指定端口探测）"""
         probe_fn = PROTOCOL_PROBES.get(protocol.lower())
         if probe_fn is None:
@@ -98,7 +107,9 @@ class ProbeEngine:
                                 error=f"Unknown protocol: {protocol}")
 
         try:
-            result = await self._probe_with_retry(probe_fn, host, port, protocol)
+            result = await self._probe_with_retry(
+                probe_fn, host, port, protocol, max_retries=max_retries,
+            )
             self._total_probes += 1
             if not result.accessible:
                 self._total_errors += 1
@@ -109,22 +120,28 @@ class ProbeEngine:
 
         # 指纹匹配 + 更新 info
         from .parsers import extract_banner_info
-        if self._matcher is not None:
-            self._matcher.match(result)
-        self._database_matcher.match(result)
+        self._ensure_evidence_trace(result)
+        prepare_protocol_status(result)
+        if result.protocol_status != "mismatch":
+            if self._matcher is not None:
+                self._matcher.match(result)
+            self._database_matcher.match(result)
+            confirm_protocol_from_fingerprint(result)
         if result.accessible:
             result.info = extract_banner_info(result)
 
         return result
 
     async def _probe_with_retry(self, probe_fn, host: str, port: int,
-                                 proto: str) -> BannerResult:
+                                 proto: str,
+                                 max_retries: Optional[int] = None) -> BannerResult:
         """执行单次探测（带重试策略）"""
-        if self.config.max_retries < 1:
+        retry_limit = self.config.max_retries if max_retries is None else max_retries
+        if retry_limit < 1:
             return await probe_fn(host, port=port, config=self.config)
 
         retry_cfg = RetryConfig(
-            max_retries=self.config.max_retries,
+            max_retries=retry_limit,
             base_delay=self.config.retry_base_delay,
         )
         executor = RetryExecutor(retry_cfg)
@@ -154,6 +171,8 @@ class ProbeEngine:
         hosts: list[str],
         protocols: Optional[list[str]] = None,
         concurrency: int = 1,
+        max_retries: Optional[int] = None,
+        global_semaphore: Optional[asyncio.Semaphore] = None,
     ) -> list[HostResult]:
         """Probe multiple hosts while preserving input order.
 
@@ -168,7 +187,10 @@ class ProbeEngine:
 
         async def probe_one(host: str) -> HostResult:
             async with semaphore:
-                return await self.probe_host(host, protocols)
+                if global_semaphore is None:
+                    return await self.probe_host(host, protocols, max_retries=max_retries)
+                async with global_semaphore:
+                    return await self.probe_host(host, protocols, max_retries=max_retries)
 
         return list(await asyncio.gather(*(probe_one(host) for host in hosts)))
 
@@ -187,6 +209,7 @@ class ProbeEngine:
                 "fingerprint_path": str(self.config.fingerprint_path)
                 if self.config.fingerprint_path else None,
                 "database_fingerprint_rules": self._database_matcher.rule_count,
+                "database_fingerprint_rules_by_protocol": self._database_matcher.stats(),
                 "database_fingerprint_path": str(
                     self.config.database_fingerprint_path or DEFAULT_LIBRARY_DIR
                 ),
@@ -200,6 +223,23 @@ class ProbeEngine:
     def _get_ports(self, proto: str) -> list[int]:
         cfg = self.config.protocol_config.get(proto)
         return cfg.ports if cfg else [22]
+
+    @staticmethod
+    def _ensure_evidence_trace(result: BannerResult) -> None:
+        if not result.accessible or result.evidence_trace:
+            return
+        preview = result.banner[:1024]
+        byte_count = len(result.banner.encode("utf-8", errors="replace"))
+        if not preview and result.banner_raw_hex:
+            preview = result.banner_raw_hex[:2048]
+            byte_count = len(result.banner_raw_hex) // 2
+        result.evidence_trace.append(EvidenceStep(
+            operation="protocol_response",
+            direction="receive",
+            byte_count=byte_count,
+            preview=preview,
+            elapsed_ms=round(result.response_time_ms, 1),
+        ))
 
 
 # 便捷方法

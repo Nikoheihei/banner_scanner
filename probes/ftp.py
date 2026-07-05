@@ -5,6 +5,7 @@ import logging
 from typing import Optional
 
 from ..core.models import BannerResult, FtpFeatures, ProbeConfig, get_effective_timeout
+from ..core.evidence import captured_response_sha256
 from ..core.parsers import (
     parse_ftp_features, extract_ftp_features_from_lines,
     parse_ftp_banner_info, extract_banner_info,
@@ -41,6 +42,7 @@ async def probe_ftp(
             max_bytes=config.max_banner_bytes,
             read_timeout=rt,
         )
+        captured_data = bytearray(data)
 
         elapsed = (asyncio.get_event_loop().time() - start) * 1000
         result.response_time_ms = elapsed
@@ -56,9 +58,10 @@ async def probe_ftp(
 
         # --- 第二阶段：若 Banner 为空，主动发送命令触发响应 ---
         if not banner.strip():
-            banner, full_text = await _proactive_ftp_probe(
+            banner, full_text, proactive_data = await _proactive_ftp_probe(
                 reader, writer, config, host, port, rt
             )
+            captured_data.extend(proactive_data)
             if banner:
                 result.banner = banner
                 # 更新耗时（含主动探测）
@@ -75,7 +78,10 @@ async def probe_ftp(
             try:
                 writer.write(b"FEAT\r\n")
                 await writer.drain()
-                features = await _read_feat_lines(reader, rt * 0.5, config.max_banner_bytes)
+                features, feature_data = await _read_feat_lines(
+                    reader, rt * 0.5, config.max_banner_bytes,
+                )
+                captured_data.extend(feature_data)
                 if features:
                     result.ftp = parse_ftp_features(features)
                     result.ftp.software = ftp_info.software
@@ -95,6 +101,7 @@ async def probe_ftp(
             # 在 error 中说明（但仍标记 accessible）
             result.error = "TCP connected but no FTP banner received"
 
+        result.response_sha256 = captured_response_sha256(bytes(captured_data))
         # 统一提取有效信息
         result.info = extract_banner_info(result)
 
@@ -112,7 +119,8 @@ async def probe_ftp(
     return result
 
 
-async def _read_feat_lines(reader, read_timeout: float, max_bytes: int) -> str:
+async def _read_feat_lines(reader, read_timeout: float,
+                           max_bytes: int) -> tuple[str, bytes]:
     """递归逐行读取 FEAT 响应，直到遇到 '211 ' 结束标记（参照 C++ 原版）"""
     all_data = b""
     while True:
@@ -145,11 +153,12 @@ async def _read_feat_lines(reader, read_timeout: float, max_bytes: int) -> str:
             if semi > 0:
                 feat = feat[:semi].strip()
             features.append(feat)
-    return ", ".join(features) if features else ""
+    return (", ".join(features) if features else ""), all_data
 
 
 async def _proactive_ftp_probe(reader, writer, config: ProbeConfig,
-                                host: str, port: int, read_timeout: float) -> tuple:
+                                host: str, port: int,
+                                read_timeout: float) -> tuple[str, str, bytes]:
     """主动触发 FTP 响应：尝试 HELP / SYST / 等待更长时间"""
     commands = [b"HELP\r\n", b"SYST\r\n", b""]  # "" = 再等一轮
     for cmd in commands:
@@ -168,8 +177,8 @@ async def _proactive_ftp_probe(reader, writer, config: ProbeConfig,
                 first_line = text.splitlines()[0].strip() if text.splitlines() else text
                 logger.debug("[FTP] %s:%d proactive %s => %s",
                            host, port, cmd.decode() if cmd else "wait", first_line[:80])
-                return first_line, text
+                return first_line, text, data
         except (_transport.ReadTimeout, _transport.TransportError):
             continue
 
-    return "", ""
+    return "", "", b""

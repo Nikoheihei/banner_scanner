@@ -26,7 +26,18 @@ import re
 from pathlib import Path
 from typing import Optional
 
-from .models import BannerResult, FingerprintMatch
+from .identification import (
+    LEGACY_CONFIDENCE,
+    finalize_identification,
+    legacy_rule_metadata,
+    match_rank,
+)
+from .models import (
+    BannerResult,
+    EVIDENCE_STRENGTHS,
+    FingerprintMatch,
+    RESULT_TYPES,
+)
 
 logger = logging.getLogger("banner_scanner.matcher")
 DEFAULT_PROTOCOL_LIBRARY_DIR = Path(__file__).resolve().parent.parent / "fingerprints" / "protocols"
@@ -37,14 +48,29 @@ DEFAULT_PROTOCOL_LIBRARY_DIR = Path(__file__).resolve().parent.parent / "fingerp
 class FingerprintRule:
     """单条指纹规则"""
 
-    def __init__(self, vendor_id: int, name: str, pattern: str, protocol: str = "",
-                 category: str = "implementation", priority: int = 100):
+    def __init__(self, vendor_id: int | str, name: str, pattern: str, protocol: str = "",
+                 category: str = "implementation", priority: int = 100,
+                 result_type: str = "", match_level: str = "",
+                 evidence_strength: str = "", primary_eligible: Optional[bool] = None,
+                 tie_breaker: int = 0, explanation: str = "",
+                 labels: Optional[dict] = None, extract: Optional[list[dict]] = None):
         self.vendor_id = vendor_id
         self.name = name
         self.pattern = pattern
         self.protocol = protocol.upper()
         self.category = category
-        self.priority = priority
+        self.priority = priority  # v1 compatibility only; never the primary rank.
+        legacy = legacy_rule_metadata(category, priority)
+        self.result_type = result_type or legacy["result_type"]
+        self.match_level = match_level or legacy["match_level"]
+        self.evidence_strength = evidence_strength or legacy["evidence_strength"]
+        self.primary_eligible = (
+            legacy["primary_eligible"] if primary_eligible is None else primary_eligible
+        )
+        self.tie_breaker = tie_breaker
+        self.explanation = explanation
+        self.labels = labels or {}
+        self.extract = extract or []
         self._regex: Optional[re.Pattern] = None
 
     @property
@@ -69,6 +95,13 @@ class FingerprintRule:
             "protocol": self.protocol,
             "category": self.category,
             "priority": self.priority,
+            "result_type": self.result_type,
+            "match_level": self.match_level,
+            "evidence_strength": self.evidence_strength,
+            "primary_eligible": self.primary_eligible,
+            "tie_breaker": self.tie_breaker,
+            "labels": self.labels,
+            "extract": self.extract,
             "pattern": self.pattern,
         }
 
@@ -89,6 +122,7 @@ class FingerprintLoader:
             rules = []
             for file_path in files:
                 rules.extend(FingerprintLoader._load_json(file_path))
+            _validate_rule_set(rules)
             logger.info(
                 "Loaded %d fingerprint rules from %d protocol libraries in %s",
                 len(rules), len(files), path,
@@ -111,6 +145,7 @@ class FingerprintLoader:
             raise FileNotFoundError(f"Fingerprint file not found: {path}")
 
         rules = loader(path)
+        _validate_rule_set(rules)
         logger.info(
             "Loaded %d fingerprint rules from %s", len(rules), path
         )
@@ -123,17 +158,48 @@ class FingerprintLoader:
 
         vendors = data.get("vendors", [])
         library_protocol = str(data.get("protocol") or "").upper()
-        return [
+        rules = [
             FingerprintRule(
                 vendor_id=v["id"],
                 name=v["name"],
                 pattern=v["pattern"],
                 protocol=str(v.get("protocol") or library_protocol),
-                category=str(v.get("category") or "implementation"),
+                category=str(v.get("category") or ""),
                 priority=int(v.get("priority", 100)),
+                result_type=str(v.get("result_type") or ""),
+                match_level=str(v.get("match_level") or ""),
+                evidence_strength=str(v.get("evidence_strength") or ""),
+                primary_eligible=v.get("primary_eligible"),
+                tie_breaker=int(v.get("tie_breaker", 0)),
+                explanation=str(v.get("explanation") or ""),
+                labels=dict(v.get("labels") or {}),
+                extract=list(v.get("extract") or []),
             )
             for v in vendors
         ]
+        _validate_rule_set(rules)
+        return rules
+
+
+def _validate_rule_set(rules: list[FingerprintRule]) -> None:
+    seen: set[int | str] = set()
+    for rule in rules:
+        if rule.vendor_id in seen:
+            raise ValueError(f"Duplicate fingerprint rule id: {rule.vendor_id}")
+        seen.add(rule.vendor_id)
+        if rule.result_type not in RESULT_TYPES:
+            raise ValueError(
+                f"Invalid result_type {rule.result_type!r} in rule {rule.vendor_id}"
+            )
+        if rule.evidence_strength not in EVIDENCE_STRENGTHS:
+            raise ValueError(
+                "Invalid evidence_strength "
+                f"{rule.evidence_strength!r} in rule {rule.vendor_id}"
+            )
+        try:
+            rule.regex
+        except re.error as exc:
+            raise ValueError(f"Invalid regex in rule {rule.vendor_id}: {exc}") from exc
 
 
 # ==================== 指纹匹配器 ====================
@@ -161,11 +227,20 @@ class FingerprintMatcher:
                 name=v["name"],
                 pattern=v["pattern"],
                 protocol=str(v.get("protocol") or library_protocol),
-                category=str(v.get("category") or "implementation"),
+                category=str(v.get("category") or ""),
                 priority=int(v.get("priority", 100)),
+                result_type=str(v.get("result_type") or ""),
+                match_level=str(v.get("match_level") or ""),
+                evidence_strength=str(v.get("evidence_strength") or ""),
+                primary_eligible=v.get("primary_eligible"),
+                tie_breaker=int(v.get("tie_breaker", 0)),
+                explanation=str(v.get("explanation") or ""),
+                labels=dict(v.get("labels") or {}),
+                extract=list(v.get("extract") or []),
             )
             for v in vendors
         ]
+        _validate_rule_set(rules)
         return cls(rules=rules)
 
     # ---- 匹配入口 ----
@@ -178,7 +253,7 @@ class FingerprintMatcher:
             return result
 
         candidates = self._collect_candidates(result)
-        matches = []
+        matches: list[FingerprintMatch] = []
         result_protocol = result.protocol.upper()
 
         for rule in self._rules:
@@ -188,37 +263,48 @@ class FingerprintMatcher:
                 m = rule.regex.search(text)
                 if m:
                     match_len = m.end() - m.start()
+                    extracted = {}
+                    for extractor in rule.extract:
+                        field = str(extractor.get("field") or "")
+                        group = extractor.get("group")
+                        if not field or group in (None, ""):
+                            continue
+                        try:
+                            value = m.group(group)
+                        except (IndexError, KeyError):
+                            continue
+                        if value:
+                            extracted[field] = str(value).strip()
                     fm = FingerprintMatch(
                         vendor_id=rule.vendor_id,
                         vendor_name=rule.name,
                         pattern=rule.pattern,
-                        confidence=min(1.0, match_len / max(len(text), 1) * 2),
+                        confidence=LEGACY_CONFIDENCE.get(rule.evidence_strength, 0.0),
                         source=source,
                         category=rule.category,
+                        labels=rule.labels,
+                        extracted=extracted,
+                        result_type=rule.result_type,
+                        match_level=rule.match_level,
+                        evidence_strength=rule.evidence_strength,
+                        primary_eligible=rule.primary_eligible,
+                        tie_breaker=rule.tie_breaker,
+                        explanation=rule.explanation,
+                        match_length=match_len,
+                        specificity=rule.specificity,
                     )
-                    matches.append((rule.priority, rule.specificity, match_len, fm))
+                    matches.append(fm)
 
-        # 明确实现优先于设备族、状态和兜底模板；同级再比较规则特异性。
-        matches.sort(key=lambda x: (-x[0], -x[1], -x[2]))
+        matches.sort(key=match_rank, reverse=True)
         seen_ids = set()
         unique: list[FingerprintMatch] = []
-        for _, _, _, fm in matches:
+        for fm in matches:
             if fm.vendor_id not in seen_ids:
                 seen_ids.add(fm.vendor_id)
                 unique.append(fm)
 
         result.matched_rules = unique
-        primary = next(
-            (match for match in unique
-             if not match.vendor_name.lower().startswith("unknown-")),
-            None,
-        )
-        if primary is not None:
-            result.vendor = primary.vendor_name
-            result.vendor_id = primary.vendor_id
-            result.vendor_confidence = primary.confidence
-
-        return result
+        return finalize_identification(result)
 
     def match_host(self, host_result) -> None:
         """对 HostResult 中所有协议的 BannerResult 执行匹配"""
@@ -237,8 +323,6 @@ class FingerprintMatcher:
         if result.ssh:
             if result.ssh.software:
                 candidates.append(("ssh.software", result.ssh.software))
-            if result.ssh.version_string:
-                candidates.append(("ssh.version_string", result.ssh.version_string))
 
         # Telnet IAC 字节 hex + 标准化签名
         if result.banner_raw_hex:
@@ -270,7 +354,7 @@ class FingerprintMatcher:
 
     # ---- 查询 ----
 
-    def get_vendor_name(self, vendor_id: int) -> Optional[str]:
+    def get_vendor_name(self, vendor_id: int | str) -> Optional[str]:
         for r in self._rules:
             if r.vendor_id == vendor_id:
                 return r.name

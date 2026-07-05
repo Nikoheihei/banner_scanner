@@ -6,6 +6,7 @@ import struct
 from typing import Optional
 
 from ..core.models import BannerResult, ProbeConfig, get_effective_timeout
+from ..core.evidence import captured_response_sha256
 from ..core.parsers import extract_banner_info, parse_pgsql_messages
 import banner_scanner.core.transport as _transport
 
@@ -168,6 +169,7 @@ async def probe_pgsql(
         except asyncio.TimeoutError as exc:
             raise _transport.ReadTimeout(f"read timed out after {rt}s") from exc
         ssl_response = ssl_byte.decode("ascii", errors="replace")
+        captured_chunks = [ssl_byte]
 
         data = b""
         truncated = False
@@ -193,6 +195,10 @@ async def probe_pgsql(
             data, truncated = await _read_message_after_type(
                 reader, ssl_byte, rt, config.max_banner_bytes,
             )
+        if ssl_response == "E":
+            captured_chunks = [data]
+        else:
+            captured_chunks.append(data)
 
         result.pgsql = parse_pgsql_messages(data, ssl_response=ssl_response)
         if not result.pgsql.implementation and ssl_response in {"S", "N"}:
@@ -215,13 +221,19 @@ async def probe_pgsql(
                     result.pgsql.implementation = decoder_info.implementation
                     data = decoder_data
                     truncated = truncated or decoder_truncated
+                captured_chunks.extend((
+                    _decoder_ssl.encode("ascii", errors="replace"),
+                    decoder_data,
+                ))
             except (_transport.TransportError, asyncio.TimeoutError) as exc:
                 logger.debug(
                     "[PGSQL] %s:%d decoder probe failed: %s", host, port, exc,
                 )
         if ssl_response not in {"S", "N"} and not result.pgsql.message_types:
             result.pgsql.protocol_version = 0
-        result.banner_raw_hex = (ssl_byte + data)[:64].hex()
+        raw_preview = data if ssl_response == "E" else ssl_byte + data
+        result.banner_raw_hex = raw_preview[:64].hex()
+        result.response_sha256 = captured_response_sha256(*captured_chunks)
         result.banner_truncated = truncated
         result.accessible = True
 

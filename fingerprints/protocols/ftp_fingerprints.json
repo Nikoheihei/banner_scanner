@@ -1,10 +1,10 @@
 {
-  "schema": "banner-scanner.protocol-fingerprints.v1",
+  "schema": "banner-scanner.protocol-fingerprints.v2",
   "protocol": "FTP",
-  "rule_count": 52,
+  "rule_count": 53,
   "vendors": [
     {
-      "id": 44,
+      "id": "ftp.software.vsftpd",
       "name": "vsFTPd",
       "protocol": "FTP",
       "pattern": ".*vsFTPd.*",
@@ -13,11 +13,15 @@
         59,
         84
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 44
     },
     {
-      "id": 45,
+      "id": "ftp.protocol-identity.unknown-ftp-45",
       "name": "Unknown-FTP-45",
       "protocol": "FTP",
       "pattern": "220\\ Service\\ ready\\ for\\ new\\ .+?",
@@ -25,23 +29,31 @@
       "template_ids": [
         60
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 45
     },
     {
-      "id": 46,
+      "id": "ftp.software.filezilla-server",
       "name": "FileZilla Server",
       "protocol": "FTP",
-      "pattern": ".*FileZilla.*Server.*",
+      "pattern": "^(?:120|220)[- ][^\\r\\n]*FileZilla\\s+Server\\b[^\\r\\n]*",
       "count": 43,
       "template_ids": [
         61
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 46
     },
     {
-      "id": 47,
+      "id": "ftp.software.pure-ftpd",
       "name": "Pure-FTPd",
       "protocol": "FTP",
       "pattern": ".*Pure.*FTPd.*",
@@ -49,11 +61,15 @@
       "template_ids": [
         62
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 47
     },
     {
-      "id": 48,
+      "id": "ftp.software.microsoft-ftp",
       "name": "Microsoft FTP",
       "protocol": "FTP",
       "pattern": ".*Microsoft.*FTP.*",
@@ -61,11 +77,15 @@
       "template_ids": [
         63
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 48
     },
     {
-      "id": 49,
+      "id": "ftp.software.proftpd",
       "name": "ProFTPD",
       "protocol": "FTP",
       "pattern": ".*ProFTPD.*",
@@ -77,11 +97,15 @@
         85,
         97
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 49
     },
     {
-      "id": 50,
+      "id": "ftp.protocol-identity.unknown-ftp-50",
       "name": "Unknown-FTP-50",
       "protocol": "FTP",
       "pattern": "220\\ Welcome\\ to\\ .+?",
@@ -89,11 +113,15 @@
       "template_ids": [
         66
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 50
     },
     {
-      "id": 51,
+      "id": "ftp.software.serv-u-ftp",
       "name": "Serv-U FTP",
       "protocol": "FTP",
       "pattern": ".*(?:^|[^A-Za-z0-9])Serv[-_ ]?U(?:\\s+FTP(?:-Server|\\s+Server)?)?(?:[^A-Za-z0-9]|$).*",
@@ -101,11 +129,15 @@
       "template_ids": [
         67
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 51
     },
     {
-      "id": 52,
+      "id": "ftp.protocol-identity.unknown-ftp-52",
       "name": "Unknown-FTP-52",
       "protocol": "FTP",
       "pattern": "220\\ FTP\\ Server",
@@ -113,11 +145,15 @@
       "template_ids": [
         68
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 52
     },
     {
-      "id": 53,
+      "id": "ftp.protocol-identity.unknown-ftp-53",
       "name": "Unknown-FTP-53",
       "protocol": "FTP",
       "pattern": "220\\ 'FTP\\ U2FsdGVkX1\\+49718V45bZYaAtYtFl\\+0sIqki8MgKxDY='",
@@ -125,11 +161,15 @@
       "template_ids": [
         69
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 53
     },
     {
-      "id": 54,
+      "id": "ftp.protocol-identity.unknown-ftp-54",
       "name": "Unknown-FTP-54",
       "protocol": "FTP",
       "pattern": "220\\ Service\\ Ready",
@@ -137,11 +177,15 @@
       "template_ids": [
         70
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 54
     },
     {
-      "id": 55,
+      "id": "ftp.protocol-identity.unknown-ftp-55",
       "name": "Unknown-FTP-55",
       "protocol": "FTP",
       "pattern": "220\\ FTP\\ Server\\ Welcome",
@@ -149,11 +193,15 @@
       "template_ids": [
         71
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 55
     },
     {
-      "id": 56,
+      "id": "ftp.software.alpine-ftp",
       "name": "Alpine FTP",
       "protocol": "FTP",
       "pattern": ".*Alpine.*FTP.*",
@@ -161,11 +209,15 @@
       "template_ids": [
         72
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 56
     },
     {
-      "id": 57,
+      "id": "ftp.protocol-identity.unknown-ftp-57",
       "name": "Unknown-FTP-57",
       "protocol": "FTP",
       "pattern": "220\\ Welcome\\ to\\ FW\\ SFTP\\ Server",
@@ -173,11 +225,15 @@
       "template_ids": [
         73
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 57
     },
     {
-      "id": 58,
+      "id": "ftp.protocol-identity.unknown-ftp-58",
       "name": "Unknown-FTP-58",
       "protocol": "FTP",
       "pattern": "220\\ This\\ is\\ a\\ restricted\\ .+?\\ Any\\ unauthorized\\ access\\ will\\ be\\ persecuted\\ and\\ punished\\ by\\ federal\\ .+?",
@@ -185,11 +241,15 @@
       "template_ids": [
         75
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 58
     },
     {
-      "id": 59,
+      "id": "ftp.protocol-identity.unknown-ftp-59",
       "name": "Unknown-FTP-59",
       "protocol": "FTP",
       "pattern": "220\\ .+?2",
@@ -197,11 +257,15 @@
       "template_ids": [
         76
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 59
     },
     {
-      "id": 60,
+      "id": "ftp.protocol-identity.unknown-ftp-60",
       "name": "Unknown-FTP-60",
       "protocol": "FTP",
       "pattern": "220\\-Welcome\\ to",
@@ -209,23 +273,31 @@
       "template_ids": [
         77
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 60
     },
     {
-      "id": 61,
+      "id": "ftp.software.filezilla-pro-enterprise",
       "name": "FileZilla Pro Enterprise",
       "protocol": "FTP",
-      "pattern": ".*FileZilla.*Pro.*Enterprise.*",
+      "pattern": "^(?:120|220)[- ][^\\r\\n]*FileZilla\\s+Pro\\s+Enterprise\\s+Server\\b[^\\r\\n]*",
       "count": 1,
       "template_ids": [
         78
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 61
     },
     {
-      "id": 62,
+      "id": "ftp.software.onshift-ftp",
       "name": "OnShift FTP",
       "protocol": "FTP",
       "pattern": ".*OnShift.*FTP.*",
@@ -233,11 +305,15 @@
       "template_ids": [
         79
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 62
     },
     {
-      "id": 63,
+      "id": "ftp.protocol-identity.unknown-ftp-63",
       "name": "Unknown-FTP-63",
       "protocol": "FTP",
       "pattern": "220\\ ESP",
@@ -245,11 +321,15 @@
       "template_ids": [
         80
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 63
     },
     {
-      "id": 64,
+      "id": "ftp.software.pyftpdlib",
       "name": "pyftpdlib",
       "protocol": "FTP",
       "pattern": ".*pyftpdlib.*",
@@ -257,11 +337,15 @@
       "template_ids": [
         81
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 64
     },
     {
-      "id": 65,
+      "id": "ftp.protocol-identity.unknown-ftp-65",
       "name": "Unknown-FTP-65",
       "protocol": "FTP",
       "pattern": "220\\ Welcome\\ to\\ Gudgel\\ Graphix",
@@ -269,11 +353,15 @@
       "template_ids": [
         82
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 65
     },
     {
-      "id": 66,
+      "id": "ftp.protocol-identity.unknown-ftp-66",
       "name": "Unknown-FTP-66",
       "protocol": "FTP",
       "pattern": "220\\ For\\ Previously\\ Approved\\ company\\ business\\ purposes\\ only",
@@ -281,11 +369,15 @@
       "template_ids": [
         83
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 66
     },
     {
-      "id": 67,
+      "id": "ftp.protocol-identity.unknown-ftp-67",
       "name": "Unknown-FTP-67",
       "protocol": "FTP",
       "pattern": "220\\ Welcome\\ message",
@@ -293,11 +385,15 @@
       "template_ids": [
         86
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 67
     },
     {
-      "id": 68,
+      "id": "ftp.protocol-identity.unknown-ftp-68",
       "name": "Unknown-FTP-68",
       "protocol": "FTP",
       "pattern": "220\\ \"Welcome\\ to\\ .+?com!\\ Check\\ out\\ .+?txt\\ for\\ .+?\"",
@@ -305,11 +401,15 @@
       "template_ids": [
         87
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 68
     },
     {
-      "id": 69,
+      "id": "ftp.software.adeptia-internal-ftp",
       "name": "Adeptia Internal FTP",
       "protocol": "FTP",
       "pattern": ".*Adeptia.*Internal.*FTP.*",
@@ -317,11 +417,15 @@
       "template_ids": [
         88
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 69
     },
     {
-      "id": 70,
+      "id": "ftp.software.phoenix-online-ftp",
       "name": "Phoenix Online FTP",
       "protocol": "FTP",
       "pattern": ".*Phoenix.*Online.*FTP.*",
@@ -329,11 +433,15 @@
       "template_ids": [
         89
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 70
     },
     {
-      "id": 71,
+      "id": "ftp.software.courseval-ftps",
       "name": "CoursEval FTPS",
       "protocol": "FTP",
       "pattern": ".*CoursEval.*FTPS.*",
@@ -341,11 +449,15 @@
       "template_ids": [
         90
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 71
     },
     {
-      "id": 72,
+      "id": "ftp.software.hindawi-ftp",
       "name": "Hindawi FTP",
       "protocol": "FTP",
       "pattern": ".*Hindawi.*FTP.*",
@@ -353,11 +465,15 @@
       "template_ids": [
         91
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 72
     },
     {
-      "id": 73,
+      "id": "ftp.software.ws-ftp",
       "name": "WS_FTP",
       "protocol": "FTP",
       "pattern": ".*(?:^|[^A-Za-z0-9])WS[_ -]?FTP(?:[^A-Za-z0-9]|$).*",
@@ -365,11 +481,15 @@
       "template_ids": [
         92
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 73
     },
     {
-      "id": 74,
+      "id": "ftp.protocol-identity.unknown-ftp-74",
       "name": "Unknown-FTP-74",
       "protocol": "FTP",
       "pattern": "220\\ Unauthorized\\ access\\ is\\ strictly\\ .+?",
@@ -377,11 +497,15 @@
       "template_ids": [
         93
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 74
     },
     {
-      "id": 75,
+      "id": "ftp.protocol-identity.unknown-ftp-75",
       "name": "Unknown-FTP-75",
       "protocol": "FTP",
       "pattern": "220\\ Image\\ Gallery",
@@ -389,11 +513,15 @@
       "template_ids": [
         94
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 75
     },
     {
-      "id": 76,
+      "id": "ftp.software.cisco",
       "name": "Cisco",
       "protocol": "FTP",
       "pattern": ".*Cisco.*",
@@ -401,11 +529,15 @@
       "template_ids": [
         95
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 76
     },
     {
-      "id": 77,
+      "id": "ftp.software.lumina-datamatics-ftp",
       "name": "Lumina Datamatics FTP",
       "protocol": "FTP",
       "pattern": ".*Lumina.*Datamatics.*FTP.*",
@@ -413,23 +545,31 @@
       "template_ids": [
         96
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 77
     },
     {
-      "id": 78,
+      "id": "ftp.software.core-ftp-server",
       "name": "Core FTP Server",
       "protocol": "FTP",
-      "pattern": ".*Core.*FTP.*Server.*",
+      "pattern": "^(?:120|220)[- ][^\\r\\n]*Core\\s+FTP\\s+Server\\s+Version[^\\r\\n]*",
       "count": 1,
       "template_ids": [
         98
       ],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 78
     },
     {
-      "id": 79,
+      "id": "ftp.protocol-identity.unknown-ftp-79",
       "name": "Unknown-FTP-79",
       "protocol": "FTP",
       "pattern": "220\\ \\-\\ \\-\\ \\-",
@@ -437,173 +577,256 @@
       "template_ids": [
         99
       ],
-      "category": "fallback",
-      "priority": 10
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "legacy_id": 79
     },
     {
-      "id": 85,
+      "id": "ftp.software.dreamhost-ftp",
       "name": "DreamHost FTP",
       "protocol": "FTP",
       "pattern": ".*DreamHost.*FTP.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 85
     },
     {
-      "id": 86,
+      "id": "ftp.software.www-net-cn-ftp",
       "name": "www.net.cn FTP",
       "protocol": "FTP",
       "pattern": ".*www\\.net\\.cn.*FTP.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 86
     },
     {
-      "id": 87,
+      "id": "ftp.software.qtcp-ftp",
       "name": "QTCP FTP",
       "protocol": "FTP",
       "pattern": ".*QTCP.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 87
     },
     {
-      "id": 88,
+      "id": "ftp.software.eshcom-ftp",
       "name": "Eshcom FTP",
       "protocol": "FTP",
       "pattern": ".*Eshcom.*FTP.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 88
     },
     {
-      "id": 90,
+      "id": "ftp.software.adeptia-internal-ftp.771fd9fc",
       "name": "Adeptia Internal FTP",
       "protocol": "FTP",
       "pattern": ".*Adeptia.*FTP.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 90
     },
     {
-      "id": 95,
+      "id": "ftp.software.axis-camera-ftp",
       "name": "Axis Camera FTP",
       "protocol": "FTP",
       "pattern": ".*AXIS.*Network.*Camera.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 95
     },
     {
-      "id": 96,
+      "id": "ftp.software.apc-management-card",
       "name": "APC Management Card",
       "protocol": "FTP",
       "pattern": ".*AP.*Network.*Management.*Card.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 96
     },
     {
-      "id": 97,
+      "id": "ftp.software.mikrotik",
       "name": "MikroTik",
       "protocol": "FTP",
       "pattern": ".*MikroTik.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 97
     },
     {
-      "id": 103,
+      "id": "ftp.software.gameservers-ftpd",
       "name": "Gameservers FTPD",
       "protocol": "FTP",
       "pattern": ".*Gameservers.*FTP.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 103
     },
     {
-      "id": 104,
+      "id": "ftp.software.arvixe-ftp",
       "name": "Arvixe FTP",
       "protocol": "FTP",
       "pattern": ".*Arvixe.*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 104
     },
     {
-      "id": 105,
+      "id": "ftp.software.firmware-update-ftp",
       "name": "Firmware Update FTP",
       "protocol": "FTP",
       "pattern": ".*[Ff]irmware.*[Uu]pdate.*[Ff][Tt][Pp].*",
       "count": 0,
       "template_ids": [],
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 105
     },
     {
-      "id": 209,
+      "id": "ftp.software.cerberus-ftp",
       "name": "Cerberus FTP",
       "protocol": "FTP",
       "pattern": ".*Cerberus.*FTP.*",
       "count": 0,
       "template_ids": [],
       "derived_from_rule_id": 13,
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 209
     },
     {
-      "id": 210,
+      "id": "ftp.software.crushftp",
       "name": "CrushFTP",
       "protocol": "FTP",
       "pattern": ".*CrushFTP.*",
       "count": 0,
       "template_ids": [],
       "derived_from_rule_id": 6,
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 210
     },
     {
-      "id": 211,
+      "id": "ftp.software.sftpgo",
       "name": "SFTPGo",
       "protocol": "FTP",
       "pattern": ".*SFTPGo.*",
       "count": 0,
       "template_ids": [],
       "derived_from_rule_id": 9,
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 211
     },
     {
-      "id": 212,
+      "id": "ftp.software.wing-ftp",
       "name": "Wing FTP",
       "protocol": "FTP",
-      "pattern": ".*Wing.*FTP.*",
+      "pattern": "^(?:120|220)[- ][^\\r\\n]*Wing\\s+FTP\\s+Server\\b[^\\r\\n]*",
       "count": 0,
       "template_ids": [],
       "derived_from_rule_id": 19,
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 212
     },
     {
-      "id": 213,
+      "id": "ftp.software.xlightftpd",
       "name": "xlightftpd",
       "protocol": "FTP",
-      "pattern": ".*(?:Xlight(?:\\s+FTP)?\\s+Server|xlightftpd).*",
+      "pattern": "^(?:120|220)[- ][^\\r\\n]*(?:\\bXlight\\b|xlightftpd)[^\\r\\n]*",
       "count": 0,
       "template_ids": [],
       "derived_from_rule_id": 33,
-      "category": "implementation",
-      "priority": 100
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "legacy_id": 213
+    },
+    {
+      "id": "ftp.software-family.filezilla",
+      "name": "FileZilla",
+      "protocol": "FTP",
+      "pattern": "^(?:120|220)[- ][^\\r\\n]*FileZilla\\b[^\\r\\n]*",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software_family",
+      "match_level": "software_family",
+      "evidence_strength": "strong",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "explanation": "The FTP greeting explicitly contains the FileZilla product family.",
+      "legacy_id": 215
     }
   ]
 }

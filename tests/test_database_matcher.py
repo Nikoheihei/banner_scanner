@@ -2,16 +2,37 @@
 
 import os
 import sys
+import json
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from banner_scanner.core.database_matcher import DatabaseFingerprintMatcher
-from banner_scanner.core.models import BannerResult, MysqlInfo, PgsqlInfo, RedisInfo
+from banner_scanner.core.database_matcher import (
+    DEFAULT_LIBRARY_DIR,
+    DatabaseFingerprintMatcher,
+)
+from banner_scanner.core.models import (
+    BannerResult,
+    EVIDENCE_STRENGTHS,
+    MysqlInfo,
+    PgsqlInfo,
+    RESULT_TYPES,
+    RedisInfo,
+)
 
 
 def test_default_libraries_loaded():
     matcher = DatabaseFingerprintMatcher.load_default()
     assert matcher.rule_count == 59
+
+
+def test_database_v2_rules_do_not_expose_numeric_confidence():
+    for path in DEFAULT_LIBRARY_DIR.glob("*_fingerprints.json"):
+        library = json.loads(path.read_text(encoding="utf-8"))
+        for rule in library["rules"]:
+            assert "confidence" not in rule
+            assert "priority" not in rule
+            assert rule["result_type"] in RESULT_TYPES
+            assert rule["evidence_strength"] in EVIDENCE_STRENGTHS
 
 
 def test_redis_valkey_match():
@@ -89,6 +110,82 @@ def test_pgsql_cratedb_structured_decoder_hint():
     matcher.match(result)
     assert result.vendor == "CrateDB"
     assert "pgsql.impl.cratedb" in result.fingerprint_details["matched_rule_ids"]
+
+
+def test_nested_condition_forms_are_logically_equivalent():
+    base_rule = {
+        "name": "MariaDB nested evidence",
+        "category": "implementation",
+        "result_type": "software",
+        "match_level": "software_name",
+        "evidence_strength": "strong",
+        "primary_eligible": True,
+        "labels": {"implementation": "MariaDB"},
+    }
+    rules = [
+        {
+            **base_rule,
+            "id": "nested.all-any",
+            "match": {"all": [
+                {"field_equals": {"mysql.protocol_version": 10}},
+                {"any": [
+                    {"field_regex": {"mysql.version": "MariaDB"}},
+                    {"field_regex": {"mysql.version": "Percona"}},
+                ]},
+            ]},
+        },
+        {
+            **base_rule,
+            "id": "nested.any-all",
+            "match": {"any": [
+                {"all": [
+                    {"field_equals": {"mysql.protocol_version": 10}},
+                    {"field_regex": {"mysql.version": "MariaDB"}},
+                ]},
+                {"all": [
+                    {"field_equals": {"mysql.protocol_version": 10}},
+                    {"field_regex": {"mysql.version": "Percona"}},
+                ]},
+            ]},
+        },
+    ]
+    matcher = DatabaseFingerprintMatcher([{
+        "protocol": {"canonical": "MYSQL"},
+        "rules": rules,
+    }])
+    result = BannerResult(
+        protocol="MYSQL",
+        host="192.0.2.6",
+        port=3306,
+        accessible=True,
+        banner="10.11.8-MariaDB",
+        mysql=MysqlInfo(protocol_version=10, version="10.11.8-MariaDB"),
+    )
+
+    matcher.match(result)
+
+    assert result.vendor == "MariaDB"
+    assert set(result.fingerprint_details["matched_rule_ids"]) == {
+        "nested.all-any", "nested.any-all",
+    }
+
+
+def test_unknown_structured_condition_key_fails_during_loading():
+    try:
+        DatabaseFingerprintMatcher([{
+            "protocol": {"canonical": "MYSQL"},
+            "rules": [{
+                "id": "invalid.condition",
+                "result_type": "software",
+                "match_level": "software_name",
+                "evidence_strength": "strong",
+                "primary_eligible": True,
+                "match": {"mystery_operator": []},
+            }],
+        }])
+        assert False, "Expected condition schema validation failure"
+    except ValueError as exc:
+        assert "Unknown condition keys" in str(exc)
 
 
 if __name__ == "__main__":
