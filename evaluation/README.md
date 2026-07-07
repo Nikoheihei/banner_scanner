@@ -34,7 +34,7 @@ per-target active results, aggregate metrics, MCP health data, and a combined
 summary. The MCP flow requires the locked `mcp[cli]==1.28.1` dependency.
 
 No class is removed because its connection rate is zero. Connection rate uses
-all selected targets; precision, recall, and F1 use reachable targets only.
+all selected targets; precision and recall use reachable targets only.
 `zero_connection_classes.json` lists classes that need network or probe-path
 diagnosis without hiding them from the aggregate metrics.
 

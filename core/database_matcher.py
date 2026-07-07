@@ -173,6 +173,9 @@ def _result_record(result: BannerResult) -> dict[str, Any]:
             "version": result.mysql.version,
             "capability_flags": result.mysql.capability_flags,
             "auth_plugin": result.mysql.auth_plugin,
+            "error_code": result.mysql.error_code,
+            "sqlstate": result.mysql.sqlstate,
+            "error_message": result.mysql.error_message,
         }
     if result.pgsql:
         record["pgsql"] = {

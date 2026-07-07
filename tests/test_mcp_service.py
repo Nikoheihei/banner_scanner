@@ -1,6 +1,10 @@
 """Transport-independent MCP service tests."""
 
 import asyncio
+import base64
+import gzip
+import ipaddress
+import json
 
 from banner_scanner.core.models import BannerResult, HostResult
 from banner_scanner.server.policy import RequestValidationError, RuntimeLimits, TargetPolicy
@@ -41,10 +45,10 @@ class FakeEngine:
             "error_rate_pct": 0.0,
             "fingerprint_rules_by_protocol": {"SSH": 56},
             "config": {
-                "database_fingerprint_rules": 59,
+                "database_fingerprint_rules": 61,
                 "database_fingerprint_rules_by_protocol": {
                     "REDIS": 24,
-                    "MYSQL": 14,
+                    "MYSQL": 16,
                     "PGSQL": 21,
                 },
             },
@@ -59,6 +63,28 @@ async def test_service_enforces_authorization_before_probe():
         assert False, "Expected authorization failure"
     except RequestValidationError:
         pass
+    assert engine.last_call is None
+
+
+async def test_service_denylist_overrides_authorization_before_probe():
+    engine = FakeEngine()
+    service = BannerScannerService(
+        engine=engine,
+        target_policy=TargetPolicy(
+            denylist=(ipaddress.ip_network("1.2.3.4/32"),),
+        ),
+    )
+
+    try:
+        await service.scan_batch(
+            hosts=["1.2.3.4"],
+            protocol="ssh",
+            authorization_confirmed=True,
+            transport="sse",
+        )
+        assert False, "Expected denylist failure"
+    except RequestValidationError as exc:
+        assert "denied by server policy" in str(exc)
     assert engine.last_call is None
 
 
@@ -79,6 +105,44 @@ async def test_service_uses_tool_defaults_and_structured_output():
     assert "matched_rules" not in str(output)
 
 
+async def test_scan_batch_unique_mode_groups_equivalent_results():
+    engine = FakeEngine()
+    service = BannerScannerService(engine=engine, target_policy=TargetPolicy())
+    output = await service.scan_batch(
+        hosts=["192.0.2.1", "192.0.2.2"],
+        protocol="ssh",
+        result_mode="unique",
+        authorization_confirmed=True,
+    )
+
+    assert output["total_hosts"] == 2
+    assert output["total_results"] == 2
+    assert output["returned_results"] == 1
+    assert "results" not in output
+    assert output["unique_results"][0]["occurrences"] == 2
+    assert output["unique_results"][0]["sample_hosts"] == [
+        "192.0.2.1", "192.0.2.2",
+    ]
+
+
+async def test_scan_batch_accepts_compressed_host_list():
+    engine = FakeEngine()
+    service = BannerScannerService(engine=engine, target_policy=TargetPolicy())
+    encoded = base64.b64encode(gzip.compress(json.dumps([
+        "192.0.2.1", "192.0.2.2",
+    ]).encode("utf-8"))).decode("ascii")
+
+    output = await service.scan_batch(
+        compressed_hosts=encoded,
+        protocol="ssh",
+        result_mode="unique",
+        authorization_confirmed=True,
+    )
+
+    assert output["total_hosts"] == 2
+    assert engine.last_call["hosts"] == ["192.0.2.1", "192.0.2.2"]
+
+
 async def test_health_check_reports_transports_rules_and_limits():
     limits = RuntimeLimits(scan_batch_max_hosts=99)
     service = BannerScannerService(
@@ -89,7 +153,7 @@ async def test_health_check_reports_transports_rules_and_limits():
     assert health["mcp_transport"] == ["stdio", "streamable_http", "sse"]
     assert health["rules"]["ssh"] == 56
     assert health["rules"]["redis"] == 24
-    assert health["rules"]["mysql"] == 14
+    assert health["rules"]["mysql"] == 16
     assert health["rules"]["pgsql"] == 21
     assert health["limits"]["scan_batch_max_hosts"] == 99
 
