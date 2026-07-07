@@ -280,7 +280,9 @@
       "extract": [],
       "labels": {
         "implementation": "Redis",
-        "service_family": "redis-compatible"
+        "service_family": "redis-compatible",
+        "official_url": "https://redis.io/",
+        "software_category": "database_implementation"
       },
       "evidence": [
         "redis_version",
@@ -314,7 +316,9 @@
       ],
       "labels": {
         "implementation": "Valkey",
-        "service_family": "redis-compatible"
+        "service_family": "redis-compatible",
+        "official_url": "https://valkey.io/",
+        "software_category": "database_implementation"
       },
       "evidence": [
         "valkey_version",
@@ -347,7 +351,9 @@
       ],
       "labels": {
         "implementation": "Dragonfly",
-        "service_family": "redis-compatible"
+        "service_family": "redis-compatible",
+        "official_url": "https://www.dragonflydb.io/",
+        "software_category": "database_implementation"
       },
       "evidence": [
         "dragonfly_version"
@@ -379,7 +385,9 @@
       ],
       "labels": {
         "implementation": "Memurai",
-        "service_family": "redis-compatible"
+        "service_family": "redis-compatible",
+        "official_url": "https://www.memurai.com/",
+        "software_category": "database_implementation"
       },
       "evidence": [
         "memurai_version"

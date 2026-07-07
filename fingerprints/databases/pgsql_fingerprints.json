@@ -398,7 +398,9 @@
       },
       "extract": [],
       "labels": {
-        "implementation_hint": "Amazon Redshift"
+        "implementation_hint": "Amazon Redshift",
+        "official_url": "https://aws.amazon.com/redshift/",
+        "software_category": "database_implementation"
       },
       "evidence": [
         "message"
@@ -442,7 +444,9 @@
       },
       "extract": [],
       "labels": {
-        "implementation_hint": "CrateDB"
+        "implementation_hint": "CrateDB",
+        "official_url": "https://cratedb.com/",
+        "software_category": "database_implementation"
       },
       "evidence": [
         "banner stack marker"
@@ -467,17 +471,19 @@
       },
       "extract": [],
       "labels": {
-        "implementation_hint": "tenant-aware-proxy"
+        "implementation_hint": "tenant-aware-proxy",
+        "deployment_type": "tenant_aware_postgresql_proxy",
+        "excluded_from_software_eval": true
       },
       "evidence": [
         "message"
       ],
       "notes": "Provider name is intentionally not asserted from this message alone.",
       "sample_count": 130,
-      "result_type": "software",
+      "result_type": "deployment",
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
-      "primary_eligible": true,
+      "primary_eligible": false,
       "tie_breaker": 0
     },
     {

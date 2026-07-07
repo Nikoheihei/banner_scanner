@@ -12,7 +12,7 @@ from banner_scanner.core.models import BannerResult
 from banner_scanner.core.models import EVIDENCE_STRENGTHS, RESULT_TYPES
 
 
-EXPECTED_RULE_COUNTS = {"SSH": 56, "FTP": 53, "TELNET": 103}
+EXPECTED_RULE_COUNTS = {"SSH": 76, "FTP": 61, "TELNET": 103}
 
 
 def _load_library(protocol: str) -> dict:
@@ -101,7 +101,9 @@ def test_windows_telnet_text_outranks_generic_iac():
         banner_raw_hex="fffb01fffb03",
     )
     matcher.match(result)
-    assert result.vendor == "Windows telnetd"
+    assert result.vendor == ""
+    assert result.findings["deployment"][0]["name"] == "Windows telnetd"
+    assert result.findings["deployment"][0]["labels"]["implementation_type"] == "windows_builtin"
 
 
 def test_ws_ftp_does_not_match_aws_sftp():
@@ -111,7 +113,8 @@ def test_ws_ftp_does_not_match_aws_sftp():
         banner="SSH-2.0-AWS_SFTP_1.2",
     )
     matcher.match(result)
-    assert result.vendor == "AWS SFTP"
+    assert result.vendor == ""
+    assert result.findings["deployment"][0]["name"] == "AWS SFTP"
     assert all(match.vendor_name != "WS_FTP" for match in result.matched_rules)
 
 

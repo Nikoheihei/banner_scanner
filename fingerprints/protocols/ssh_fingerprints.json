@@ -1,7 +1,7 @@
 {
   "schema": "banner-scanner.protocol-fingerprints.v2",
   "protocol": "SSH",
-  "rule_count": 56,
+  "rule_count": 76,
   "vendors": [
     {
       "id": "ssh.software.openssh",
@@ -28,7 +28,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 1
+      "legacy_id": 1,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.software.aws-sftp",
@@ -39,12 +42,15 @@
       "template_ids": [
         3
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 2
+      "legacy_id": 2,
+      "labels": {
+        "deployment_type": "managed_service"
+      }
     },
     {
       "id": "ssh.software.files-com",
@@ -55,12 +61,15 @@
       "template_ids": [
         5
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 3
+      "legacy_id": 3,
+      "labels": {
+        "deployment_type": "managed_service"
+      }
     },
     {
       "id": "ssh.software.bitvise-ssh-server",
@@ -82,7 +91,8 @@
         "aliases": [
           "WinSSHD"
         ],
-        "provider": "Bitvise"
+        "provider": "Bitvise",
+        "software_category": "independent_software"
       },
       "extract": [
         {
@@ -108,7 +118,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 5
+      "legacy_id": 5,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.software.crushftp",
@@ -124,7 +137,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 6
+      "legacy_id": 6,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.software.cisco",
@@ -135,12 +151,16 @@
       "template_ids": [
         10
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "provider",
+      "match_level": "provider_name",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 7
+      "legacy_id": 7,
+      "labels": {
+        "provider_type": "device_vendor",
+        "device_or_system_hint": "Cisco network device"
+      }
     },
     {
       "id": "ssh.protocol-identity.unknown-ssh-8",
@@ -172,7 +192,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 9
+      "legacy_id": 9,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.software.srtsshserver",
@@ -183,12 +206,15 @@
       "template_ids": [
         16
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 10
+      "legacy_id": 10,
+      "labels": {
+        "review_status": "unverified_label"
+      }
     },
     {
       "id": "ssh.software.goanywhere",
@@ -204,7 +230,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 11
+      "legacy_id": 11,
+      "labels": {
+        "software_category": "mft_platform"
+      }
     },
     {
       "id": "ssh.protocol-identity.unknown-ssh-12",
@@ -236,7 +265,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 13
+      "legacy_id": 13,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.software.ws-ftp",
@@ -252,7 +284,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 14
+      "legacy_id": 14,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.software.gitlab-sshd",
@@ -263,12 +298,15 @@
       "template_ids": [
         23
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 15
+      "legacy_id": 15,
+      "labels": {
+        "deployment_type": "managed_service"
+      }
     },
     {
       "id": "ssh.software.domo",
@@ -279,12 +317,15 @@
       "template_ids": [
         24
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 16
+      "legacy_id": 16,
+      "labels": {
+        "deployment_type": "managed_service"
+      }
     },
     {
       "id": "ssh.software.maverick-sshd",
@@ -300,7 +341,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 17
+      "legacy_id": 17,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.protocol-identity.unknown-ssh-18",
@@ -332,7 +376,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 19
+      "legacy_id": 19,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.protocol-identity.unknown-ssh-20",
@@ -365,7 +412,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 21
+      "legacy_id": 21,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.protocol-identity.unknown-ssh-22",
@@ -392,12 +442,15 @@
       "template_ids": [
         34
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 23
+      "legacy_id": 23,
+      "labels": {
+        "deployment_type": "managed_service"
+      }
     },
     {
       "id": "ssh.protocol-identity.unknown-ssh-24",
@@ -424,12 +477,15 @@
       "template_ids": [
         37
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 25
+      "legacy_id": 25,
+      "labels": {
+        "review_status": "unverified_label"
+      }
     },
     {
       "id": "ssh.protocol-identity.unknown-ssh-26",
@@ -477,7 +533,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 28
+      "legacy_id": 28,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.software.vshell",
@@ -493,7 +552,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 29
+      "legacy_id": 29,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.software.platform-sh",
@@ -504,12 +566,15 @@
       "template_ids": [
         42
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 30
+      "legacy_id": 30,
+      "labels": {
+        "deployment_type": "managed_service"
+      }
     },
     {
       "id": "ssh.protocol-identity.unknown-ssh-31",
@@ -557,7 +622,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 33
+      "legacy_id": 33,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.software.paramiko",
@@ -568,12 +636,15 @@
       "template_ids": [
         48
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 34
+      "legacy_id": 34,
+      "labels": {
+        "implementation_type": "library_component"
+      }
     },
     {
       "id": "ssh.software.babeld",
@@ -584,12 +655,15 @@
       "template_ids": [
         49
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 35
+      "legacy_id": 35,
+      "labels": {
+        "implementation_type": "library_component"
+      }
     },
     {
       "id": "ssh.software.audiocodes",
@@ -600,12 +674,15 @@
       "template_ids": [
         51
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "device_family",
+      "match_level": "device_family",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 36
+      "legacy_id": 36,
+      "labels": {
+        "implementation_type": "device_or_embedded_system"
+      }
     },
     {
       "id": "ssh.protocol-identity.unknown-ssh-37",
@@ -669,7 +746,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 40
+      "legacy_id": 40,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.protocol-identity.unknown-ssh-41",
@@ -712,12 +792,15 @@
       "template_ids": [
         58
       ],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 43
+      "legacy_id": 43,
+      "labels": {
+        "implementation_type": "library_component"
+      }
     },
     {
       "id": "ssh.software.dropbear",
@@ -731,7 +814,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 82
+      "legacy_id": 82,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.software.busybox",
@@ -740,12 +826,15 @@
       "pattern": ".*BusyBox.*",
       "count": 0,
       "template_ids": [],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "device_family",
+      "match_level": "device_family",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 83
+      "legacy_id": 83,
+      "labels": {
+        "implementation_type": "device_or_embedded_system"
+      }
     },
     {
       "id": "ssh.software.routeros",
@@ -754,12 +843,17 @@
       "pattern": ".*RouterOS.*",
       "count": 0,
       "template_ids": [],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 84
+      "legacy_id": 84,
+      "labels": {
+        "provider": "MikroTik",
+        "implementation": "RouterOS built-in service",
+        "implementation_type": "device_os_builtin"
+      }
     },
     {
       "id": "ssh.software.netscreen",
@@ -768,12 +862,15 @@
       "pattern": ".*NetScreen.*",
       "count": 0,
       "template_ids": [],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "device_family",
+      "match_level": "device_family",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 98
+      "legacy_id": 98,
+      "labels": {
+        "implementation_type": "device_or_embedded_system"
+      }
     },
     {
       "id": "ssh.software.adtran",
@@ -782,12 +879,15 @@
       "pattern": ".*Adtran.*",
       "count": 0,
       "template_ids": [],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "device_family",
+      "match_level": "device_family",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 99
+      "legacy_id": 99,
+      "labels": {
+        "implementation_type": "device_or_embedded_system"
+      }
     },
     {
       "id": "ssh.software.moveit",
@@ -801,7 +901,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 100
+      "legacy_id": 100,
+      "labels": {
+        "software_category": "mft_platform"
+      }
     },
     {
       "id": "ssh.software.crestron",
@@ -810,12 +913,15 @@
       "pattern": ".*Crestron.*",
       "count": 0,
       "template_ids": [],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "device_family",
+      "match_level": "device_family",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 101
+      "legacy_id": 101,
+      "labels": {
+        "implementation_type": "device_or_embedded_system"
+      }
     },
     {
       "id": "ssh.software.romsshell",
@@ -824,12 +930,15 @@
       "pattern": ".*RomSShell.*",
       "count": 0,
       "template_ids": [],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "device_family",
+      "match_level": "device_family",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 102
+      "legacy_id": 102,
+      "labels": {
+        "implementation_type": "device_or_embedded_system"
+      }
     },
     {
       "id": "ssh.software.asyncssh",
@@ -838,12 +947,15 @@
       "pattern": ".*AsyncSSH.*",
       "count": 0,
       "template_ids": [],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 141
+      "legacy_id": 141,
+      "labels": {
+        "implementation_type": "library_component"
+      }
     },
     {
       "id": "ssh.software.weonlydo-ssh",
@@ -852,12 +964,15 @@
       "pattern": "^SSH\\-[12]\\.[0-9]+\\-WeOnlyDo(?![-_ ]?(?:wodFTPD|WingFTP))(?:\\s+[^\\r\\n]+)?(?=\\r?\\n|\\r|$)",
       "count": 0,
       "template_ids": [],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 142
+      "legacy_id": 142,
+      "labels": {
+        "review_status": "unverified_label"
+      }
     },
     {
       "id": "ssh.software.busybox.51089e6d",
@@ -866,12 +981,15 @@
       "pattern": ".*[Bb]usy[Bb]ox.*",
       "count": 0,
       "template_ids": [],
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "device_family",
+      "match_level": "device_family",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
       "tie_breaker": 0,
-      "legacy_id": 175
+      "legacy_id": 175,
+      "labels": {
+        "implementation_type": "device_or_embedded_system"
+      }
     },
     {
       "id": "ssh.software.proftpd",
@@ -886,7 +1004,10 @@
       "evidence_strength": "strong",
       "primary_eligible": true,
       "tie_breaker": 0,
-      "legacy_id": 214
+      "legacy_id": 214,
+      "labels": {
+        "software_category": "independent_software"
+      }
     },
     {
       "id": "ssh.provider.weonlydo",
@@ -902,6 +1023,353 @@
       "tie_breaker": 0,
       "explanation": "The SSH identification line explicitly names WeOnlyDo.",
       "legacy_id": 216
+    },
+    {
+      "id": "ssh.software.rosssh",
+      "name": "ROSSSH",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-ROSSSH(?:[^\\r\\n]*)?(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "explanation": "The SSH identification line explicitly names ROSSSH.",
+      "legacy_id": 217,
+      "labels": {
+        "provider": "MikroTik",
+        "implementation": "RouterOS built-in service",
+        "implementation_type": "device_os_builtin"
+      }
+    },
+    {
+      "id": "ssh.software.ipssh",
+      "name": "IPSSH",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-IPSSH(?:[\\-_]?[0-9][0-9A-Za-z.]*|[^\\r\\n]*)?(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "deployment",
+      "match_level": "implementation_hint",
+      "evidence_strength": "moderate",
+      "primary_eligible": false,
+      "tie_breaker": 0,
+      "explanation": "The SSH identification line explicitly names IPSSH.",
+      "legacy_id": 218,
+      "labels": {
+        "provider": "Wind River",
+        "implementation": "VxWorks IPSSH built-in service",
+        "implementation_type": "device_os_builtin"
+      }
+    },
+    {
+      "id": "ssh.software.rebexssh",
+      "name": "RebexSSH",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-RebexSSH(?:[\\-_]?[0-9][0-9A-Za-z.]*)?(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "explanation": "The SSH identification line explicitly names RebexSSH.",
+      "legacy_id": 219,
+      "labels": {
+        "software_category": "independent_software"
+      }
+    },
+    {
+      "id": "ssh.software.pragma-fortress-ssh",
+      "name": "Pragma Fortress SSH",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*(?:Pragma|Fortress)[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "https://www.pragmasys.com/"
+      }
+    },
+    {
+      "id": "ssh.software.silvershield",
+      "name": "SilverSHielD",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*SilverSHielD[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "http://www.k2sxs.com/silvershield/"
+      }
+    },
+    {
+      "id": "ssh.software.freessh",
+      "name": "FreSSH",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*(?:freeSSHd|FreSSH)[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "https://www.freesshd.com/"
+      }
+    },
+    {
+      "id": "ssh.software.sysax-ssh",
+      "name": "Sysax SSH",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*Sysax[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "https://www.sysax.com/server/"
+      }
+    },
+    {
+      "id": "ssh.software.wrq-reflection",
+      "name": "WRQ Reflection",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*(?:WRQ|Reflection)[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "https://www.opentext.com/products/reflection-for-secure-it"
+      }
+    },
+    {
+      "id": "ssh.software.coressh",
+      "name": "CoreSSH",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*CoreSSH[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "https://www.coreftp.com/"
+      }
+    },
+    {
+      "id": "ssh.software.core-ftp",
+      "name": "Core FTP",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*Core\\s+FTP[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "https://www.coreftp.com/server/"
+      }
+    },
+    {
+      "id": "ssh.software.filezilla-pro-enterprise-server",
+      "name": "FileZilla Pro Enterprise Server",
+      "protocol": "SSH",
+      "pattern": "^(?:SSH\\-[12]\\.[0-9]+\\-|220[- ]?)[^\\r\\n]*FileZilla\\s+Pro\\s+Enterprise(?:\\s+Server)?[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "https://filezillapro.com/"
+      }
+    },
+    {
+      "id": "ssh.software.syncplify-server",
+      "name": "Syncplify Server",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*Syncplify(?:\\s+Server)?[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "https://www.syncplify.com/"
+      }
+    },
+    {
+      "id": "ssh.software.completeftp",
+      "name": "CompleteFTP",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*CompleteFTP[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "https://enterprisedt.com/products/completeftp/"
+      }
+    },
+    {
+      "id": "ssh.software.filecopa",
+      "name": "FileCOPA",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*FileCOPA[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "https://www.filecopa.com/"
+      }
+    },
+    {
+      "id": "ssh.software.zftpserver",
+      "name": "zFTPServer",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*(?:zFTPServer|ProVide)[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "https://www.provideserver.com/"
+      }
+    },
+    {
+      "id": "ssh.software.versassh",
+      "name": "VersaSSH",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*VersaSSH[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "independent_software",
+        "official_url": "https://versa-networks.com/"
+      }
+    },
+    {
+      "id": "ssh.software.jscape",
+      "name": "JSCAPE",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*JSCAPE[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "mft_platform",
+        "official_url": "https://www.jscape.com/"
+      }
+    },
+    {
+      "id": "ssh.software.informatica-mft",
+      "name": "Informatica MFT",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*Informatica[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "mft_platform",
+        "official_url": "https://www.informatica.com/"
+      }
+    },
+    {
+      "id": "ssh.software.cleo",
+      "name": "Cleo",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*Cleo[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "mft_platform",
+        "official_url": "https://www.cleo.com/"
+      }
+    },
+    {
+      "id": "ssh.software.filemage-gateway",
+      "name": "FileMage Gateway",
+      "protocol": "SSH",
+      "pattern": "^SSH\\-[12]\\.[0-9]+\\-[^\\r\\n]*FileMage[^\\r\\n]*(?=\\r?\\n|\\r|$)",
+      "count": 0,
+      "template_ids": [],
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "strong",
+      "primary_eligible": true,
+      "tie_breaker": 0,
+      "labels": {
+        "software_category": "mft_platform",
+        "official_url": "https://www.filemage.io/"
+      }
     }
   ]
 }

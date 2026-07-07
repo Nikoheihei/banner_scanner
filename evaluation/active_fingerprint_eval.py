@@ -29,6 +29,12 @@ from ..core.engine import ProbeEngine
 from ..core.matcher import DEFAULT_PROTOCOL_LIBRARY_DIR, FingerprintMatcher
 from ..core.models import BannerResult, ProbeConfig
 from ..core.protocol_detection import FTP_MARKER
+from .software_catalog import (
+    canonical_software_label,
+    is_evaluation_software,
+    official_url,
+    software_category,
+)
 
 
 @dataclass(frozen=True)
@@ -56,6 +62,7 @@ TRUTH_PATTERNS: dict[str, list[tuple[re.Pattern[str], str]]] = {
         (re.compile(r"SFTPGo", re.I), "SFTPGo"),
         (re.compile(r"SFTPPlus", re.I), "SFTPPlus"),
         (re.compile(r"GoAnywhere", re.I), "GoAnywhere"),
+        (re.compile(r"MOVEit", re.I), "MOVEit"),
         (re.compile(r"ProFTPD", re.I), "ProFTPD"),
         (re.compile(r"CrushFTP", re.I), "CrushFTP"),
         (re.compile(r"WingFTP", re.I), "Wing FTP"),
@@ -65,6 +72,26 @@ TRUTH_PATTERNS: dict[str, list[tuple[re.Pattern[str], str]]] = {
         (re.compile(r"Cisco", re.I), "Cisco"),
         (re.compile(r"SSHPiper", re.I), "SSHPiper"),
         (re.compile(r"AsyncSSH", re.I), "AsyncSSH"),
+        (re.compile(r"ROSSSH", re.I), "ROSSSH"),
+        (re.compile(r"IPSSH", re.I), "IPSSH"),
+        (re.compile(r"RebexSSH", re.I), "RebexSSH"),
+        (re.compile(r"Pragma|Fortress", re.I), "Pragma Fortress SSH"),
+        (re.compile(r"SilverSHielD", re.I), "SilverSHielD"),
+        (re.compile(r"freeSSHd|FreSSH", re.I), "FreSSH"),
+        (re.compile(r"Sysax", re.I), "Sysax SSH"),
+        (re.compile(r"WRQ|Reflection", re.I), "WRQ Reflection"),
+        (re.compile(r"CoreSSH", re.I), "CoreSSH"),
+        (re.compile(r"Core\s+FTP", re.I), "Core FTP"),
+        (re.compile(r"FileZilla\s+Pro\s+Enterprise", re.I), "FileZilla Pro Enterprise Server"),
+        (re.compile(r"Syncplify", re.I), "Syncplify Server"),
+        (re.compile(r"CompleteFTP", re.I), "CompleteFTP"),
+        (re.compile(r"FileCOPA", re.I), "FileCOPA"),
+        (re.compile(r"zFTPServer|ProVide", re.I), "zFTPServer"),
+        (re.compile(r"VersaSSH", re.I), "VersaSSH"),
+        (re.compile(r"JSCAPE", re.I), "JSCAPE"),
+        (re.compile(r"Informatica", re.I), "Informatica MFT"),
+        (re.compile(r"Cleo", re.I), "Cleo"),
+        (re.compile(r"FileMage", re.I), "FileMage Gateway"),
     ],
     "FTP": [
         (re.compile(r"vsFTPd", re.I), "vsFTPd"),
@@ -85,6 +112,13 @@ TRUTH_PATTERNS: dict[str, list[tuple[re.Pattern[str], str]]] = {
         (re.compile(r"DreamHost", re.I), "DreamHost FTP"),
         (re.compile(r"Gameservers", re.I), "Gameservers FTPD"),
         (re.compile(r"xlight", re.I), "xlightftpd"),
+        (re.compile(r"PCMan'?s\s+FTP\s+Server", re.I), "PCMan FTP Server"),
+        (re.compile(r"Rumpus", re.I), "Rumpus"),
+        (re.compile(r"Syncplify", re.I), "Syncplify Server"),
+        (re.compile(r"zFTPServer|ProVide", re.I), "zFTPServer"),
+        (re.compile(r"GoAnywhere", re.I), "GoAnywhere"),
+        (re.compile(r"CompleteFTP", re.I), "CompleteFTP"),
+        (re.compile(r"FileCOPA", re.I), "FileCOPA"),
     ],
     "TELNET": [
         (re.compile(r"BusyBox", re.I), "BusyBox telnetd"),
@@ -186,6 +220,9 @@ def normalize_label(protocol: str, label: str) -> str:
         return ""
     protocol = protocol.upper()
     text = label.strip()
+    catalog_label = canonical_software_label(protocol, text)
+    if catalog_label and catalog_label != text:
+        return catalog_label
     lowered = text.lower()
     aliases = {
         "dropbear ssh": "Dropbear",
@@ -215,7 +252,7 @@ def normalize_label(protocol: str, label: str) -> str:
                 return canonical
     for pattern, canonical in TRUTH_PATTERNS.get(protocol, []):
         if pattern.search(text):
-            return canonical
+            return canonical_software_label(protocol, canonical)
     return text
 
 
@@ -266,8 +303,9 @@ def collect_from_fingerprint_db(path: str | Path, sampler: DeterministicSampler)
         )
         for host, port, protocol, banner in cursor:
             label = truth_label(protocol, banner or "")
-            if not label:
+            if not label or not is_evaluation_software(protocol, label):
                 continue
+            label = canonical_software_label(protocol, label)
             sampler.add(TargetSample(
                 protocol=protocol.upper(), software_true=label, host=host,
                 port=int(port), source="fingerprint.db",
@@ -287,8 +325,9 @@ def collect_from_json(path: str | Path, sampler: DeterministicSampler) -> None:
             banner = str(record.get("banner") or "")
             label = truth_label(protocol, banner, record)
             host = str(record.get("host") or default_host)
-            if not label or not host:
+            if not label or not host or not is_evaluation_software(protocol, label):
                 continue
+            label = canonical_software_label(protocol, label)
             sampler.add(TargetSample(
                 protocol=protocol, software_true=label, host=host,
                 port=int(record.get("port") or default_port(protocol)),
@@ -344,6 +383,8 @@ def active_record(sample: TargetSample, result: BannerResult, channel: str) -> d
         "channel": channel,
         "protocol": sample.protocol,
         "software_true": sample.software_true,
+        "software_category": software_category(sample.protocol, sample.software_true),
+        "official_url": official_url(sample.protocol, sample.software_true),
         "software_pred": predicted,
         "fingerprint_pred": fingerprint,
         "parsed_pred": parsed,
@@ -374,6 +415,8 @@ def mcp_record(sample: TargetSample, result: dict[str, Any]) -> dict[str, Any]:
         "channel": "mcp_streamable_http",
         "protocol": sample.protocol,
         "software_true": sample.software_true,
+        "software_category": software_category(sample.protocol, sample.software_true),
+        "official_url": official_url(sample.protocol, sample.software_true),
         "software_pred": predicted,
         "fingerprint_pred": fingerprint,
         "parsed_pred": parsed,
@@ -602,6 +645,8 @@ def compute_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
             software_output[label] = {
                 "samples": len(own), "correct": tp,
                 "reachable_samples": len(accessible),
+                "software_category": software_category(protocol, label),
+                "official_url": official_url(protocol, label),
                 "connection_rate": round(safe_div(len(accessible), len(own)), 6),
                 "precision": round(precision, 6), "recall": round(recall, 6),
                 "tp": tp, "fp": fp, "fn": fn, "tn": tn,
@@ -694,6 +739,8 @@ def build_samples(args: argparse.Namespace) -> tuple[dict, list[TargetSample], l
                       {sample.host for sample in flow_group})
         inventory_classes.append({
             "protocol": protocol, "software": software,
+            "software_category": software_category(protocol, software),
+            "official_url": official_url(protocol, software),
             "candidate_rows": sampler.candidate_rows[key],
             "selected_unique_ips": len(samples),
             "performance_targets": performance_count,

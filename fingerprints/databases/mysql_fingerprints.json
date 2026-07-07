@@ -114,7 +114,9 @@
         }
       ],
       "labels": {
-        "implementation": "MariaDB"
+        "implementation": "MariaDB",
+        "official_url": "https://mariadb.com/",
+        "software_category": "database_implementation"
       },
       "evidence": [
         "mysql.error_message"
@@ -212,7 +214,9 @@
         }
       ],
       "labels": {
-        "implementation": "MariaDB"
+        "implementation": "MariaDB",
+        "official_url": "https://mariadb.com/",
+        "software_category": "database_implementation"
       },
       "evidence": [
         "mysql.version"
@@ -242,7 +246,9 @@
         }
       ],
       "labels": {
-        "implementation": "Percona Server"
+        "implementation": "Percona Server",
+        "official_url": "https://www.percona.com/mysql/software/percona-server-for-mysql",
+        "software_category": "database_implementation"
       },
       "evidence": [
         "mysql.version"
@@ -272,7 +278,9 @@
         }
       ],
       "labels": {
-        "implementation": "TiDB"
+        "implementation": "TiDB",
+        "official_url": "https://www.pingcap.com/tidb/",
+        "software_category": "database_implementation"
       },
       "evidence": [
         "mysql.version"
@@ -312,7 +320,9 @@
         }
       ],
       "labels": {
-        "implementation": "MySQL_or_compatible"
+        "implementation": "MySQL_or_compatible",
+        "protocol_identity": "mysql_compatible_unmarked",
+        "excluded_from_software_eval": true
       },
       "evidence": [
         "mysql.protocol_version",
@@ -320,10 +330,10 @@
       ],
       "notes": "Some compatible products expose only a numeric MySQL-looking version.",
       "sample_count": 314689,
-      "result_type": "software",
-      "match_level": "software_name",
-      "evidence_strength": "strong",
-      "primary_eligible": true,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "weak",
+      "primary_eligible": false,
       "tie_breaker": 0
     },
     {

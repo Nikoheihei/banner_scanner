@@ -9,6 +9,21 @@ import random
 from collections import defaultdict
 from pathlib import Path
 
+try:
+    from banner_scanner.evaluation.software_catalog import (
+        is_evaluation_software,
+        official_url,
+        software_category,
+    )
+except ModuleNotFoundError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from banner_scanner.evaluation.software_catalog import (
+        is_evaluation_software,
+        official_url,
+        software_category,
+    )
+
 
 PROTOCOL_NAMES = {
     "FTP": "ftp",
@@ -41,6 +56,8 @@ def main() -> None:
     for row in rows:
         protocol = str(row["protocol"]).upper()
         software = str(row["software_true"])
+        if not is_evaluation_software(protocol, software):
+            continue
         host = str(row["host"])
         port = int(row["port"])
         address = ipaddress.ip_address(host)
@@ -60,6 +77,8 @@ def main() -> None:
             "protocol": PROTOCOL_NAMES[protocol],
             "protocol_label": protocol,
             "software": software,
+            "software_category": software_category(protocol, software),
+            "official_url": official_url(protocol, software),
             "requested": args.per_class,
             "available_unique_public": len(candidates),
             "selected": len(selected),
