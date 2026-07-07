@@ -143,12 +143,14 @@ class ValidatedProbeRequest:
     concurrency: int
     retries: int
     detail_level: str
+    result_mode: str
 
 
 def validate_probe_request(*, hosts, protocols, concurrency, retries,
                            detail_level: str, authorization_confirmed: bool,
                            batch: bool, limits: RuntimeLimits,
-                           target_policy: TargetPolicy) -> ValidatedProbeRequest:
+                           target_policy: TargetPolicy,
+                           result_mode: str = "full") -> ValidatedProbeRequest:
     if authorization_confirmed is not True:
         raise RequestValidationError(
             "authorization_confirmed=true is required and records intent only; "
@@ -189,6 +191,8 @@ def validate_probe_request(*, hosts, protocols, concurrency, retries,
         raise RequestValidationError(f"retries must be between 0 and {limits.max_retries}")
     if detail_level not in {"summary", "evidence"}:
         raise RequestValidationError("detail_level must be summary or evidence")
+    if result_mode not in {"full", "unique"}:
+        raise RequestValidationError("result_mode must be full or unique")
 
     return ValidatedProbeRequest(
         hosts=normalized_hosts,
@@ -196,6 +200,7 @@ def validate_probe_request(*, hosts, protocols, concurrency, retries,
         concurrency=concurrency,
         retries=retries,
         detail_level=detail_level,
+        result_mode=result_mode,
     )
 
 

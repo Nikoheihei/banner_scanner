@@ -22,7 +22,7 @@ from banner_scanner.core.models import (
 
 def test_default_libraries_loaded():
     matcher = DatabaseFingerprintMatcher.load_default()
-    assert matcher.rule_count == 59
+    assert matcher.rule_count == 61
 
 
 def test_database_v2_rules_do_not_expose_numeric_confidence():
@@ -63,6 +63,29 @@ def test_mysql_provider_and_implementation_match():
     matcher.match(result)
     assert result.vendor == "MySQL_or_compatible"
     assert "mysql.dist.azure" in result.fingerprint_details["matched_rule_ids"]
+
+
+def test_mysql_mariadb_error_packet_match():
+    matcher = DatabaseFingerprintMatcher.load_default()
+    result = BannerResult(
+        protocol="MYSQL", host="192.0.2.7", port=3306,
+        accessible=True,
+        banner="Host '192.0.2.8' is not allowed to connect to this MariaDB server",
+        mysql=MysqlInfo(
+            error_code=1130,
+            sqlstate="HY000",
+            error_message=(
+                "Host '192.0.2.8' is not allowed to connect to this MariaDB server"
+            ),
+        ),
+    )
+
+    matcher.match(result)
+
+    assert result.vendor == "MariaDB"
+    assert result.fingerprint_details["protocol_match"] is True
+    assert "mysql.protocol.error-packet" in result.fingerprint_details["matched_rule_ids"]
+    assert "mysql.impl.mariadb-error-message" in result.fingerprint_details["matched_rule_ids"]
 
 
 def test_pgsql_auth_match():

@@ -1,8 +1,8 @@
 {
   "schema": "banner-scanner.database-fingerprints.v2",
   "library_id": "mysql-fingerprints",
-  "version": "0.1.0",
-  "generated_at": "2026-06-25T03:23:52.673549+00:00",
+  "version": "0.2.0",
+  "generated_at": "2026-07-05T08:06:05Z",
   "source_corpus": {
     "path": "external scan corpus (not committed)",
     "record_count": 422199,
@@ -46,6 +46,85 @@
       "match_level": "protocol_only",
       "evidence_strength": "conclusive",
       "primary_eligible": false,
+      "tie_breaker": 0
+    },
+    {
+      "id": "mysql.protocol.error-packet",
+      "category": "protocol_identity",
+      "name": "MySQL protocol error packet",
+      "description": "Confirms a MySQL-compatible service from a parsed initial error packet.",
+      "match": {
+        "field_equals": {
+          "protocol": "MYSQL"
+        },
+        "field_present": [
+          "mysql.error_code",
+          "mysql.error_message"
+        ]
+      },
+      "extract": [
+        {
+          "field": "error_code",
+          "source": "mysql.error_code"
+        },
+        {
+          "field": "sqlstate",
+          "source": "mysql.sqlstate"
+        },
+        {
+          "field": "error_message",
+          "source": "mysql.error_message"
+        }
+      ],
+      "labels": {
+        "protocol": "MYSQL",
+        "response_type": "error-packet"
+      },
+      "evidence": [
+        "mysql.error_code",
+        "mysql.sqlstate",
+        "mysql.error_message"
+      ],
+      "notes": "An initial error packet can confirm the protocol even when no version handshake is returned.",
+      "sample_count": 4,
+      "result_type": "protocol_identity",
+      "match_level": "protocol_only",
+      "evidence_strength": "conclusive",
+      "primary_eligible": false,
+      "tie_breaker": 0
+    },
+    {
+      "id": "mysql.impl.mariadb-error-message",
+      "category": "implementation",
+      "name": "MariaDB",
+      "description": "Identifies MariaDB when its initial error packet explicitly names the MariaDB server.",
+      "match": {
+        "field_regex": {
+          "mysql.error_message": "\\bMariaDB server\\b"
+        }
+      },
+      "extract": [
+        {
+          "field": "error_code",
+          "source": "mysql.error_code"
+        },
+        {
+          "field": "sqlstate",
+          "source": "mysql.sqlstate"
+        }
+      ],
+      "labels": {
+        "implementation": "MariaDB"
+      },
+      "evidence": [
+        "mysql.error_message"
+      ],
+      "notes": "The product name is explicit in the server-generated error text.",
+      "sample_count": 4,
+      "result_type": "software",
+      "match_level": "software_name",
+      "evidence_strength": "conclusive",
+      "primary_eligible": true,
       "tie_breaker": 0
     },
     {

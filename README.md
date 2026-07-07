@@ -143,7 +143,7 @@ MCP request
 | Telnet | 被动读取并处理 IAC 协商 | 文本、IAC、提示符和微特征 | 不提交口令 |
 | Redis | `PING`，随后读取 `INFO server` | RESP 文本和 INFO 字段 | 不认证、不修改数据 |
 | MySQL | 读取 protocol-v10 初始握手 | 版本、能力位、字符集、认证插件 | 不发送登录包、不执行 SQL |
-| PostgreSQL | `SSLRequest`，必要时发送最小 StartupMessage | SSL 行为、认证消息、错误字段和参数 | 不发送密码、不执行 SQL；收到 `S` 后不继续 TLS 握手 |
+| PostgreSQL | `SSLRequest`，必要时完成 TLS 并发送最小 StartupMessage | SSL 行为、认证消息、错误字段和参数 | 不发送密码、不执行 SQL |
 
 ## 指纹库
 
@@ -155,7 +155,7 @@ MCP request
 | FTP | `fingerprints/protocols/ftp_fingerprints.json` | 53 |
 | Telnet | `fingerprints/protocols/telnet_fingerprints.json` | 103 |
 | Redis | `fingerprints/databases/redis_fingerprints.json` | 24 |
-| MySQL | `fingerprints/databases/mysql_fingerprints.json` | 14 |
+| MySQL | `fingerprints/databases/mysql_fingerprints.json` | 16 |
 | PostgreSQL | `fingerprints/databases/pgsql_fingerprints.json` | 21 |
 
 文本协议规则直接对协议限定的 Banner 和解析文本执行正则匹配。规则可以附带静态标签和正则分组提取：
@@ -255,7 +255,7 @@ python3 -m banner_scanner.evaluation.active_fingerprint_eval \
   --confirm-authorized
 ```
 
-性能统计保留所有类别，不会删除 0% 连接类别。连接率按全部样本计算；Precision、Recall 和 F1 只在已连接样本上计算，因此不可连接目标不会进入 Recall 分母。流程测试通过官方 MCP Streamable HTTP 客户端调用 `scan_batch`，不绕过 MCP 服务。
+性能统计保留所有类别，不会删除 0% 连接类别。连接率按全部样本计算；Precision 和 Recall 只在已连接样本上计算，因此不可连接目标不会进入 Recall 分母。流程测试通过官方 MCP Streamable HTTP 客户端调用 `scan_batch`，不绕过 MCP 服务。
 
 ## 代码结构
 

@@ -604,7 +604,6 @@ def compute_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
                 "reachable_samples": len(accessible),
                 "connection_rate": round(safe_div(len(accessible), len(own)), 6),
                 "precision": round(precision, 6), "recall": round(recall, 6),
-                "f1": round(safe_div(2 * precision * recall, precision + recall), 6),
                 "tp": tp, "fp": fp, "fn": fn, "tn": tn,
                 **identification_metrics(own),
             }
@@ -630,7 +629,6 @@ def compute_metrics(records: list[dict[str, Any]]) -> dict[str, Any]:
             "connection_rate": "reachable / samples",
             "precision": "TP / (TP + FP), calculated over reachable samples",
             "recall": "TP / (TP + FN), calculated over reachable samples",
-            "f1": "2 * precision * recall / (precision + recall)",
             "fingerprint_coverage_rate": (
                 "reachable records with non-empty fingerprint_pred / reachable"
             ),
