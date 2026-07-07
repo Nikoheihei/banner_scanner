@@ -13,6 +13,11 @@ from banner_scanner.evaluation.active_fingerprint_eval import (
     normalize_label,
     truth_label,
 )
+from banner_scanner.evaluation.software_catalog import (
+    is_evaluation_software,
+    official_url,
+    software_category,
+)
 
 
 def test_iter_concatenated_json():
@@ -43,6 +48,17 @@ def test_normalize_prediction_aliases():
     assert normalize_label("SSH", "Dropbear SSH") == "Dropbear"
     assert normalize_label("MYSQL", "MySQL 8.0.46") == "MySQL_or_compatible"
     assert normalize_label("REDIS", "Redis 7.2.4") == "Redis"
+
+
+def test_evaluation_catalog_separates_software_platforms_and_auxiliary_facts():
+    assert is_evaluation_software("SSH", "GoAnywhere")
+    assert software_category("SSH", "GoAnywhere") == "mft_platform"
+    assert official_url("SSH", "GoAnywhere") == "https://www.goanywhere.com/"
+
+    assert not is_evaluation_software("SSH", "Cisco")
+    assert not is_evaluation_software("SSH", "Paramiko")
+    assert not is_evaluation_software("MYSQL", "MySQL_or_compatible")
+    assert not is_evaluation_software("TELNET", "Windows telnetd")
 
 
 def test_compute_metrics_excludes_unreachable_from_recall():

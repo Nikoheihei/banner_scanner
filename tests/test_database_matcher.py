@@ -61,7 +61,12 @@ def test_mysql_provider_and_implementation_match():
         ),
     )
     matcher.match(result)
-    assert result.vendor == "MySQL_or_compatible"
+    assert result.vendor == ""
+    compatible = [
+        item for item in result.findings["protocol_identity"]
+        if item["name"] == "MySQL_or_compatible"
+    ][0]
+    assert compatible["labels"]["excluded_from_software_eval"] is True
     assert "mysql.dist.azure" in result.fingerprint_details["matched_rule_ids"]
 
 

@@ -20,9 +20,10 @@ def test_filezilla_enterprise_keeps_parent_family_without_conflict():
 def test_weonlydo_product_and_provider_are_parallel_facts():
     result = _identify("SSH", "SSH-2.0-WeOnlyDo-wodFTPD 3.3.0.424\r\n")
 
-    assert result.identification_status == "identified"
-    assert result.primary_identification.name == "wodFTPD"
-    assert result.primary_identification.version == "3.3.0.424"
+    assert result.identification_status == "unidentified"
+    assert result.primary_identification is None
+    assert result.findings["deployment"][0]["name"] == "wodFTPD"
+    assert result.findings["deployment"][0]["labels"]["review_status"] == "unverified_label"
     assert result.findings["provider"][0]["name"] == "WeOnlyDo"
 
 
@@ -87,7 +88,9 @@ def test_paramiko_identification_line_may_include_ssh_comments():
         "SSH",
         "SSH-2.0-paramiko_2.1.3 501 command not implemented ERROR\r\n",
     )
-    assert result.primary_identification.name == "Paramiko"
+    assert result.primary_identification is None
+    assert result.findings["deployment"][0]["name"] == "Paramiko"
+    assert result.findings["deployment"][0]["labels"]["implementation_type"] == "library_component"
 
 
 def test_wing_truth_requires_product_name_not_hostname_substring():
@@ -100,9 +103,44 @@ def test_xlight_name_survives_damaged_greeting_text():
     assert result.primary_identification.name == "xlightftpd"
 
 
-def test_telnet_ios_version_is_direct_cisco_software_evidence():
+def test_telnet_ios_version_is_cisco_device_evidence():
     result = _identify(
         "TELNET",
         "Router C2901\r\nModel - 2901 IOS version 15.2(4)M6\r\n",
     )
-    assert result.primary_identification.name == "Cisco IOS telnetd"
+    assert result.primary_identification is None
+    assert result.findings["provider"][0]["name"] == "Cisco IOS telnetd"
+    assert result.findings["provider"][0]["labels"]["provider_type"] == "device_vendor"
+
+
+def test_explicit_pcman_ftp_banner_is_identified():
+    result = _identify("FTP", "220 PCMan's FTP Server 2.0 Ready.")
+
+    assert result.identification_status == "identified"
+    assert result.primary_identification.name == "PCMan FTP Server"
+    assert result.primary_identification.version == "2.0"
+
+
+def test_explicit_ssh_products_from_active_results_are_identified():
+    cases = (
+        ("SSH-2.0-RebexSSH_8.0.9483.0\r\n", "RebexSSH", "8.0.9483.0"),
+    )
+    for banner, name, version in cases:
+        result = _identify("SSH", banner)
+        assert result.identification_status == "identified"
+        assert result.primary_identification.name == name
+        assert result.primary_identification.version == version
+
+
+def test_explicit_device_os_ssh_products_are_auxiliary_evidence():
+    cases = (
+        ("SSH-2.0-ROSSSH\r\n", "ROSSSH", "RouterOS built-in service"),
+        ("SSH-2.0-IPSSH5.1.0p1\r\n", "IPSSH", "VxWorks IPSSH built-in service"),
+        ("SSH-2.0-IPSSH-6.9.0\r\n", "IPSSH", "VxWorks IPSSH built-in service"),
+    )
+    for banner, name, implementation in cases:
+        result = _identify("SSH", banner)
+        assert result.identification_status == "unidentified"
+        assert result.primary_identification is None
+        assert result.findings["deployment"][0]["name"] == name
+        assert result.findings["deployment"][0]["labels"]["implementation"] == implementation

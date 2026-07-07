@@ -86,6 +86,7 @@ SSH_SOFTWARE_ALIASES = {
     'arris': 'ARRIS',
     'coreftp': 'CoreFTP',
     'ipssh': 'IPSSH',
+    'rebexssh': 'RebexSSH',
     'moveit': 'MOVEit',
     'mpssh': 'mpSSH',
     'crestron': 'Crestron',
@@ -104,7 +105,8 @@ def parse_ssh_banner(banner: str) -> SshBanner:
     if len(banner) < 6 or not banner.startswith("SSH-"):
         return info
 
-    parts = banner.split("-", 2)
+    identification_line = banner.splitlines()[0].strip()
+    parts = identification_line.split("-", 2)
     if len(parts) < 3:
         return info
 
@@ -156,7 +158,7 @@ def _parse_ssh_software_version(sw_id: str) -> Tuple[str, str]:
     lowered = sw_id.lower()
     if lowered == "weonlydo-wodftpd":
         return "wodFTPD", ""
-    for prefix in ("mod_sftp/", "paramiko", "mocanassh", "mocanassh/"):
+    for prefix in ("mod_sftp/", "paramiko", "mocanassh", "mocanassh/", "ipssh"):
         if lowered.startswith(prefix):
             raw_soft = prefix.rstrip("/")
             raw_ver = sw_id[len(prefix):].lstrip("_-/ ")
