@@ -41,8 +41,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.protocol.error-response",
@@ -74,8 +73,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "conclusive",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.protocol.authentication",
@@ -100,8 +98,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.protocol.ssl-request-response",
@@ -126,8 +123,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.auth.method.ok",
@@ -158,8 +154,7 @@
       "result_type": "authentication",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.auth.method.cleartext-password",
@@ -190,8 +185,7 @@
       "result_type": "authentication",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.auth.method.md5-password",
@@ -222,8 +216,7 @@
       "result_type": "authentication",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.auth.method.sasl",
@@ -254,8 +247,7 @@
       "result_type": "authentication",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.auth.method.nonstandard-code",
@@ -286,8 +278,7 @@
       "result_type": "authentication",
       "match_level": "status_fact",
       "evidence_strength": "weak",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.extract.sqlstate",
@@ -316,8 +307,7 @@
       "result_type": "service_status",
       "match_level": "status_fact",
       "evidence_strength": "conclusive",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.extract.message",
@@ -346,8 +336,7 @@
       "result_type": "service_status",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.extract.server-version",
@@ -376,8 +365,7 @@
       "result_type": "service_status",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.impl.redshift",
@@ -410,8 +398,7 @@
       "result_type": "software",
       "match_level": "implementation_hint",
       "evidence_strength": "strong",
-      "primary_eligible": true,
-      "tie_breaker": 0
+      "primary_eligible": true
     },
     {
       "id": "pgsql.impl.cratedb",
@@ -456,8 +443,7 @@
       "result_type": "software",
       "match_level": "implementation_hint",
       "evidence_strength": "strong",
-      "primary_eligible": true,
-      "tie_breaker": 0
+      "primary_eligible": true
     },
     {
       "id": "pgsql.impl.tenant-proxy",
@@ -483,8 +469,7 @@
       "result_type": "deployment",
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.err.bad-packet-header",
@@ -509,8 +494,7 @@
       "result_type": "service_status",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.err.invalid-startup",
@@ -534,8 +518,7 @@
       "result_type": "service_status",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.security.ssl-required",
@@ -559,8 +542,7 @@
       "result_type": "authentication",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.auth.invalid-auth",
@@ -592,8 +574,7 @@
       "result_type": "authentication",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.availability.starting-or-paused",
@@ -625,8 +606,7 @@
       "result_type": "service_status",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "pgsql.resource.memory",
@@ -650,8 +630,7 @@
       "result_type": "service_status",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     }
   ]
 }

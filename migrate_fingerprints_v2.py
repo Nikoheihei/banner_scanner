@@ -51,7 +51,6 @@ def migrate_database_libraries() -> None:
             rule.setdefault("match_level", match_level)
             rule.setdefault("evidence_strength", _evidence_strength(rule))
             rule.setdefault("primary_eligible", primary_eligible)
-            rule.setdefault("tie_breaker", 0)
             rule.pop("confidence", None)
         data["schema"] = "banner-scanner.database-fingerprints.v2"
         path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

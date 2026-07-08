@@ -27,7 +27,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 1,
       "labels": {
         "software_category": "independent_software"
@@ -46,7 +45,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 2,
       "labels": {
         "deployment_type": "managed_service"
@@ -65,7 +63,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 3,
       "labels": {
         "deployment_type": "managed_service"
@@ -86,7 +83,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "aliases": [
           "WinSSHD"
@@ -117,7 +113,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 5,
       "labels": {
         "software_category": "independent_software"
@@ -136,7 +131,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 6,
       "labels": {
         "software_category": "independent_software"
@@ -155,7 +149,6 @@
       "match_level": "provider_name",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 7,
       "labels": {
         "provider_type": "device_vendor",
@@ -175,7 +168,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 8
     },
     {
@@ -191,7 +183,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 9,
       "labels": {
         "software_category": "independent_software"
@@ -210,7 +201,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 10,
       "labels": {
         "review_status": "unverified_label"
@@ -229,7 +219,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 11,
       "labels": {
         "software_category": "mft_platform"
@@ -248,7 +237,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 12
     },
     {
@@ -264,7 +252,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 13,
       "labels": {
         "software_category": "independent_software"
@@ -283,7 +270,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 14,
       "labels": {
         "software_category": "independent_software"
@@ -302,7 +288,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 15,
       "labels": {
         "deployment_type": "managed_service"
@@ -321,7 +306,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 16,
       "labels": {
         "deployment_type": "managed_service"
@@ -340,7 +324,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 17,
       "labels": {
         "software_category": "independent_software"
@@ -359,7 +342,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 18
     },
     {
@@ -375,7 +357,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 19,
       "labels": {
         "software_category": "independent_software"
@@ -394,7 +375,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 20
     },
     {
@@ -411,7 +391,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 21,
       "labels": {
         "software_category": "independent_software"
@@ -430,7 +409,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 22
     },
     {
@@ -446,7 +424,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 23,
       "labels": {
         "deployment_type": "managed_service"
@@ -465,7 +442,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 24
     },
     {
@@ -481,7 +457,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 25,
       "labels": {
         "review_status": "unverified_label"
@@ -500,7 +475,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 26
     },
     {
@@ -516,7 +490,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 27
     },
     {
@@ -532,7 +505,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 28,
       "labels": {
         "software_category": "independent_software"
@@ -551,7 +523,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 29,
       "labels": {
         "software_category": "independent_software"
@@ -570,7 +541,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 30,
       "labels": {
         "deployment_type": "managed_service"
@@ -589,7 +559,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 31
     },
     {
@@ -605,7 +574,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 32
     },
     {
@@ -621,7 +589,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 33,
       "labels": {
         "software_category": "independent_software"
@@ -640,7 +607,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 34,
       "labels": {
         "implementation_type": "library_component"
@@ -659,7 +625,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 35,
       "labels": {
         "implementation_type": "library_component"
@@ -678,7 +643,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 36,
       "labels": {
         "implementation_type": "device_or_embedded_system"
@@ -697,7 +661,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 37
     },
     {
@@ -713,7 +676,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 38
     },
     {
@@ -729,7 +691,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 39
     },
     {
@@ -745,7 +706,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 40,
       "labels": {
         "software_category": "independent_software"
@@ -764,7 +724,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 41
     },
     {
@@ -780,7 +739,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 42
     },
     {
@@ -796,7 +754,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 43,
       "labels": {
         "implementation_type": "library_component"
@@ -813,7 +770,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 82,
       "labels": {
         "software_category": "independent_software"
@@ -830,7 +786,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 83,
       "labels": {
         "implementation_type": "device_or_embedded_system"
@@ -847,7 +802,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 84,
       "labels": {
         "provider": "MikroTik",
@@ -866,7 +820,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 98,
       "labels": {
         "implementation_type": "device_or_embedded_system"
@@ -883,7 +836,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 99,
       "labels": {
         "implementation_type": "device_or_embedded_system"
@@ -900,7 +852,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 100,
       "labels": {
         "software_category": "mft_platform"
@@ -917,7 +868,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 101,
       "labels": {
         "implementation_type": "device_or_embedded_system"
@@ -934,7 +884,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 102,
       "labels": {
         "implementation_type": "device_or_embedded_system"
@@ -951,7 +900,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 141,
       "labels": {
         "implementation_type": "library_component"
@@ -968,7 +916,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 142,
       "labels": {
         "review_status": "unverified_label"
@@ -985,7 +932,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 175,
       "labels": {
         "implementation_type": "device_or_embedded_system"
@@ -1003,7 +949,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "legacy_id": 214,
       "labels": {
         "software_category": "independent_software"
@@ -1020,7 +965,6 @@
       "match_level": "provider_name",
       "evidence_strength": "strong",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "explanation": "The SSH identification line explicitly names WeOnlyDo.",
       "legacy_id": 216
     },
@@ -1035,7 +979,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "explanation": "The SSH identification line explicitly names ROSSSH.",
       "legacy_id": 217,
       "labels": {
@@ -1055,7 +998,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "explanation": "The SSH identification line explicitly names IPSSH.",
       "legacy_id": 218,
       "labels": {
@@ -1075,7 +1017,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "explanation": "The SSH identification line explicitly names RebexSSH.",
       "legacy_id": 219,
       "labels": {
@@ -1093,7 +1034,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "https://www.pragmasys.com/"
@@ -1110,7 +1050,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "http://www.k2sxs.com/silvershield/"
@@ -1127,7 +1066,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "https://www.freesshd.com/"
@@ -1144,7 +1082,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "https://www.sysax.com/server/"
@@ -1161,7 +1098,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "https://www.opentext.com/products/reflection-for-secure-it"
@@ -1178,7 +1114,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "https://www.coreftp.com/"
@@ -1195,7 +1130,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "https://www.coreftp.com/server/"
@@ -1212,7 +1146,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "https://filezillapro.com/"
@@ -1229,7 +1162,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "https://www.syncplify.com/"
@@ -1246,7 +1178,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "https://enterprisedt.com/products/completeftp/"
@@ -1263,7 +1194,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "https://www.filecopa.com/"
@@ -1280,7 +1210,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "https://www.provideserver.com/"
@@ -1297,7 +1226,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "independent_software",
         "official_url": "https://versa-networks.com/"
@@ -1314,7 +1242,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "mft_platform",
         "official_url": "https://www.jscape.com/"
@@ -1331,7 +1258,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "mft_platform",
         "official_url": "https://www.informatica.com/"
@@ -1348,7 +1274,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "mft_platform",
         "official_url": "https://www.cleo.com/"
@@ -1365,7 +1290,6 @@
       "match_level": "software_name",
       "evidence_strength": "strong",
       "primary_eligible": true,
-      "tie_breaker": 0,
       "labels": {
         "software_category": "mft_platform",
         "official_url": "https://www.filemage.io/"

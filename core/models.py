@@ -118,7 +118,6 @@ class FingerprintMatch:
     match_level: str = "software_name"
     evidence_strength: str = "strong"
     primary_eligible: bool = True
-    tie_breaker: int = 0
     explanation: str = ""
     match_length: int = 0
     specificity: int = 0

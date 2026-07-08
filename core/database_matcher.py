@@ -85,12 +85,11 @@ def _rule_semantics(rule: dict[str, Any]) -> tuple[str, str, bool]:
     return mapping.get(category, ("capability", "status_fact", False))
 
 
-def _database_rule_rank(rule: dict[str, Any]) -> tuple[int, int, int, str]:
+def _database_rule_rank(rule: dict[str, Any]) -> tuple[int, int, str]:
     _result_type, match_level, _primary_eligible = _rule_semantics(rule)
     return (
         MATCH_LEVEL_RANK.get(match_level, 0),
         EVIDENCE_STRENGTH_RANK.get(_evidence_strength(rule), 0),
-        int(rule.get("tie_breaker", 0)),
         str(rule.get("id", "")),
     )
 
@@ -355,7 +354,6 @@ class DatabaseFingerprintMatcher:
                 match_level=match_level,
                 evidence_strength=strength,
                 primary_eligible=primary_eligible,
-                tie_breaker=int(rule.get("tie_breaker", 0)),
                 explanation=str(rule.get("description") or ""),
             ))
 

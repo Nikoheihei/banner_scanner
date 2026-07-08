@@ -151,8 +151,8 @@ MCP request
 
 | 协议 | 文件 | 规则数 |
 |---|---|---:|
-| SSH | `fingerprints/protocols/ssh_fingerprints.json` | 56 |
-| FTP | `fingerprints/protocols/ftp_fingerprints.json` | 53 |
+| SSH | `fingerprints/protocols/ssh_fingerprints.json` | 76 |
+| FTP | `fingerprints/protocols/ftp_fingerprints.json` | 61 |
 | Telnet | `fingerprints/protocols/telnet_fingerprints.json` | 103 |
 | Redis | `fingerprints/databases/redis_fingerprints.json` | 24 |
 | MySQL | `fingerprints/databases/mysql_fingerprints.json` | 16 |
@@ -170,7 +170,6 @@ MCP request
   "match_level": "software_name",
   "evidence_strength": "strong",
   "primary_eligible": true,
-  "tie_breaker": 0,
   "labels": {"aliases": ["WinSSHD"], "provider": "Bitvise"},
   "extract": [{"field": "component", "group": "component"}]
 }
@@ -189,12 +188,11 @@ Redis、MySQL 和 PostgreSQL 规则组合 Banner 与协议字段。`all`、`any`
   "result_type": "software",
   "match_level": "software_name",
   "evidence_strength": "conclusive",
-  "primary_eligible": true,
-  "tie_breaker": 0
+  "primary_eligible": true
 }
 ```
 
-`tie_breaker` 只在结果类型、匹配层级和证据强度都相同时处理确有必要的例外，不作为主要优先级。数据库规则不再使用容易被误解为概率的 `confidence` 字段。
+当多条规则同时命中时，程序先比较识别层级和证据强度，再比较规则具体程度、实际命中长度和规则编号。数据库规则不再使用容易被误解为概率的 `confidence` 字段。
 
 从原始 SQLite 模板重建三个文本库：
 
