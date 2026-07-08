@@ -69,12 +69,11 @@ def legacy_rule_metadata(category: str, priority: int = 0) -> dict[str, Any]:
     }
 
 
-def match_rank(match: FingerprintMatch) -> tuple[int, int, int, int, int, str]:
+def match_rank(match: FingerprintMatch) -> tuple[int, int, int, int, str]:
     """Return a deterministic rank used only inside one result type."""
     return (
         MATCH_LEVEL_RANK.get(match.match_level, 0),
         EVIDENCE_STRENGTH_RANK.get(match.evidence_strength, 0),
-        match.tie_breaker,
         match.specificity,
         match.match_length,
         str(match.vendor_id),
@@ -175,8 +174,8 @@ def finalize_identification(result: BannerResult) -> BannerResult:
         return result
 
     top = candidates[0]
-    top_semantic_rank = match_rank(top)[:3]
-    conflicting = [candidate for candidate in candidates if match_rank(candidate)[:3] == top_semantic_rank]
+    top_semantic_rank = match_rank(top)[:2]
+    conflicting = [candidate for candidate in candidates if match_rank(candidate)[:2] == top_semantic_rank]
     conflicting_names = {candidate.vendor_name.casefold() for candidate in conflicting}
     if len(conflicting_names) > 1:
         result.identification_status = "conflict"

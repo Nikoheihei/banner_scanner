@@ -45,8 +45,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "conclusive",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "mysql.protocol.error-packet",
@@ -90,8 +89,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "conclusive",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "mysql.impl.mariadb-error-message",
@@ -126,8 +124,7 @@
       "result_type": "software",
       "match_level": "software_name",
       "evidence_strength": "conclusive",
-      "primary_eligible": true,
-      "tie_breaker": 0
+      "primary_eligible": true
     },
     {
       "id": "mysql.extract.version",
@@ -162,8 +159,7 @@
       "result_type": "software",
       "match_level": "software_version",
       "evidence_strength": "conclusive",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "mysql.extract.major",
@@ -194,8 +190,7 @@
       "result_type": "software",
       "match_level": "software_version",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "mysql.impl.mariadb",
@@ -226,8 +221,7 @@
       "result_type": "software",
       "match_level": "software_name",
       "evidence_strength": "conclusive",
-      "primary_eligible": true,
-      "tie_breaker": 0
+      "primary_eligible": true
     },
     {
       "id": "mysql.impl.percona",
@@ -258,8 +252,7 @@
       "result_type": "software",
       "match_level": "software_name",
       "evidence_strength": "conclusive",
-      "primary_eligible": true,
-      "tie_breaker": 0
+      "primary_eligible": true
     },
     {
       "id": "mysql.impl.tidb",
@@ -290,8 +283,7 @@
       "result_type": "software",
       "match_level": "software_name",
       "evidence_strength": "conclusive",
-      "primary_eligible": true,
-      "tie_breaker": 0
+      "primary_eligible": true
     },
     {
       "id": "mysql.impl.mysql-compatible-default",
@@ -333,8 +325,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "weak",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "mysql.dist.ubuntu",
@@ -358,8 +349,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "mysql.dist.debian",
@@ -383,8 +373,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "mysql.dist.azure",
@@ -408,8 +397,7 @@
       "result_type": "provider",
       "match_level": "generic_device_hint",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "mysql.dist.cloudlinux",
@@ -433,8 +421,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "mysql.runtime.log-enabled",
@@ -458,8 +445,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "moderate",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "mysql.auth.plugin-observed",
@@ -488,8 +474,7 @@
       "result_type": "authentication",
       "match_level": "status_fact",
       "evidence_strength": "weak",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "mysql.capability.flags-observed",
@@ -518,8 +503,7 @@
       "result_type": "capability",
       "match_level": "status_fact",
       "evidence_strength": "moderate",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     }
   ]
 }

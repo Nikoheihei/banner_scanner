@@ -84,8 +84,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "conclusive",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.protocol.resp-bulk-info",
@@ -112,8 +111,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "conclusive",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.protocol.pong",
@@ -139,8 +137,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.protocol.info-error-context",
@@ -170,8 +167,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "moderate",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.protocol.ok-context",
@@ -200,8 +196,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "weak",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.protocol.scanner-pong-ok-context",
@@ -230,8 +225,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "weak",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.protocol.auth-required",
@@ -258,8 +252,7 @@
       "result_type": "protocol_identity",
       "match_level": "protocol_only",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.impl.redis-server",
@@ -293,8 +286,7 @@
       "result_type": "software",
       "match_level": "software_name",
       "evidence_strength": "strong",
-      "primary_eligible": true,
-      "tie_breaker": 0
+      "primary_eligible": true
     },
     {
       "id": "redis.impl.valkey",
@@ -329,8 +321,7 @@
       "result_type": "software",
       "match_level": "software_name",
       "evidence_strength": "conclusive",
-      "primary_eligible": true,
-      "tie_breaker": 0
+      "primary_eligible": true
     },
     {
       "id": "redis.impl.dragonfly",
@@ -363,8 +354,7 @@
       "result_type": "software",
       "match_level": "software_name",
       "evidence_strength": "conclusive",
-      "primary_eligible": true,
-      "tie_breaker": 0
+      "primary_eligible": true
     },
     {
       "id": "redis.impl.memurai",
@@ -397,8 +387,7 @@
       "result_type": "software",
       "match_level": "software_name",
       "evidence_strength": "conclusive",
-      "primary_eligible": true,
-      "tie_breaker": 0
+      "primary_eligible": true
     },
     {
       "id": "redis.extract.redis-version",
@@ -428,8 +417,7 @@
       "result_type": "software",
       "match_level": "software_version",
       "evidence_strength": "conclusive",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.mode.standalone",
@@ -454,8 +442,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "conclusive",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.mode.cluster",
@@ -480,8 +467,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "conclusive",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.info.full",
@@ -509,8 +495,7 @@
       "result_type": "capability",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.info.server-section",
@@ -534,8 +519,7 @@
       "result_type": "capability",
       "match_level": "status_fact",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.deploy.redis-stack",
@@ -561,8 +545,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.deploy.container-path",
@@ -588,8 +571,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "moderate",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.deploy.linux-package",
@@ -615,8 +597,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "moderate",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.deploy.usr-local",
@@ -640,8 +621,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "moderate",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.runtime.linux",
@@ -671,8 +651,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.runtime.epoll",
@@ -696,8 +675,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.supervised.systemd",
@@ -721,8 +699,7 @@
       "result_type": "deployment",
       "match_level": "generic_device_hint",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     },
     {
       "id": "redis.metadata.availability-zone",
@@ -752,8 +729,7 @@
       "result_type": "provider",
       "match_level": "generic_device_hint",
       "evidence_strength": "strong",
-      "primary_eligible": false,
-      "tie_breaker": 0
+      "primary_eligible": false
     }
   ]
 }

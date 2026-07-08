@@ -16,7 +16,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 80,
       "labels": {
         "observed_on_telnet_port": true
@@ -35,7 +34,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 81
     },
     {
@@ -49,7 +47,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 106,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -66,7 +63,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 107,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -83,7 +79,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 108,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -100,7 +95,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 109,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -117,7 +111,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 110,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -134,7 +127,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 111,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -151,7 +143,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 112,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -168,7 +159,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 113,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -185,7 +175,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 114,
       "labels": {
         "platform_type": "bbs_platform",
@@ -204,7 +193,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 115,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -221,7 +209,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 116,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -238,7 +225,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 117,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -255,7 +241,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 118,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -272,7 +257,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 119,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -289,7 +273,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 120,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -306,7 +289,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 121,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -323,7 +305,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 122,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -340,7 +321,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 123,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -357,7 +337,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 124,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -374,7 +353,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 125,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -391,7 +369,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 126,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -408,7 +385,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 127,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -425,7 +401,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 128,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -442,7 +417,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 129,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -459,7 +433,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 130,
       "labels": {
         "implementation_type": "generic_or_builtin_telnet_service"
@@ -476,7 +449,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 131,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -493,7 +465,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 132,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -510,7 +481,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 133,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -527,7 +497,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 134,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -544,7 +513,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 135,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -561,7 +529,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 136,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -578,7 +545,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 137,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -595,7 +561,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 138,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -612,7 +577,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 139,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -629,7 +593,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 140,
       "labels": {
         "implementation_type": "windows_builtin",
@@ -647,7 +610,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 143,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -664,7 +626,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 144
     },
     {
@@ -678,7 +639,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 145
     },
     {
@@ -692,7 +652,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 146
     },
     {
@@ -706,7 +665,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 147
     },
     {
@@ -720,7 +678,6 @@
       "match_level": "status_fact",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 148
     },
     {
@@ -734,7 +691,6 @@
       "match_level": "status_fact",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 149
     },
     {
@@ -748,7 +704,6 @@
       "match_level": "status_fact",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 150
     },
     {
@@ -762,7 +717,6 @@
       "match_level": "status_fact",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 151
     },
     {
@@ -776,7 +730,6 @@
       "match_level": "status_fact",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 152
     },
     {
@@ -790,7 +743,6 @@
       "match_level": "provider_name",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 153,
       "labels": {
         "provider_type": "device_vendor",
@@ -808,7 +760,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 154,
       "labels": {
         "implementation_type": "generic_or_builtin_telnet_service"
@@ -825,7 +776,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 155,
       "labels": {
         "implementation_type": "generic_or_builtin_telnet_service"
@@ -842,7 +792,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 156,
       "labels": {
         "implementation_type": "windows_builtin",
@@ -860,7 +809,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 157
     },
     {
@@ -874,7 +822,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 158
     },
     {
@@ -888,7 +835,6 @@
       "match_level": "provider_name",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 159,
       "labels": {
         "provider_type": "device_vendor",
@@ -906,7 +852,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 160,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -923,7 +868,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 161,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -940,7 +884,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 162,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -957,7 +900,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 163,
       "labels": {
         "provider": "MikroTik",
@@ -976,7 +918,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 164,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -993,7 +934,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 165,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1010,7 +950,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 166,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1027,7 +966,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 167,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1044,7 +982,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 168,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1061,7 +998,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 169,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1078,7 +1014,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 170,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1095,7 +1030,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 171,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1112,7 +1046,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 172,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1129,7 +1062,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 173,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1146,7 +1078,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 174,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1163,7 +1094,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 176,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1180,7 +1110,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 177,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1197,7 +1126,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 178,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1214,7 +1142,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 179,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1231,7 +1158,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 180,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1248,7 +1174,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 181,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1265,7 +1190,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 182,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1282,7 +1206,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 183,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1299,7 +1222,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 184,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1316,7 +1238,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 185,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1333,7 +1254,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 186,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1350,7 +1270,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 187,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1367,7 +1286,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 188,
       "labels": {
         "implementation_type": "device_or_platform_hint"
@@ -1384,7 +1302,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 189,
       "labels": {
         "observed_on_telnet_port": true
@@ -1401,7 +1318,6 @@
       "match_level": "status_fact",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 190
     },
     {
@@ -1415,7 +1331,6 @@
       "match_level": "status_fact",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 191
     },
     {
@@ -1429,7 +1344,6 @@
       "match_level": "status_fact",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 192
     },
     {
@@ -1443,7 +1357,6 @@
       "match_level": "protocol_only",
       "evidence_strength": "weak",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 193,
       "labels": {
         "observed_on_telnet_port": true
@@ -1460,7 +1373,6 @@
       "match_level": "status_fact",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 194
     },
     {
@@ -1474,7 +1386,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 195,
       "labels": {
         "implementation_type": "generic_or_builtin_telnet_service"
@@ -1491,7 +1402,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 196,
       "labels": {
         "implementation_type": "generic_or_builtin_telnet_service"
@@ -1508,7 +1418,6 @@
       "match_level": "provider_name",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 197,
       "labels": {
         "provider_type": "device_vendor",
@@ -1526,7 +1435,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 198
     },
     {
@@ -1540,7 +1448,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 199
     },
     {
@@ -1554,7 +1461,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 200
     },
     {
@@ -1568,7 +1474,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 201,
       "labels": {
         "implementation_type": "generic_or_builtin_telnet_service"
@@ -1585,7 +1490,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 202,
       "labels": {
         "implementation_type": "generic_or_builtin_telnet_service"
@@ -1602,7 +1506,6 @@
       "match_level": "implementation_hint",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 203,
       "labels": {
         "implementation_type": "generic_or_builtin_telnet_service"
@@ -1619,7 +1522,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 204
     },
     {
@@ -1633,7 +1535,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 205
     },
     {
@@ -1647,7 +1548,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 206
     },
     {
@@ -1661,7 +1561,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 207
     },
     {
@@ -1675,7 +1574,6 @@
       "match_level": "device_family",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "legacy_id": 208
     },
     {
@@ -1689,7 +1587,6 @@
       "match_level": "provider_name",
       "evidence_strength": "moderate",
       "primary_eligible": false,
-      "tie_breaker": 0,
       "explanation": "The Telnet response explicitly contains a Cisco IOS version marker.",
       "legacy_id": 217,
       "labels": {

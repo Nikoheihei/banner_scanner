@@ -331,7 +331,6 @@ def build_fingerprints(db_path: str) -> list[dict]:
             "match_level": related["match_level"],
             "evidence_strength": related["evidence_strength"],
             "primary_eligible": related.get("primary_eligible", False),
-            "tie_breaker": 0,
             "explanation": related["explanation"],
         })
         next_id += 1
@@ -555,7 +554,6 @@ def v2_text_metadata(category: str, legacy_priority: int) -> dict:
             "match_level": "protocol_only",
             "evidence_strength": "weak",
             "primary_eligible": False,
-            "tie_breaker": 0,
         }
     if category == "family":
         return {
@@ -563,7 +561,6 @@ def v2_text_metadata(category: str, legacy_priority: int) -> dict:
             "match_level": "device_family",
             "evidence_strength": "moderate",
             "primary_eligible": False,
-            "tie_breaker": 0,
         }
     if category == "status":
         return {
@@ -571,7 +568,6 @@ def v2_text_metadata(category: str, legacy_priority: int) -> dict:
             "match_level": "status_fact",
             "evidence_strength": "moderate",
             "primary_eligible": False,
-            "tie_breaker": 0,
         }
     if legacy_priority >= 140:
         strength = "conclusive"
@@ -587,7 +583,6 @@ def v2_text_metadata(category: str, legacy_priority: int) -> dict:
         "match_level": level,
         "evidence_strength": strength,
         "primary_eligible": True,
-        "tie_breaker": 0,
     }
 
 

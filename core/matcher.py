@@ -52,7 +52,7 @@ class FingerprintRule:
                  category: str = "implementation", priority: int = 100,
                  result_type: str = "", match_level: str = "",
                  evidence_strength: str = "", primary_eligible: Optional[bool] = None,
-                 tie_breaker: int = 0, explanation: str = "",
+                 explanation: str = "",
                  labels: Optional[dict] = None, extract: Optional[list[dict]] = None):
         self.vendor_id = vendor_id
         self.name = name
@@ -67,7 +67,6 @@ class FingerprintRule:
         self.primary_eligible = (
             legacy["primary_eligible"] if primary_eligible is None else primary_eligible
         )
-        self.tie_breaker = tie_breaker
         self.explanation = explanation
         self.labels = labels or {}
         self.extract = extract or []
@@ -99,7 +98,6 @@ class FingerprintRule:
             "match_level": self.match_level,
             "evidence_strength": self.evidence_strength,
             "primary_eligible": self.primary_eligible,
-            "tie_breaker": self.tie_breaker,
             "labels": self.labels,
             "extract": self.extract,
             "pattern": self.pattern,
@@ -170,7 +168,6 @@ class FingerprintLoader:
                 match_level=str(v.get("match_level") or ""),
                 evidence_strength=str(v.get("evidence_strength") or ""),
                 primary_eligible=v.get("primary_eligible"),
-                tie_breaker=int(v.get("tie_breaker", 0)),
                 explanation=str(v.get("explanation") or ""),
                 labels=dict(v.get("labels") or {}),
                 extract=list(v.get("extract") or []),
@@ -233,7 +230,6 @@ class FingerprintMatcher:
                 match_level=str(v.get("match_level") or ""),
                 evidence_strength=str(v.get("evidence_strength") or ""),
                 primary_eligible=v.get("primary_eligible"),
-                tie_breaker=int(v.get("tie_breaker", 0)),
                 explanation=str(v.get("explanation") or ""),
                 labels=dict(v.get("labels") or {}),
                 extract=list(v.get("extract") or []),
@@ -288,7 +284,6 @@ class FingerprintMatcher:
                         match_level=rule.match_level,
                         evidence_strength=rule.evidence_strength,
                         primary_eligible=rule.primary_eligible,
-                        tie_breaker=rule.tie_breaker,
                         explanation=rule.explanation,
                         match_length=match_len,
                         specificity=rule.specificity,
