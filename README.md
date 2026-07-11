@@ -28,9 +28,9 @@ banner-scanner-mcp-http --host 127.0.0.1 --port 8877
 
 默认 MCP 地址为 `http://127.0.0.1:8877/mcp`，可直接使用仓库中的 `mcp.json`。
 
-### SSE 兼容入口
+### SSE 服务
 
-推荐在 Cherry Studio 等只配置 SSE URL 的客户端中使用 FastMCP 入口：
+Cherry Studio 使用 SSE 类型的 MCP 服务时，推荐启动 FastMCP 入口：
 
 ```bash
 banner-scanner-fastmcp --transport sse --host 127.0.0.1 --port 8877
@@ -56,13 +56,13 @@ Cherry Studio 中填写运行服务这台机器的局域网地址，例如：
 http://192.168.1.23:8877/sse
 ```
 
-项目也保留官方 MCP SDK 的 SSE 入口：
+项目也保留另一个 SSE 启动命令：
 
 ```bash
 banner-scanner-mcp-http --transport sse --host 127.0.0.1 --port 8877
 ```
 
-SSE 地址为 `/sse`，仅用于 legacy compatibility 和教学验收；新的客户端应优先使用 Streamable HTTP。stdio、Streamable HTTP、官方 SDK SSE 和 FastMCP SSE 共用同一套参数校验、探测、匹配和输出代码。
+无论使用哪个 SSE 启动命令，客户端地址都以 `/sse` 结尾，工具名称、输入参数和返回格式保持一致。
 
 ## MCP 工具
 
