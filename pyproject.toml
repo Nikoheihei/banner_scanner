@@ -9,6 +9,7 @@ description = "Authorized six-protocol Banner probing and fingerprint identifica
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+  "fastmcp==2.12.4",
   "mcp[cli]==1.28.1",
 ]
 
@@ -16,6 +17,7 @@ dependencies = [
 banner-scanner = "banner_scanner.cli:main"
 banner-scanner-mcp = "banner_scanner.server.mcp_server:main"
 banner-scanner-mcp-http = "banner_scanner.server.mcp_http_server:main"
+banner-scanner-fastmcp = "banner_scanner.server.fastmcp_standalone:main"
 
 [tool.setuptools]
 packages = [
