@@ -4,7 +4,7 @@
 生成 SSH、FTP、Telnet 三个独立指纹库供 FingerprintMatcher 使用。
 
 用法:
-    python3 build_fingerprints.py [--db fingerprint.db]
+    python3 tools/fingerprints/build_fingerprints.py [--db fingerprint.db]
         [--output-dir fingerprints/protocols]
 """
 
@@ -17,6 +17,7 @@ from collections import OrderedDict
 from pathlib import Path
 
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
 SUPPORTED_PROTOCOLS = ("SSH", "FTP", "TELNET")
 
 
@@ -780,7 +781,7 @@ def main():
     parser = argparse.ArgumentParser(description="从 fingerprint.db 构建指纹库")
     parser.add_argument("--db", default="fingerprint.db",
                         help="SQLite 数据库路径")
-    parser.add_argument("--output-dir", default="fingerprints/protocols",
+    parser.add_argument("--output-dir", default=str(REPO_ROOT / "fingerprints" / "protocols"),
                         help="三个独立协议指纹库的输出目录")
     parser.add_argument("--csv", default=None,
                         help="可选：同时从 CSV 导出")

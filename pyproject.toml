@@ -32,7 +32,6 @@ include-package-data = true
 
 [tool.setuptools.package-data]
 banner_scanner = [
-  "mcp.json",
   "fingerprints/protocols/*.json",
   "fingerprints/databases/*.json",
 ]

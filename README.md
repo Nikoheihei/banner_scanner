@@ -26,7 +26,7 @@ banner-scanner-mcp
 banner-scanner-mcp-http --host 127.0.0.1 --port 8877
 ```
 
-默认 MCP 地址为 `http://127.0.0.1:8877/mcp`，可直接使用仓库中的 `mcp.json`。
+默认 MCP 地址为 `http://127.0.0.1:8877/mcp`，可参考 `examples/mcp.streamable-http.json` 配置客户端。
 
 ### SSE 服务
 
@@ -225,7 +225,7 @@ Redis、MySQL 和 PostgreSQL 规则组合 Banner 与协议字段。`all`、`any`
 从原始 SQLite 模板重建三个文本库：
 
 ```bash
-python3 build_fingerprints.py \
+python3 tools/fingerprints/build_fingerprints.py \
   --db /path/to/fingerprint.db \
   --output-dir fingerprints/protocols
 ```
@@ -316,10 +316,10 @@ banner_scanner/
 ├── server/                   MCP 工具、策略、审计、序列化和传输入口
 ├── evaluation/               原始样本回归与主动性能/流程测试
 ├── tests/                    单元和回归测试
+├── examples/                 MCP 客户端配置示例
+├── tools/fingerprints/       指纹库构建和迁移工具
+├── tools/mcp/                MCP 服务验证工具
 ├── tools/legacy/             早期调试脚本和旧版共享 vendors.json 归档
-├── build_fingerprints.py     文本指纹库重建工具
-├── migrate_fingerprints_v2.py 规则 v2 迁移工具
-├── mcp.json                  Streamable HTTP 客户端配置示例
 └── pyproject.toml            包信息、SDK 锁定和命令入口
 ```
 
