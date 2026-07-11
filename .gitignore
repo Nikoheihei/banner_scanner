@@ -7,3 +7,6 @@ dist/
 build/
 evaluation/results/
 logs/
+*.log
+/docx_render_check/
+/*.docx
