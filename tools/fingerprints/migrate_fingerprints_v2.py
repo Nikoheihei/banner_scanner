@@ -5,17 +5,23 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 from pathlib import Path
 
-from banner_scanner.build_fingerprints import stable_text_rule_id, v2_text_metadata
+TOOL_DIR = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
+PACKAGE_PARENT = REPO_ROOT.parent
+for path in (TOOL_DIR, PACKAGE_PARENT):
+    path_text = str(path)
+    if path_text not in sys.path:
+        sys.path.insert(0, path_text)
+
+from build_fingerprints import stable_text_rule_id, v2_text_metadata
 from banner_scanner.core.database_matcher import _evidence_strength, _rule_semantics
 
 
-ROOT = Path(__file__).resolve().parent
-
-
 def migrate_text_libraries() -> None:
-    for path in sorted((ROOT / "fingerprints" / "protocols").glob("*_fingerprints.json")):
+    for path in sorted((REPO_ROOT / "fingerprints" / "protocols").glob("*_fingerprints.json")):
         data = json.loads(path.read_text(encoding="utf-8"))
         used_ids: set[str] = set()
         for rule in data.get("vendors", []):
@@ -43,7 +49,7 @@ def migrate_text_libraries() -> None:
 
 
 def migrate_database_libraries() -> None:
-    for path in sorted((ROOT / "fingerprints" / "databases").glob("*_fingerprints.json")):
+    for path in sorted((REPO_ROOT / "fingerprints" / "databases").glob("*_fingerprints.json")):
         data = json.loads(path.read_text(encoding="utf-8"))
         for rule in data.get("rules", []):
             result_type, match_level, primary_eligible = _rule_semantics(rule)
