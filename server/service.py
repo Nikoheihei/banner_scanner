@@ -6,13 +6,14 @@ import asyncio
 import base64
 import json
 import ipaddress
+import logging
 import socket
 import time
 import zlib
 from typing import Any
 
 from ..core.engine import ProbeEngine
-from .audit import audit_probe
+from .audit import audit_probe, audit_tool_rejection, audit_tool_request, new_request_id
 from .policy import (
     RateLimiter,
     RequestValidationError,
@@ -21,6 +22,9 @@ from .policy import (
     validate_probe_request,
 )
 from .serialization import banner_result_to_dict
+
+
+logger = logging.getLogger("banner_scanner.mcp")
 
 
 class BannerScannerService:
@@ -40,25 +44,55 @@ class BannerScannerService:
                            detail_level: str = "evidence",
                            authorization_confirmed: bool = False,
                            transport: str = "unknown") -> dict[str, Any]:
-        self._rate_limiter.check()
+        request_id = new_request_id()
         concurrency = (
             self.limits.probe_banner_default_concurrency
             if concurrency is None else concurrency
         )
-        request = validate_probe_request(
+        audit_tool_request(
+            request_id=request_id,
+            tool="probe_banner",
+            transport=transport,
             hosts=hosts,
+            compressed_hosts_present=False,
             protocols=protocols,
-            concurrency=concurrency,
             retries=retries,
+            concurrency=concurrency,
             detail_level=detail_level,
+            result_mode="full",
             authorization_confirmed=authorization_confirmed,
-            batch=False,
-            limits=self.limits,
-            target_policy=self.target_policy,
         )
-        return await self._execute_request(
-            tool="probe_banner", request=request, transport=transport,
-        )
+        try:
+            self._rate_limiter.check()
+            request = validate_probe_request(
+                hosts=hosts,
+                protocols=protocols,
+                concurrency=concurrency,
+                retries=retries,
+                detail_level=detail_level,
+                authorization_confirmed=authorization_confirmed,
+                batch=False,
+                limits=self.limits,
+                target_policy=self.target_policy,
+            )
+            return await self._execute_request(
+                request_id=request_id,
+                tool="probe_banner",
+                request=request,
+                transport=transport,
+            )
+        except RequestValidationError as exc:
+            audit_tool_rejection(
+                request_id=request_id, tool="probe_banner", transport=transport,
+                code="request_validation_error", error=exc,
+            )
+            raise
+        except TimeoutError as exc:
+            audit_tool_rejection(
+                request_id=request_id, tool="probe_banner", transport=transport,
+                code="request_timeout", error=exc,
+            )
+            raise
 
     async def scan_batch(self, *, hosts: list[str] | None = None,
                          compressed_hosts: str | None = None,
@@ -68,27 +102,57 @@ class BannerScannerService:
                          result_mode: str = "full",
                          authorization_confirmed: bool = False,
                          transport: str = "unknown") -> dict[str, Any]:
-        self._rate_limiter.check()
-        hosts = self._decode_hosts(hosts, compressed_hosts)
+        request_id = new_request_id()
         concurrency = (
             self.limits.scan_batch_default_concurrency
             if concurrency is None else concurrency
         )
-        request = validate_probe_request(
+        audit_tool_request(
+            request_id=request_id,
+            tool="scan_batch",
+            transport=transport,
             hosts=hosts,
+            compressed_hosts_present=bool(compressed_hosts),
             protocols=[protocol],
-            concurrency=concurrency,
             retries=retries,
+            concurrency=concurrency,
             detail_level=detail_level,
-            authorization_confirmed=authorization_confirmed,
-            batch=True,
-            limits=self.limits,
-            target_policy=self.target_policy,
             result_mode=result_mode,
+            authorization_confirmed=authorization_confirmed,
         )
-        return await self._execute_request(
-            tool="scan_batch", request=request, transport=transport,
-        )
+        try:
+            self._rate_limiter.check()
+            hosts = self._decode_hosts(hosts, compressed_hosts)
+            request = validate_probe_request(
+                hosts=hosts,
+                protocols=[protocol],
+                concurrency=concurrency,
+                retries=retries,
+                detail_level=detail_level,
+                authorization_confirmed=authorization_confirmed,
+                batch=True,
+                limits=self.limits,
+                target_policy=self.target_policy,
+                result_mode=result_mode,
+            )
+            return await self._execute_request(
+                request_id=request_id,
+                tool="scan_batch",
+                request=request,
+                transport=transport,
+            )
+        except RequestValidationError as exc:
+            audit_tool_rejection(
+                request_id=request_id, tool="scan_batch", transport=transport,
+                code="request_validation_error", error=exc,
+            )
+            raise
+        except TimeoutError as exc:
+            audit_tool_rejection(
+                request_id=request_id, tool="scan_batch", transport=transport,
+                code="request_timeout", error=exc,
+            )
+            raise
 
     @staticmethod
     def _decode_hosts(hosts: list[str] | None,
@@ -120,12 +184,15 @@ class BannerScannerService:
             return decoded
         return hosts or []
 
-    async def _execute_request(self, *, tool: str, request,
+    async def _execute_request(self, *, request_id: str, tool: str, request,
                                transport: str) -> dict[str, Any]:
         async def operation() -> dict[str, Any]:
             await self._validate_resolved_targets(request.hosts)
             return await self._run_probe(
-                tool=tool, request=request, transport=transport,
+                request_id=request_id,
+                tool=tool,
+                request=request,
+                transport=transport,
             )
 
         try:
@@ -138,7 +205,8 @@ class BannerScannerService:
                 f"{self.limits.request_timeout_seconds:g} seconds"
             ) from exc
 
-    async def _run_probe(self, *, tool: str, request, transport: str) -> dict[str, Any]:
+    async def _run_probe(self, *, request_id: str, tool: str, request,
+                         transport: str) -> dict[str, Any]:
         started = time.monotonic()
         host_results = await self.engine.probe_hosts(
             request.hosts,
@@ -155,6 +223,7 @@ class BannerScannerService:
         ]
         elapsed_ms = (time.monotonic() - started) * 1000
         request_id = audit_probe(
+            request_id=request_id,
             tool=tool,
             transport=transport,
             target_count=len(request.hosts),
@@ -232,6 +301,7 @@ class BannerScannerService:
         return list(grouped.values())
 
     async def health_check(self) -> dict[str, Any]:
+        logger.info("MCP health_check request received")
         health = await self.engine.health_check()
         text_rules = {
             str(protocol).lower(): count
@@ -243,7 +313,7 @@ class BannerScannerService:
                 "database_fingerprint_rules_by_protocol", {}
             ).items()
         }
-        return {
+        response = {
             "service": "ok" if health.get("healthy") else "degraded",
             "mcp_transport": ["stdio", "streamable_http", "sse"],
             "rules": {
@@ -261,6 +331,8 @@ class BannerScannerService:
                 "error_rate_pct": health.get("error_rate_pct", 0.0),
             },
         }
+        logger.info("MCP health_check response ready")
+        return response
 
     async def _validate_resolved_targets(self, hosts: list[str]) -> None:
         restrictive = (

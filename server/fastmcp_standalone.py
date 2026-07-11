@@ -13,6 +13,7 @@ from typing import Any
 
 from fastmcp import FastMCP
 
+from .logging_config import configure_mcp_logging
 from .policy import RequestValidationError, TargetPolicy
 from .service import BannerScannerService
 
@@ -128,6 +129,7 @@ def _check_remote_bind(host: str) -> None:
 
 def main() -> None:
     args = _build_parser().parse_args()
+    configure_mcp_logging()
     _check_remote_bind(args.host)
     transport = "http" if args.transport == "streamable-http" else args.transport
     if transport == "stdio":
