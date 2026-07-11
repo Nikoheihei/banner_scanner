@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""快速扫描脚本 — 修改 HOSTS 列表后直接运行"""
+"""旧版快速扫描脚本 — 修改 HOSTS 列表后直接运行"""
 import asyncio
 import sys
 from pathlib import Path
 
-_project_root = str(Path(__file__).parent.parent)
+_project_root = str(Path(__file__).resolve().parents[3])
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
 

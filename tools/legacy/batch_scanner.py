@@ -4,16 +4,16 @@
 结果写入 scan_output.txt (逐行 JSON)，支持断点续传。
 
 用法:
-    python3 batch_scanner.py --concurrency 300 --timeout 2.0 --output scan_output.txt
+    python3 tools/legacy/batch_scanner.py --concurrency 300 --timeout 2.0 --output scan_output.txt
 
     # 断点续传 (自动跳过已扫描)
-    python3 batch_scanner.py -c 300 --resume
+    python3 tools/legacy/batch_scanner.py -c 300 --resume
 
     # 限制数量
-    python3 batch_scanner.py -c 100 --limit 5000
+    python3 tools/legacy/batch_scanner.py -c 100 --limit 5000
 
     # 仅某协议
-    python3 batch_scanner.py -c 200 --protocol FTP
+    python3 tools/legacy/batch_scanner.py -c 200 --protocol FTP
 """
 
 import argparse
@@ -25,7 +25,8 @@ import sys
 import time
 from pathlib import Path
 
-_parent = str(Path(__file__).parent.parent)
+_legacy_dir = Path(__file__).resolve().parent
+_parent = str(Path(__file__).resolve().parents[3])
 if _parent not in sys.path:
     sys.path.insert(0, _parent)
 
@@ -181,7 +182,11 @@ async def scan_batch(targets: list[dict], engine: ProbeEngine,
 async def main():
     parser = argparse.ArgumentParser(description="批量扫描 banner_mapping 中所有 IP")
     parser.add_argument("--db", default="fingerprint.db", help="输入数据库")
-    parser.add_argument("--fingerprints", default="vendors.json", help="指纹库")
+    parser.add_argument(
+        "--fingerprints",
+        default=str(_legacy_dir / "vendors.json"),
+        help="旧版共享 vendors.json 指纹库",
+    )
     parser.add_argument("--output", default="scan_output.txt", help="输出文件")
     parser.add_argument("-c", "--concurrency", type=int, default=300,
                         help="并发数 (默认 300)")
