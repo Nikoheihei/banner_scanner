@@ -4,7 +4,7 @@
 
 ## 安装
 
-项目固定使用 MCP Python SDK `1.28.1`，避免传输行为随依赖升级变化。
+项目固定使用 MCP Python SDK `1.28.1`，并额外提供 `fastmcp==2.12.4` 入口，避免传输行为随依赖升级变化。
 
 ```bash
 python3 -m pip install -e .
@@ -30,11 +30,39 @@ banner-scanner-mcp-http --host 127.0.0.1 --port 8877
 
 ### SSE 兼容入口
 
+推荐在 Cherry Studio 等只配置 SSE URL 的客户端中使用 FastMCP 入口：
+
+```bash
+banner-scanner-fastmcp --transport sse --host 127.0.0.1 --port 8877
+```
+
+客户端 URL 填写：
+
+```text
+http://127.0.0.1:8877/sse
+```
+
+如果服务需要给同一局域网内的其他机器访问，监听地址可以改为 `0.0.0.0`。此时必须显式确认允许远程监听，并配置目标 allowlist，避免 MCP 客户端把服务用来探测未授权目标：
+
+```bash
+export BANNER_SCANNER_ALLOW_REMOTE_BIND=1
+export BANNER_SCANNER_ALLOWLIST="203.0.113.0/24,198.51.100.10/32"
+banner-scanner-fastmcp --transport sse --host 0.0.0.0 --port 8877
+```
+
+Cherry Studio 中填写运行服务这台机器的局域网地址，例如：
+
+```text
+http://192.168.1.23:8877/sse
+```
+
+项目也保留官方 MCP SDK 的 SSE 入口：
+
 ```bash
 banner-scanner-mcp-http --transport sse --host 127.0.0.1 --port 8877
 ```
 
-SSE 地址为 `/sse`，仅用于 legacy compatibility 和教学验收；新的客户端应优先使用 Streamable HTTP。三种传输共用同一套参数校验、探测、匹配和输出代码。
+SSE 地址为 `/sse`，仅用于 legacy compatibility 和教学验收；新的客户端应优先使用 Streamable HTTP。stdio、Streamable HTTP、官方 SDK SSE 和 FastMCP SSE 共用同一套参数校验、探测、匹配和输出代码。
 
 ## MCP 工具
 
