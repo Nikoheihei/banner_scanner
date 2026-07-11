@@ -4,7 +4,7 @@
 并验证匹配准确率。
 
 用法:
-    python3 scanner_test.py [--sample 50] [--timeout 3.0] [--retries 2]
+    python3 tools/legacy/scanner_test.py [--sample 50] [--timeout 3.0] [--retries 2]
 """
 
 import argparse
@@ -20,7 +20,8 @@ from pathlib import Path
 from typing import Optional
 
 # 添加项目父目录到 path (banner_scanner 是 package)
-_parent = str(Path(__file__).parent.parent)
+_legacy_dir = Path(__file__).resolve().parent
+_parent = str(Path(__file__).resolve().parents[3])
 if _parent not in sys.path:
     sys.path.insert(0, _parent)
 
@@ -349,8 +350,8 @@ async def main():
     )
     parser.add_argument("--db", default="fingerprint.db",
                         help="SQLite 数据库路径")
-    parser.add_argument("--fingerprints", default="vendors.json",
-                        help="vendors.json 指纹库路径")
+    parser.add_argument("--fingerprints", default=str(_legacy_dir / "vendors.json"),
+                        help="旧版共享 vendors.json 指纹库路径")
     parser.add_argument("--sample", type=int, default=50,
                         help="采样 IP 数量 (默认 50)")
     parser.add_argument("--timeout", type=float, default=3.0,

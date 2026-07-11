@@ -316,11 +316,14 @@ banner_scanner/
 ├── server/                   MCP 工具、策略、审计、序列化和传输入口
 ├── evaluation/               原始样本回归与主动性能/流程测试
 ├── tests/                    单元和回归测试
+├── tools/legacy/             早期调试脚本和旧版共享 vendors.json 归档
 ├── build_fingerprints.py     文本指纹库重建工具
 ├── migrate_fingerprints_v2.py 规则 v2 迁移工具
 ├── mcp.json                  Streamable HTTP 客户端配置示例
 └── pyproject.toml            包信息、SDK 锁定和命令入口
 ```
+
+当前 MCP 服务不依赖 `tools/legacy/vendors.json`。该目录仅保留早期调试脚本和旧共享指纹库，便于必要时对比历史实现。
 
 ## 能力边界
 
