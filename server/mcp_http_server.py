@@ -10,6 +10,7 @@ import argparse
 import os
 
 from .http_middleware import MCPHttpGuard
+from .logging_config import configure_mcp_logging
 from .mcp_app import create_mcp
 from .policy import RuntimeLimits, TargetPolicy
 from .serialization import banner_result_to_dict as _banner_to_dict
@@ -30,6 +31,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
+    configure_mcp_logging()
     remote_bind = args.host not in {"127.0.0.1", "::1", "localhost"}
     auth_token = os.environ.get("BANNER_SCANNER_AUTH_TOKEN", "")
     if remote_bind:

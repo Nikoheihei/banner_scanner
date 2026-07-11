@@ -247,6 +247,28 @@ python3 build_fingerprints.py \
 
 审计日志不默认记录完整 Banner，只记录截断预览和完整已捕获响应的 SHA-256 `banner_hash`。
 
+## 日志保存
+
+MCP 服务启动后默认将运行日志保存到 `logs/mcp_server.log`，同时继续输出到终端。日志可用于排查 Cherry Studio 是否连接到服务、MCP 是否完成初始化、工具是否被调用，以及请求是否被目标策略拒绝。
+
+可通过环境变量调整日志位置和详细程度：
+
+| 变量 | 含义 |
+|---|---|
+| `BANNER_SCANNER_LOG_FILE` | 日志文件路径；默认 `logs/mcp_server.log`；设为空字符串可关闭文件日志 |
+| `BANNER_SCANNER_LOG_LEVEL` | 日志级别，默认 `INFO` |
+| `BANNER_SCANNER_LOG_PARAMS` | 设为 `1`、`true`、`yes` 或 `on` 时，记录前 5 个目标预览 |
+
+示例：
+
+```bash
+export BANNER_SCANNER_LOG_FILE=logs/cherry_sse.log
+export BANNER_SCANNER_LOG_PARAMS=1
+banner-scanner-fastmcp --transport sse --host 127.0.0.1 --port 8877
+```
+
+日志会记录工具名、传输方式、目标数量、协议、重试次数、并发数、授权确认、耗时、连接结果摘要、错误原因和 `request_id`。默认不保存完整 Banner；探测结果只保存截断预览和 `banner_hash`。
+
 ## 验证
 
 运行不依赖外网的单元测试：
