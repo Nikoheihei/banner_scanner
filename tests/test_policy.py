@@ -126,6 +126,16 @@ def test_domain_in_allowed_domains_is_allowed():
     assert request.hosts == ["service.example.com"]
 
 
+def test_domain_is_accepted_for_later_ip_policy_check_when_no_domain_allowlist_exists():
+    policy = TargetPolicy(
+        allowlist=(ipaddress.ip_network("203.0.113.0/24"),),
+    )
+
+    request = _validate(hosts=["service.example.com"], target_policy=policy)
+
+    assert request.hosts == ["service.example.com"]
+
+
 def test_domain_outside_allowed_domains_is_rejected():
     policy = TargetPolicy(allowed_domains=("example.com",))
 

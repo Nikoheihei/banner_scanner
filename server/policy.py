@@ -32,6 +32,7 @@ class RuntimeLimits:
     global_max_concurrency: int = 100
     max_retries: int = 5
     max_request_body_bytes: int = 1024 * 1024
+    max_resolved_ips_per_host: int = 16
     max_banner_preview_bytes: int = 4096
     max_evidence_preview_bytes: int = 1024
     request_timeout_seconds: float = 300.0
@@ -105,10 +106,6 @@ class TargetPolicy:
                 for domain in self.allowed_domains
             ):
                 raise RequestValidationError(f"Domain is outside the configured allowlist: {host!r}")
-            if self.allowlist and not self.allowed_domains:
-                raise RequestValidationError(
-                    "Domain targets require BANNER_SCANNER_ALLOWED_DOMAINS when an IP allowlist is active"
-                )
             return ascii_host
 
         self.validate_address(address)

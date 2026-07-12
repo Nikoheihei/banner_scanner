@@ -93,7 +93,11 @@ def audit_probe(*, request_id: str | None = None, tool: str, transport: str, tar
     for result in results:
         preview = result.banner.replace("\r", "\\r").replace("\n", "\\n")[:preview_limit]
         samples.append({
+            "input_host": result.input_host or result.host,
             "host": result.host,
+            "resolved_ip": result.resolved_ip,
+            "resolved_ips": result.resolved_ips,
+            "attempted_ips": result.attempted_ips,
             "port": result.port,
             "protocol": result.protocol,
             "accessible": result.accessible,

@@ -130,7 +130,7 @@ def banner_result_to_dict(result: BannerResult, *, detail_level: str = "evidence
         "protocol_status": _protocol_status(result),
         "identification_status": result.identification_status,
         "endpoint": {
-            "host": result.host,
+            "host": result.input_host or result.host,
             "port": result.port,
             "protocol": result.protocol,
         },
@@ -140,6 +140,15 @@ def banner_result_to_dict(result: BannerResult, *, detail_level: str = "evidence
             if result.primary_identification is not None else None
         ),
     }
+    if result.resolved_ip:
+        payload["endpoint"]["resolved_ip"] = result.resolved_ip
+    if result.input_host or result.resolved_ips or result.attempted_ips:
+        payload["target_resolution"] = {
+            "input_host": result.input_host or result.host,
+            "resolved_ips": result.resolved_ips or [result.resolved_ip or result.host],
+            "attempted_ips": result.attempted_ips,
+            "selected_ip": result.selected_ip,
+        }
     if _protocol_status(result) == "mismatch":
         payload["expected_protocol"] = result.protocol.upper()
         payload["observed_protocol"] = result.observed_protocol
