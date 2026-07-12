@@ -16,13 +16,15 @@ class TransportError(Exception):
     detail_code = "protocol_exchange_failed"
 
     def __init__(self, message: str, *, phase: str | None = None,
-                 detail_code: str | None = None, os_error: int | None = None):
+                 detail_code: str | None = None, os_error: int | None = None,
+                 context: dict | None = None):
         super().__init__(message)
         if phase is not None:
             self.phase = phase
         if detail_code is not None:
             self.detail_code = detail_code
         self.os_error = os_error
+        self.context = context or {}
 
 
 class ConnectionTimeout(TransportError):
@@ -49,6 +51,7 @@ def failure_from_exception(exc: BaseException, *, elapsed_ms: float = 0.0) -> Pr
             message=str(exc),
             elapsed_ms=round(elapsed_ms, 1),
             os_error=exc.os_error,
+            context=dict(exc.context),
         )
     return ProbeFailure(
         phase="system",
@@ -65,12 +68,15 @@ def record_failure(result: BannerResult, exc: BaseException, *, elapsed_ms: floa
     result.error = failure.message
     result.response_time_ms = max(result.response_time_ms, failure.elapsed_ms)
     result.retry_elapsed_ms = max(result.retry_elapsed_ms, failure.elapsed_ms)
-    result.retry_history = [{
+    attempt = {
         "attempt": 1,
         "phase": failure.phase,
         "detail_code": failure.detail_code,
         "elapsed_ms": failure.elapsed_ms,
-    }]
+    }
+    if failure.context:
+        attempt["context"] = failure.context
+    result.retry_history = [attempt]
 
 
 def record_result_failure(result: BannerResult, *, phase: str, detail_code: str,
@@ -107,6 +113,40 @@ def _make_tls_context() -> ssl.SSLContext:
     except (AttributeError, ssl.SSLError):
         pass
     return ctx
+
+
+def _address_family(host: str) -> str:
+    """Report the address family without attempting a second resolution."""
+    try:
+        socket.inet_pton(socket.AF_INET, host)
+        return "ipv4"
+    except OSError:
+        pass
+    try:
+        socket.inet_pton(socket.AF_INET6, host)
+        return "ipv6"
+    except OSError:
+        return "hostname"
+
+
+def _connect_context(host: str, port: int, connect_timeout: float) -> dict:
+    return {
+        "endpoint": {"host": host, "port": port},
+        "address_family": _address_family(host),
+        "connect_timeout_ms": round(connect_timeout * 1000, 1),
+    }
+
+
+def _resource_errnos() -> set[int]:
+    return {
+        value for value in (
+            getattr(errno, "EMFILE", None),
+            getattr(errno, "ENFILE", None),
+            getattr(errno, "ENOBUFS", None),
+            getattr(errno, "ENOMEM", None),
+            getattr(errno, "EADDRNOTAVAIL", None),
+        ) if value is not None
+    }
 
 
 async def upgrade_tls(
@@ -161,6 +201,7 @@ async def connect_tcp(
 ) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter, dict]:
     """返回 (reader, writer, tcp_info) 其中 tcp_info 含 TCP 层元数据"""
     tcp_info = {}
+    context = _connect_context(host, port, connect_timeout)
     try:
         if use_tls:
             try:
@@ -206,20 +247,28 @@ async def connect_tcp(
             pass
         return reader, writer, tcp_info
     except asyncio.TimeoutError:
-        raise ConnectionTimeout(f"connect to {host}:{port} timed out")
+        raise ConnectionTimeout(
+            f"connect to {host}:{port} timed out",
+            context=context,
+        )
     except socket.gaierror as exc:
         raise DnsResolutionError(
             f"DNS resolution for {host} failed: {exc}",
             os_error=exc.errno,
+            context=context,
         ) from exc
     except OSError as exc:
         errno_code = exc.errno
         if errno_code == errno.ECONNREFUSED:
             detail_code = "tcp_connection_refused"
-        elif errno_code in {errno.ENETUNREACH, errno.EHOSTUNREACH}:
+        elif errno_code == errno.ENETUNREACH:
             detail_code = "network_unreachable"
+        elif errno_code == errno.EHOSTUNREACH:
+            detail_code = "host_unreachable"
         elif errno_code in {errno.EACCES, errno.EPERM}:
-            detail_code = "permission_denied"
+            detail_code = "local_permission_denied"
+        elif errno_code in _resource_errnos():
+            detail_code = "local_resource_exhausted"
         else:
             detail_code = "tcp_connect_failed"
         raise TransportError(
@@ -227,6 +276,7 @@ async def connect_tcp(
             phase="tcp_connect",
             detail_code=detail_code,
             os_error=errno_code,
+            context=context,
         ) from exc
 
 

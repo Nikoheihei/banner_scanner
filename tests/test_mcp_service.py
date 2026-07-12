@@ -225,6 +225,11 @@ async def test_domain_fallback_keeps_structured_failure_diagnostics():
                         detail_code="tcp_connect_timeout",
                         message=message,
                         elapsed_ms=3000.0,
+                        context={
+                            "endpoint": {"host": host, "port": port},
+                            "address_family": "ipv4",
+                            "connect_timeout_ms": 3000.0,
+                        },
                     ),
                 )
             return BannerResult(
@@ -252,6 +257,11 @@ async def test_domain_fallback_keeps_structured_failure_diagnostics():
         "phase": "tcp_connect",
         "detail_code": "tcp_connect_timeout",
         "elapsed_ms": 3000.0,
+        "context": {
+            "endpoint": {"host": "203.0.113.10", "port": 22},
+            "address_family": "ipv4",
+            "connect_timeout_ms": 3000.0,
+        },
     }
 
 

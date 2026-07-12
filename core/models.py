@@ -163,6 +163,7 @@ class ProbeFailure:
     message: str
     elapsed_ms: float = 0.0
     os_error: int | None = None
+    context: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

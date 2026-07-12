@@ -353,6 +353,8 @@ class BannerScannerService:
                         "phase": result.failure.phase,
                         "detail_code": result.failure.detail_code,
                         "elapsed_ms": round(result.failure.elapsed_ms, 1),
+                        **({"context": result.failure.context}
+                           if result.failure.context else {}),
                     } if result.failure is not None else {}),
                 })
                 last_result = result

@@ -187,6 +187,8 @@ def banner_result_to_dict(result: BannerResult, *, detail_level: str = "evidence
             })
             if result.failure.os_error is not None:
                 error["os_error"] = result.failure.os_error
+            if result.failure.context:
+                error["context"] = result.failure.context
         if result.retry_attempts > 1 or result.retry_history:
             error["retry_summary"] = {
                 "attempts": result.retry_attempts,

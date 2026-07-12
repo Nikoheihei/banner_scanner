@@ -195,13 +195,15 @@ http://127.0.0.1:8877/mcp
 }
 ```
 
-- `tcp_connect_timeout`：在连接时限内未完成 TCP 连接；可能是静默过滤、端口未开放、路由或本机出口限制，单次超时不能据此确定原因。
+- `tcp_connect_timeout`：在连接时限内未完成 TCP 三次握手；可能是静默过滤、端口未开放、路由或本机出口限制，单次超时不能据此确定原因。
 - `protocol_read_timeout`：TCP 已连接，但未在读取时限内收到协议响应。
 - `tcp_connection_refused`：目标地址可达，但该端口主动拒绝连接。
-- `dns_resolution_failed`、`network_unreachable`、`permission_denied`：分别表示域名解析、本机网络路由或本机策略层面的失败。
+- `network_unreachable`、`host_unreachable`：本机系统分别明确返回网络不可达或主机不可达。
+- `local_permission_denied`、`local_resource_exhausted`：本机策略拒绝创建连接，或本机临时端口、套接字缓冲区、文件描述符等资源不足。
+- `dns_resolution_failed`：域名解析失败。
 - `tls_handshake_timeout`、`tls_handshake_failed`：连接后 TLS 协商超时或失败。
 
-在 `detail_level="evidence"` 下，失败结果还会附带有限的 `attempt_history`；域名回退时，`target_resolution.attempted_ips` 也会保留每个已尝试地址的阶段、细化代码和耗时。`health_check` 的 `engine.failure_counts` 可查看当前服务进程按细化代码累计的失败数量。
+TCP 建连失败还会在 `error.context` 中给出实际端点、地址族和本次连接时限。在 `detail_level="evidence"` 下，失败结果还会附带有限的 `attempt_history`；域名回退时，`target_resolution.attempted_ips` 也会保留每个已尝试地址的阶段、细化代码、耗时和连接上下文。`health_check` 的 `engine.failure_counts` 可查看当前服务进程按细化代码累计的失败数量。
 
 ## 探测与识别方式
 

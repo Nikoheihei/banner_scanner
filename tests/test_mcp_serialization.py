@@ -201,6 +201,11 @@ def test_timeout_output_identifies_the_network_phase_without_changing_base_code(
             detail_code="tcp_connect_timeout",
             message="connect to 192.0.2.50:21 timed out",
             elapsed_ms=3001.2,
+            context={
+                "endpoint": {"host": "192.0.2.50", "port": 21},
+                "address_family": "ipv4",
+                "connect_timeout_ms": 3000.0,
+            },
         ),
         retry_attempts=1,
         retry_elapsed_ms=3001.2,
@@ -209,6 +214,11 @@ def test_timeout_output_identifies_the_network_phase_without_changing_base_code(
             "phase": "tcp_connect",
             "detail_code": "tcp_connect_timeout",
             "elapsed_ms": 3001.2,
+            "context": {
+                "endpoint": {"host": "192.0.2.50", "port": 21},
+                "address_family": "ipv4",
+                "connect_timeout_ms": 3000.0,
+            },
         }],
     )
 
@@ -221,12 +231,22 @@ def test_timeout_output_identifies_the_network_phase_without_changing_base_code(
         "phase": "tcp_connect",
         "detail_code": "tcp_connect_timeout",
         "elapsed_ms": 3001.2,
+        "context": {
+            "endpoint": {"host": "192.0.2.50", "port": 21},
+            "address_family": "ipv4",
+            "connect_timeout_ms": 3000.0,
+        },
         "retry_summary": {"attempts": 1, "total_elapsed_ms": 3001.2},
         "attempt_history": [{
             "attempt": 1,
             "phase": "tcp_connect",
             "detail_code": "tcp_connect_timeout",
             "elapsed_ms": 3001.2,
+            "context": {
+                "endpoint": {"host": "192.0.2.50", "port": 21},
+                "address_family": "ipv4",
+                "connect_timeout_ms": 3000.0,
+            },
         }],
     }
 

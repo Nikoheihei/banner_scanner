@@ -107,6 +107,7 @@ def audit_probe(*, request_id: str | None = None, tool: str, transport: str, tar
             "failure_elapsed_ms": (
                 round(result.failure.elapsed_ms, 1) if result.failure else 0.0
             ),
+            "failure_context": result.failure.context if result.failure else {},
             "banner_preview": preview,
             "banner_hash": banner_hash(result),
         })
