@@ -11,6 +11,16 @@ from ..core.models import BannerResult
 def _network_status(result: BannerResult) -> str:
     if result.accessible:
         return "connected"
+    if result.failure is not None:
+        mapping = {
+            "tcp_connect_timeout": "timeout",
+            "protocol_read_timeout": "timeout",
+            "tls_handshake_timeout": "timeout",
+            "tcp_connection_refused": "refused",
+            "dns_resolution_failed": "dns_error",
+            "request_cancelled": "cancelled",
+        }
+        return mapping.get(result.failure.detail_code, "unreachable")
     error = result.error.casefold()
     if "timed out" in error or "timeout" in error:
         return "timeout"
@@ -37,6 +47,16 @@ def _protocol_status(result: BannerResult) -> str:
 
 
 def _error_code(result: BannerResult) -> str:
+    if result.failure is not None:
+        mapping = {
+            "tcp_connect_timeout": "probe_timeout",
+            "protocol_read_timeout": "probe_timeout",
+            "tls_handshake_timeout": "probe_timeout",
+            "tcp_connection_refused": "connection_refused",
+            "dns_resolution_failed": "dns_error",
+            "request_cancelled": "request_cancelled",
+        }
+        return mapping.get(result.failure.detail_code, "network_error")
     status = _network_status(result)
     mapping = {
         "timeout": "probe_timeout",
@@ -155,10 +175,28 @@ def banner_result_to_dict(result: BannerResult, *, detail_level: str = "evidence
     if result.identification_status == "conflict":
         payload["candidates"] = [asdict(item) for item in result.identification_candidates]
     if result.error:
-        payload["error"] = {
+        error: dict[str, Any] = {
             "code": _error_code(result),
             "message": result.error,
         }
+        if result.failure is not None:
+            error.update({
+                "phase": result.failure.phase,
+                "detail_code": result.failure.detail_code,
+                "elapsed_ms": round(result.failure.elapsed_ms, 1),
+            })
+            if result.failure.os_error is not None:
+                error["os_error"] = result.failure.os_error
+            if result.failure.context:
+                error["context"] = result.failure.context
+        if result.retry_attempts > 1 or result.retry_history:
+            error["retry_summary"] = {
+                "attempts": result.retry_attempts,
+                "total_elapsed_ms": round(result.retry_elapsed_ms, 1),
+            }
+            if detail_level == "evidence" and result.retry_history:
+                error["attempt_history"] = result.retry_history[:6]
+        payload["error"] = error
 
     observations: dict[str, Any] = {}
     if detail_level == "evidence":

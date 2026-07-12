@@ -1,7 +1,9 @@
 """集成测试：Mock 传输层，验证完整探测流程。"""
 
 import asyncio
+import errno
 import hashlib
+import socket
 import struct
 import sys
 import os
@@ -201,8 +203,131 @@ async def test_connection_timeout():
         assert br is not None
         assert br.accessible == False
         assert "timed out" in br.error
+        assert br.failure is not None
+        assert br.failure.phase == "tcp_connect"
+        assert br.failure.detail_code == "tcp_connect_timeout"
     finally:
         _transport.connect_tcp = original
+
+
+async def test_connect_timeout_carries_endpoint_address_family_and_deadline():
+    original = asyncio.open_connection
+
+    async def pending_connection(*_args, **_kwargs):
+        await asyncio.Event().wait()
+
+    asyncio.open_connection = pending_connection
+    try:
+        try:
+            await _transport.connect_tcp("2001:db8::20", 22, connect_timeout=0.01)
+            assert False, "Expected connection timeout"
+        except _transport.ConnectionTimeout as exc:
+            failure = _transport.failure_from_exception(exc, elapsed_ms=10.5)
+            assert failure.detail_code == "tcp_connect_timeout"
+            assert failure.context == {
+                "endpoint": {"host": "2001:db8::20", "port": 22},
+                "address_family": "ipv6",
+                "connect_timeout_ms": 10.0,
+            }
+    finally:
+        asyncio.open_connection = original
+
+
+async def test_transport_classifies_refused_unreachable_and_dns_errors():
+    original = asyncio.open_connection
+
+    async def refused(*_args, **_kwargs):
+        raise OSError(errno.ECONNREFUSED, "Connection refused")
+
+    asyncio.open_connection = refused
+    try:
+        try:
+            await _transport.connect_tcp("192.0.2.61", 22, connect_timeout=0.1)
+            assert False, "Expected connection failure"
+        except _transport.TransportError as exc:
+            failure = _transport.failure_from_exception(exc)
+            assert failure.phase == "tcp_connect"
+            assert failure.detail_code == "tcp_connection_refused"
+            assert failure.os_error == errno.ECONNREFUSED
+    finally:
+        asyncio.open_connection = original
+
+    async def host_unreachable(*_args, **_kwargs):
+        raise OSError(errno.EHOSTUNREACH, "No route to host")
+
+    asyncio.open_connection = host_unreachable
+    try:
+        try:
+            await _transport.connect_tcp("192.0.2.63", 22, connect_timeout=0.1)
+            assert False, "Expected host failure"
+        except _transport.TransportError as exc:
+            failure = _transport.failure_from_exception(exc)
+            assert failure.detail_code == "host_unreachable"
+            assert failure.context == {
+                "endpoint": {"host": "192.0.2.63", "port": 22},
+                "address_family": "ipv4",
+                "connect_timeout_ms": 100.0,
+            }
+    finally:
+        asyncio.open_connection = original
+
+    async def permission_denied(*_args, **_kwargs):
+        raise OSError(errno.EPERM, "Operation not permitted")
+
+    asyncio.open_connection = permission_denied
+    try:
+        try:
+            await _transport.connect_tcp("2001:db8::10", 22, connect_timeout=0.1)
+            assert False, "Expected permission failure"
+        except _transport.TransportError as exc:
+            failure = _transport.failure_from_exception(exc)
+            assert failure.detail_code == "local_permission_denied"
+            assert failure.context["address_family"] == "ipv6"
+    finally:
+        asyncio.open_connection = original
+
+    resource_errno = getattr(errno, "EMFILE", errno.ENOMEM)
+
+    async def resource_exhausted(*_args, **_kwargs):
+        raise OSError(resource_errno, "Too many open files")
+
+    asyncio.open_connection = resource_exhausted
+    try:
+        try:
+            await _transport.connect_tcp("192.0.2.64", 22, connect_timeout=0.1)
+            assert False, "Expected local resource failure"
+        except _transport.TransportError as exc:
+            assert _transport.failure_from_exception(exc).detail_code == "local_resource_exhausted"
+    finally:
+        asyncio.open_connection = original
+
+    async def unreachable(*_args, **_kwargs):
+        raise OSError(errno.ENETUNREACH, "Network is unreachable")
+
+    asyncio.open_connection = unreachable
+    try:
+        try:
+            await _transport.connect_tcp("192.0.2.62", 22, connect_timeout=0.1)
+            assert False, "Expected network failure"
+        except _transport.TransportError as exc:
+            assert _transport.failure_from_exception(exc).detail_code == "network_unreachable"
+    finally:
+        asyncio.open_connection = original
+
+    async def dns_failure(*_args, **_kwargs):
+        raise socket.gaierror(-2, "Name or service not known")
+
+    asyncio.open_connection = dns_failure
+    try:
+        try:
+            await _transport.connect_tcp("missing.example.test", 22, connect_timeout=0.1)
+            assert False, "Expected DNS failure"
+        except _transport.TransportError as exc:
+            failure = _transport.failure_from_exception(exc)
+            assert failure.phase == "dns_resolution"
+            assert failure.detail_code == "dns_resolution_failed"
+    finally:
+        asyncio.open_connection = original
 
 
 async def test_implicit_tls_uses_fresh_plaintext_fallback():

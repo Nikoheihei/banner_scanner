@@ -247,14 +247,26 @@ async def probe_pgsql(
         elif ssl_response in {"S", "N"}:
             result.banner = f"SSLRequest:{ssl_response}"
         else:
-            result.error = f"Unexpected PostgreSQL SSL response: {ssl_response!r}"
+            _transport.record_result_failure(
+                result,
+                phase="protocol_exchange",
+                detail_code="protocol_response_unrecognized",
+                message=f"Unexpected PostgreSQL SSL response: {ssl_response!r}",
+                elapsed_ms=(asyncio.get_running_loop().time() - start) * 1000,
+            )
         result.info = extract_banner_info(result)
     except (_transport.ConnectionTimeout, _transport.ReadTimeout,
             _transport.TransportError) as exc:
-        result.error = str(exc)
+        _transport.record_failure(
+            result, exc,
+            elapsed_ms=(asyncio.get_running_loop().time() - start) * 1000,
+        )
         logger.debug("[PGSQL] %s:%d %s", host, port, exc)
     except Exception as exc:
-        result.error = f"Unexpected: {exc}"
+        _transport.record_failure(
+            result, exc,
+            elapsed_ms=(asyncio.get_running_loop().time() - start) * 1000,
+        )
         logger.warning("[PGSQL] %s:%d unexpected error: %s", host, port, exc)
     finally:
         result.response_time_ms = (asyncio.get_running_loop().time() - start) * 1000

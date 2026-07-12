@@ -85,10 +85,16 @@ async def probe_ssh(
     except (_transport.ConnectionTimeout,
             _transport.ReadTimeout,
             _transport.TransportError) as e:
-        result.error = str(e)
+        _transport.record_failure(
+            result, e,
+            elapsed_ms=(asyncio.get_event_loop().time() - start) * 1000,
+        )
         logger.debug("[SSH] %s:%d %s", host, port, e)
     except Exception as e:
-        result.error = f"Unexpected: {e}"
+        _transport.record_failure(
+            result, e,
+            elapsed_ms=(asyncio.get_event_loop().time() - start) * 1000,
+        )
         logger.warning("[SSH] %s:%d unexpected error: %s", host, port, e)
     finally:
         await _transport.safe_close(writer)

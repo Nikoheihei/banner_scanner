@@ -88,16 +88,28 @@ async def probe_redis(
         result.banner_truncated = ping_truncated or info_truncated
         result.accessible = True
         if not result.banner:
-            result.error = "TCP connected but no Redis response received"
+            _transport.record_result_failure(
+                result,
+                phase="protocol_read",
+                detail_code="protocol_no_banner",
+                message="TCP connected but no Redis response received",
+                elapsed_ms=(asyncio.get_running_loop().time() - start) * 1000,
+            )
         elif info_payload and info_payload.startswith("-"):
             logger.debug("[REDIS] %s:%d INFO denied: %s", host, port, info_payload.strip())
         result.info = extract_banner_info(result)
     except (_transport.ConnectionTimeout, _transport.ReadTimeout,
             _transport.TransportError) as exc:
-        result.error = str(exc)
+        _transport.record_failure(
+            result, exc,
+            elapsed_ms=(asyncio.get_running_loop().time() - start) * 1000,
+        )
         logger.debug("[REDIS] %s:%d %s", host, port, exc)
     except Exception as exc:
-        result.error = f"Unexpected: {exc}"
+        _transport.record_failure(
+            result, exc,
+            elapsed_ms=(asyncio.get_running_loop().time() - start) * 1000,
+        )
         logger.warning("[REDIS] %s:%d unexpected error: %s", host, port, exc)
     finally:
         result.response_time_ms = (asyncio.get_running_loop().time() - start) * 1000

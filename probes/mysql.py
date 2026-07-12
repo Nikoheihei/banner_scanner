@@ -56,14 +56,26 @@ async def probe_mysql(
         elif result.mysql.error_message:
             result.banner = result.mysql.error_message
         else:
-            result.error = "TCP connected but MySQL handshake was not recognized"
+            _transport.record_result_failure(
+                result,
+                phase="protocol_exchange",
+                detail_code="protocol_response_unrecognized",
+                message="TCP connected but MySQL handshake was not recognized",
+                elapsed_ms=(asyncio.get_running_loop().time() - start) * 1000,
+            )
         result.info = extract_banner_info(result)
     except (_transport.ConnectionTimeout, _transport.ReadTimeout,
             _transport.TransportError) as exc:
-        result.error = str(exc)
+        _transport.record_failure(
+            result, exc,
+            elapsed_ms=(asyncio.get_running_loop().time() - start) * 1000,
+        )
         logger.debug("[MYSQL] %s:%d %s", host, port, exc)
     except Exception as exc:
-        result.error = f"Unexpected: {exc}"
+        _transport.record_failure(
+            result, exc,
+            elapsed_ms=(asyncio.get_running_loop().time() - start) * 1000,
+        )
         logger.warning("[MYSQL] %s:%d unexpected error: %s", host, port, exc)
     finally:
         result.response_time_ms = (asyncio.get_running_loop().time() - start) * 1000

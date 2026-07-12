@@ -150,6 +150,23 @@ class EvidenceStep:
 
 
 @dataclass
+class ProbeFailure:
+    """Structured reason for a failed or incomplete probe exchange.
+
+    ``phase`` describes where the failure occurred. ``detail_code`` is a
+    stable machine-readable diagnosis; it is an observation, not a statement
+    about who or what caused a network failure.
+    """
+
+    phase: str
+    detail_code: str
+    message: str
+    elapsed_ms: float = 0.0
+    os_error: int | None = None
+    context: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
 class BannerResult:
     protocol: str
     host: str
@@ -166,6 +183,7 @@ class BannerResult:
     banner_truncated: bool = False
     response_time_ms: float = 0.0
     error: str = ""
+    failure: Optional[ProbeFailure] = None
     ssh: Optional[SshBanner] = None
     ftp: Optional[FtpFeatures] = None
     telnet: Optional[TelnetBanner] = None
@@ -190,6 +208,7 @@ class BannerResult:
     retry_count: int = 0                # 实际重试次数
     retry_attempts: int = 1             # 总尝试次数 (含首次)
     retry_elapsed_ms: float = 0.0       # 含重试的总耗时 (ms)
+    retry_history: list[dict[str, Any]] = field(default_factory=list)
     # 统一提取信息 (跨协议)
     info: dict = field(default_factory=dict)  # {service_name, service_version, os, ...}
 

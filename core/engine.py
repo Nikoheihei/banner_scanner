@@ -1,6 +1,7 @@
 """核心探测引擎。"""
 
 import asyncio
+from collections import Counter
 import logging
 import time
 from pathlib import Path
@@ -29,6 +30,7 @@ class ProbeEngine:
         self.config = config or ProbeConfig()
         self._total_probes = 0
         self._total_errors = 0
+        self._failure_counts: Counter[str] = Counter()
         self._start_time = time.time()
 
         # 可选挂载指纹匹配器
@@ -67,6 +69,7 @@ class ProbeEngine:
                         probe_fn, host, port, proto, max_retries=max_retries,
                     )
                     self._total_probes += 1
+                    self._record_failure(result)
                     if result.accessible:
                         results[proto] = result
                         break  # 成功则不再尝试其他端口
@@ -111,6 +114,7 @@ class ProbeEngine:
                 probe_fn, host, port, protocol, max_retries=max_retries,
             )
             self._total_probes += 1
+            self._record_failure(result)
             if not result.accessible:
                 self._total_errors += 1
         except Exception as e:
@@ -202,6 +206,7 @@ class ProbeEngine:
             "error_rate_pct": round(
                 (self._total_errors / max(self._total_probes, 1)) * 100, 2
             ),
+            "failure_counts": dict(sorted(self._failure_counts.items())),
             "config": {
                 "connect_timeout": self.config.connect_timeout,
                 "read_timeout": self.config.read_timeout,
@@ -223,6 +228,10 @@ class ProbeEngine:
     def _get_ports(self, proto: str) -> list[int]:
         cfg = self.config.protocol_config.get(proto)
         return cfg.ports if cfg else [22]
+
+    def _record_failure(self, result: BannerResult) -> None:
+        if result.failure is not None:
+            self._failure_counts[result.failure.detail_code] += 1
 
     @staticmethod
     def _ensure_evidence_trace(result: BannerResult) -> None:
