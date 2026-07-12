@@ -29,12 +29,13 @@ mcp = FastMCP(
 service = BannerScannerService()
 
 
-def _tool_error(tool: str, code: str, exc: Exception) -> dict[str, Any]:
+def _tool_error(tool: str, code: str, phase: str, exc: Exception) -> dict[str, Any]:
     return {
         "tool": tool,
         "rejected": True,
         "error": {
             "code": code,
+            "phase": phase,
             "message": str(exc),
         },
     }
@@ -59,9 +60,13 @@ async def probe_banner(
             transport="fastmcp",
         )
     except RequestValidationError as exc:
-        return _tool_error("probe_banner", "request_validation_error", exc)
+        return _tool_error(
+            "probe_banner", "request_validation_error", "request_validation", exc,
+        )
     except TimeoutError as exc:
-        return _tool_error("probe_banner", "request_timeout", exc)
+        return _tool_error("probe_banner", "request_timeout", "request_timeout", exc)
+    except Exception as exc:
+        return _tool_error("probe_banner", "internal_error", "internal", exc)
 
 
 @mcp.tool()
@@ -87,9 +92,13 @@ async def scan_batch(
             transport="fastmcp",
         )
     except RequestValidationError as exc:
-        return _tool_error("scan_batch", "request_validation_error", exc)
+        return _tool_error(
+            "scan_batch", "request_validation_error", "request_validation", exc,
+        )
     except TimeoutError as exc:
-        return _tool_error("scan_batch", "request_timeout", exc)
+        return _tool_error("scan_batch", "request_timeout", "request_timeout", exc)
+    except Exception as exc:
+        return _tool_error("scan_batch", "internal_error", "internal", exc)
 
 
 @mcp.tool()
