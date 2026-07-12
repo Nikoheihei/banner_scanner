@@ -20,15 +20,16 @@ def new_request_id() -> str:
 
 
 def _log_params_enabled() -> bool:
-    return os.environ.get("BANNER_SCANNER_LOG_PARAMS", "").lower() in {
-        "1", "true", "yes", "on",
+    """Return whether target parameters are persisted in the service audit log.
+
+    Target addresses are operational data needed to correlate an MCP request
+    with its per-endpoint outcome.  They are therefore recorded by default.
+    Deployments that must redact targets from their local log can explicitly
+    set ``BANNER_SCANNER_LOG_PARAMS=0``.
+    """
+    return os.environ.get("BANNER_SCANNER_LOG_PARAMS", "1").lower() not in {
+        "0", "false", "no", "off",
     }
-
-
-def _host_preview(hosts: list[str] | None, limit: int = 5) -> list[str]:
-    if not hosts:
-        return []
-    return [str(host) for host in hosts[:limit]]
 
 
 def audit_tool_request(*, request_id: str, tool: str, transport: str,
@@ -52,7 +53,9 @@ def audit_tool_request(*, request_id: str, tool: str, transport: str,
         "authorization_confirmed": authorization_confirmed,
     }
     if _log_params_enabled():
-        record["host_preview"] = _host_preview(hosts)
+        # The service limits host counts, so storing the whole list is bounded
+        # and makes a later result record traceable to the original request.
+        record["hosts"] = [str(host) for host in (hosts or [])]
     logger.info(json.dumps(record, ensure_ascii=False, separators=(",", ":")))
 
 
@@ -90,8 +93,13 @@ def audit_probe(*, request_id: str | None = None, tool: str, transport: str, tar
     for result in results:
         preview = result.banner.replace("\r", "\\r").replace("\n", "\\n")[:preview_limit]
         samples.append({
+            "host": result.host,
+            "port": result.port,
             "protocol": result.protocol,
             "accessible": result.accessible,
+            "response_time_ms": round(result.response_time_ms, 1),
+            "retry_attempts": result.retry_attempts,
+            "error": result.error,
             "banner_preview": preview,
             "banner_hash": banner_hash(result),
         })
