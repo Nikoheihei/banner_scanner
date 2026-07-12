@@ -84,8 +84,7 @@ banner-scanner-mcp-http --transport sse --host 127.0.0.1 --port 8877
   "protocols": ["ssh", "redis"],
   "retries": 2,
   "concurrency": 5,
-  "detail_level": "evidence",
-  "authorization_confirmed": true
+  "detail_level": "evidence"
 }
 ```
 
@@ -97,12 +96,11 @@ banner-scanner-mcp-http --transport sse --host 127.0.0.1 --port 8877
   "protocol": "mysql",
   "retries": 1,
   "concurrency": 20,
-  "detail_level": "summary",
-  "authorization_confirmed": true
+  "detail_level": "summary"
 }
 ```
 
-`authorization_confirmed` 只记录调用者已确认授权范围，不是唯一安全机制。目标范围和运行上限仍由服务端强制执行。
+工具调用表示客户端希望发起探测；是否允许建立连接仍由服务端的目标范围策略和运行上限强制决定。
 
 ## 结果解释
 
@@ -273,7 +271,7 @@ export BANNER_SCANNER_LOG_FILE=logs/cherry_sse.log
 banner-scanner-fastmcp --transport sse --host 127.0.0.1 --port 8877
 ```
 
-日志会记录工具名、传输方式、完整目标列表、协议、重试次数、并发数、授权确认、耗时，以及每个 IP:端口的连接结果、耗时、重试次数和错误原因；每次请求都可用 `request_id` 串联。默认不保存完整 Banner；探测结果只保存截断预览和 `banner_hash`。
+日志会记录工具名、传输方式、完整目标列表、协议、重试次数、并发数、耗时，以及每个 IP:端口的连接结果、耗时、重试次数和错误原因；每次请求都可用 `request_id` 串联。默认不保存完整 Banner；探测结果只保存截断预览和 `banner_hash`。
 
 ## 验证
 

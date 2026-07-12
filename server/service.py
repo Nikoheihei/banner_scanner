@@ -64,7 +64,6 @@ class BannerScannerService:
     async def probe_banner(self, *, hosts: list[str], protocols: list[str] | None = None,
                            retries: int = 2, concurrency: int | None = None,
                            detail_level: str = "evidence",
-                           authorization_confirmed: bool = False,
                            transport: str = "unknown") -> dict[str, Any]:
         request_id = new_request_id()
         concurrency = (
@@ -82,7 +81,6 @@ class BannerScannerService:
             concurrency=concurrency,
             detail_level=detail_level,
             result_mode="full",
-            authorization_confirmed=authorization_confirmed,
         )
         try:
             self._rate_limiter.check()
@@ -92,7 +90,6 @@ class BannerScannerService:
                 concurrency=concurrency,
                 retries=retries,
                 detail_level=detail_level,
-                authorization_confirmed=authorization_confirmed,
                 batch=False,
                 limits=self.limits,
                 target_policy=self.target_policy,
@@ -122,7 +119,6 @@ class BannerScannerService:
                          retries: int = 2, concurrency: int | None = None,
                          detail_level: str = "summary",
                          result_mode: str = "full",
-                         authorization_confirmed: bool = False,
                          transport: str = "unknown") -> dict[str, Any]:
         request_id = new_request_id()
         concurrency = (
@@ -145,7 +141,6 @@ class BannerScannerService:
                 concurrency=concurrency,
                 detail_level=detail_level,
                 result_mode=result_mode,
-                authorization_confirmed=authorization_confirmed,
             )
             audit_logged = True
             request = validate_probe_request(
@@ -154,7 +149,6 @@ class BannerScannerService:
                 concurrency=concurrency,
                 retries=retries,
                 detail_level=detail_level,
-                authorization_confirmed=authorization_confirmed,
                 batch=True,
                 limits=self.limits,
                 target_policy=self.target_policy,
@@ -181,7 +175,6 @@ class BannerScannerService:
                     concurrency=concurrency,
                     detail_level=detail_level,
                     result_mode=result_mode,
-                    authorization_confirmed=authorization_confirmed,
                 )
             audit_tool_rejection(
                 request_id=request_id, tool="scan_batch", transport=transport,
@@ -266,7 +259,6 @@ class BannerScannerService:
             transport=transport,
             target_count=len(request.hosts),
             protocols=request.protocols,
-            authorization_confirmed=True,
             results=banner_results,
             elapsed_ms=elapsed_ms,
         )

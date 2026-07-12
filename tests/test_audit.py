@@ -51,7 +51,6 @@ def test_audit_request_logs_all_hosts_by_default():
             concurrency=5,
             detail_level="summary",
             result_mode="full",
-            authorization_confirmed=True,
         ))
     finally:
         if old_value is not None:
@@ -77,7 +76,6 @@ def test_audit_request_can_redact_hosts():
             concurrency=5,
             detail_level="evidence",
             result_mode="full",
-            authorization_confirmed=True,
         ))
     finally:
         if old_value is None:

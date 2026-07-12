@@ -56,7 +56,6 @@ def create_mcp(service: BannerScannerService | None = None,
         retries: int = 2,
         concurrency: int | None = None,
         detail_level: str = "evidence",
-        authorization_confirmed: bool = False,
     ) -> dict[str, Any]:
         """Actively probe up to 20 authorized targets using one or more protocols."""
         try:
@@ -66,7 +65,6 @@ def create_mcp(service: BannerScannerService | None = None,
                 retries=retries,
                 concurrency=concurrency,
                 detail_level=detail_level,
-                authorization_confirmed=authorization_confirmed,
                 transport=transport_name,
             )
         except RequestValidationError as exc:
@@ -83,7 +81,6 @@ def create_mcp(service: BannerScannerService | None = None,
         concurrency: int | None = None,
         detail_level: str = "summary",
         result_mode: str = "full",
-        authorization_confirmed: bool = False,
     ) -> dict[str, Any]:
         """Probe up to 100 targets; compressed_hosts is gzip+base64 JSON."""
         try:
@@ -95,7 +92,6 @@ def create_mcp(service: BannerScannerService | None = None,
                 concurrency=concurrency,
                 detail_level=detail_level,
                 result_mode=result_mode,
-                authorization_confirmed=authorization_confirmed,
                 transport=transport_name,
             )
         except RequestValidationError as exc:

@@ -17,21 +17,12 @@ def _validate(**overrides):
         "concurrency": 5,
         "retries": 2,
         "detail_level": "evidence",
-        "authorization_confirmed": True,
         "batch": False,
         "limits": RuntimeLimits(),
         "target_policy": TargetPolicy(),
     }
     values.update(overrides)
     return validate_probe_request(**values)
-
-
-def test_authorization_confirmation_is_required():
-    try:
-        _validate(authorization_confirmed=False)
-        assert False, "Expected authorization confirmation failure"
-    except RequestValidationError as exc:
-        assert "records intent only" in str(exc)
 
 
 def test_ip_in_allowlist_is_allowed():
@@ -77,22 +68,6 @@ def test_denylist_takes_precedence_over_allowlist():
     try:
         _validate(hosts=["1.2.3.4"], target_policy=policy)
         assert False, "Expected denylist precedence failure"
-    except RequestValidationError as exc:
-        assert "denied by server policy" in str(exc)
-
-
-def test_authorization_confirmation_does_not_bypass_denylist():
-    policy = TargetPolicy(
-        denylist=(ipaddress.ip_network("1.2.3.4/32"),),
-    )
-
-    try:
-        _validate(
-            hosts=["1.2.3.4"],
-            authorization_confirmed=True,
-            target_policy=policy,
-        )
-        assert False, "Expected denylist failure despite authorization confirmation"
     except RequestValidationError as exc:
         assert "denied by server policy" in str(exc)
 

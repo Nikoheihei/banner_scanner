@@ -104,7 +104,6 @@ async def test_mcp_scan_batch_denylist_rejects_before_probe_engine():
     result = await app.tools["scan_batch"](
         hosts=["1.2.3.4"],
         protocol="ssh",
-        authorization_confirmed=True,
     )
 
     assert result["rejected"] is True

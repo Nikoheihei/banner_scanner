@@ -47,7 +47,6 @@ async def probe_banner(
     retries: int = 2,
     concurrency: int | None = None,
     detail_level: str = "evidence",
-    authorization_confirmed: bool = False,
 ) -> dict[str, Any]:
     """Actively probe up to 20 authorized targets using one or more protocols."""
     try:
@@ -57,7 +56,6 @@ async def probe_banner(
             retries=retries,
             concurrency=concurrency,
             detail_level=detail_level,
-            authorization_confirmed=authorization_confirmed,
             transport="fastmcp",
         )
     except RequestValidationError as exc:
@@ -75,7 +73,6 @@ async def scan_batch(
     concurrency: int | None = None,
     detail_level: str = "summary",
     result_mode: str = "full",
-    authorization_confirmed: bool = False,
 ) -> dict[str, Any]:
     """Probe up to 100 targets for one protocol."""
     try:
@@ -87,7 +84,6 @@ async def scan_batch(
             concurrency=concurrency,
             detail_level=detail_level,
             result_mode=result_mode,
-            authorization_confirmed=authorization_confirmed,
             transport="fastmcp",
         )
     except RequestValidationError as exc:
