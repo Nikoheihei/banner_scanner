@@ -40,10 +40,10 @@ python3 -m pip install -e .
 | `BANNER_SCANNER_LOG_PARAMS` | 默认记录完整目标和调用参数；设为 `0` 时隐藏目标地址 |
 | `BANNER_SCANNER_ALLOW_REMOTE_BIND` | 监听非本机地址时必须设为 `1` |
 
-仅供本机 Cherry Studio 使用时，通常只需配置日志：
+仅供本机 Cherry Studio SSE 使用时，通常只需配置日志：
 
 ```bash
-export BANNER_SCANNER_LOG_FILE="<project-root>/logs/cherry_stdio.log"
+export BANNER_SCANNER_LOG_FILE="<project-root>/logs/cherry_sse.log"
 ```
 
 若服务需要扫描任意公网 IPv4/IPv6，但不允许访问私网：
@@ -57,48 +57,45 @@ export BANNER_SCANNER_PRIVATE_NETWORK_POLICY="deny"
 
 ## 启动和客户端配置
 
-### Cherry Studio：stdio
+### Cherry Studio：SSE
 
-这是本机使用时推荐的方式。stdio 不监听 IP 或端口；Cherry Studio 每次启用或调用时会启动一个新的 MCP 子进程。
-
-在 Cherry Studio 的“设置 → MCP 服务器 → 添加服务器”中填写：
-
-| 字段 | 值 |
-|---|---|
-| 名称 | `banner-scanner-stdio` |
-| 类型 | `STDIO` |
-| 命令 | `<project-root>/.venv/bin/banner-scanner-mcp` |
-| 参数 | 留空 |
-
-将 `<project-root>` 替换为项目所在目录。`banner-scanner-mcp` 是由 stdio 客户端启动的命令；不需要另开一个监听端口的后台服务。
-
-### Streamable HTTP
-
-```bash
-banner-scanner-mcp-http --host 127.0.0.1 --port 8877
-```
-
-客户端地址：
-
-```text
-http://127.0.0.1:8877/mcp
-```
-
-### SSE
-
-SSE 用于兼容仍要求该传输方式的客户端：
+启动本机 SSE 服务：
 
 ```bash
 banner-scanner-fastmcp --transport sse --host 127.0.0.1 --port 8877
 ```
 
-客户端地址：
+在 Cherry Studio 的“设置 → MCP 服务器 → 添加服务器”中填写：
 
-```text
-http://127.0.0.1:8877/sse
+| 字段 | 值 |
+|---|---|
+| 名称 | `banner-scanner-sse` |
+| 类型 | `SSE` |
+| URL | `http://127.0.0.1:8877/sse` |
+
+同一局域网的其他机器访问时，服务端使用实际的目标范围策略并监听全部网卡：
+
+```bash
+export BANNER_SCANNER_ALLOW_REMOTE_BIND=1
+export BANNER_SCANNER_ALLOWLIST="203.0.113.0/24,198.51.100.10/32"
+banner-scanner-fastmcp --transport sse --host 0.0.0.0 --port 8877
 ```
 
-同一局域网的其他机器访问时，监听地址改为 `0.0.0.0`，但客户端 URL 必须填写运行服务机器的实际局域网 IP，不能填写 `0.0.0.0`。
+Cherry Studio 的 URL 要填写运行服务机器的实际局域网 IP，例如 `http://192.168.1.23:8877/sse`，不能填写 `0.0.0.0`。
+
+### stdio 和 Streamable HTTP
+
+stdio 是本机子进程方式：在 Cherry Studio 中选择 `STDIO`，命令填写 `<project-root>/.venv/bin/banner-scanner-mcp`，无需 URL 或端口。
+
+Streamable HTTP 的启动命令和地址如下：
+
+```bash
+banner-scanner-mcp-http --host 127.0.0.1 --port 8877
+```
+
+```text
+http://127.0.0.1:8877/mcp
+```
 
 ## MCP 工具
 
