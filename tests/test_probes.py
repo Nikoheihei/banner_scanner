@@ -10,10 +10,11 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from banner_scanner.core.engine import ProbeEngine
-from banner_scanner.core.models import ProbeConfig
+from banner_scanner.core.models import BannerResult, ProbeConfig
 import banner_scanner.core.transport as _transport
 import banner_scanner.probes.ftp as _ftp_probe
 import banner_scanner.probes.ssh as _ssh_probe
+from banner_scanner.server.serialization import banner_result_to_dict
 
 
 class _MockTransport:
@@ -208,6 +209,72 @@ async def test_connection_timeout():
         assert br.failure.detail_code == "tcp_connect_timeout"
     finally:
         _transport.connect_tcp = original
+
+
+async def test_retry_exhaustion_keeps_transport_failure_phase_and_history():
+    config = ProbeConfig(max_retries=1, retry_base_delay=0)
+    engine = ProbeEngine(config=config)
+
+    async def timeout_probe(*_args, **_kwargs):
+        raise _transport.ConnectionTimeout("connect to 192.0.2.71:22 timed out")
+
+    result = await engine._probe_with_retry(
+        timeout_probe, "192.0.2.71", 22, "ssh", max_retries=1,
+    )
+    payload = banner_result_to_dict(result)
+
+    assert result.failure is not None
+    assert result.failure.phase == "tcp_connect"
+    assert result.failure.detail_code == "tcp_connect_timeout"
+    assert result.retry_count == 1
+    assert len(result.retry_history) == 2
+    assert all(item["phase"] == "tcp_connect" for item in result.retry_history)
+    assert payload["error"]["phase"] == "tcp_connect"
+    assert payload["error"]["detail_code"] == "tcp_connect_timeout"
+
+
+async def test_retry_exhaustion_preserves_read_and_refused_phases():
+    config = ProbeConfig(max_retries=1, retry_base_delay=0)
+    engine = ProbeEngine(config=config)
+
+    async def read_probe(*_args, **_kwargs):
+        raise _transport.ReadTimeout("read timed out after 3s")
+
+    async def refused_probe(*_args, **_kwargs):
+        raise _transport.TransportError(
+            "connect to 192.0.2.72:22 failed: connection refused",
+            phase="tcp_connect",
+            detail_code="tcp_connection_refused",
+        )
+
+    read_result = await engine._probe_with_retry(
+        read_probe, "192.0.2.72", 22, "ssh", max_retries=1,
+    )
+    refused_result = await engine._probe_with_retry(
+        refused_probe, "192.0.2.72", 22, "ssh", max_retries=1,
+    )
+
+    read_error = banner_result_to_dict(read_result)["error"]
+    refused_error = banner_result_to_dict(refused_result)["error"]
+    assert (read_error["phase"], read_error["detail_code"]) == (
+        "protocol_read", "protocol_read_timeout",
+    )
+    assert (refused_error["phase"], refused_error["detail_code"]) == (
+        "tcp_connect", "tcp_connection_refused",
+    )
+
+
+async def test_retry_success_does_not_serialize_an_error():
+    config = ProbeConfig(max_retries=1, retry_base_delay=0)
+    engine = ProbeEngine(config=config)
+
+    async def successful_probe(*_args, **_kwargs):
+        return BannerResult(protocol="SSH", host="192.0.2.73", port=22, accessible=True)
+
+    result = await engine._probe_with_retry(
+        successful_probe, "192.0.2.73", 22, "ssh", max_retries=1,
+    )
+    assert "error" not in banner_result_to_dict(result)
 
 
 async def test_connect_timeout_carries_endpoint_address_family_and_deadline():

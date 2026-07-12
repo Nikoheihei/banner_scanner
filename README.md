@@ -205,6 +205,8 @@ http://127.0.0.1:8877/mcp
 
 TCP 建连失败还会在 `error.context` 中给出实际端点、地址族和本次连接时限。在 `detail_level="evidence"` 下，失败结果还会附带有限的 `attempt_history`；域名回退时，`target_resolution.attempted_ips` 也会保留每个已尝试地址的阶段、细化代码、耗时和连接上下文。`health_check` 的 `engine.failure_counts` 可查看当前服务进程按细化代码累计的失败数量。
 
+工具调用在探测前被拒绝、整体请求超时或发生内部异常时，也会在顶层 `error` 返回 `phase`，分别为 `request_validation`、`request_timeout` 和 `internal`。对于没有结构化失败记录的旧式单目标错误，服务会保守标记为 `dns_resolution`、`connect`、`read`、`protocol_probe` 或 `internal`。
+
 ## 探测与识别方式
 
 | 协议 | 当前探测方式 | 识别所用的主要证据 |

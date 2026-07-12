@@ -11,6 +11,7 @@ from .models import BannerResult, EvidenceStep, HostResult, ProbeConfig
 from .matcher import DEFAULT_PROTOCOL_LIBRARY_DIR, FingerprintMatcher
 from .database_matcher import DEFAULT_LIBRARY_DIR, DatabaseFingerprintMatcher
 from .retry import RetryExecutor, RetryConfig, RETRYABLE_EXCEPTIONS
+from .transport import record_failure
 from .protocol_detection import confirm_protocol_from_fingerprint, prepare_protocol_status
 from ..probes import PROTOCOL_PROBES
 from ..probes.ssh import probe_ssh as _probe_ssh
@@ -162,13 +163,29 @@ class ProbeEngine:
         except RETRYABLE_EXCEPTIONS as e:
             # 所有重试耗尽
             retry_result = executor.result
-            return BannerResult(
-                protocol=proto.upper(), host=host, port=port,
-                error=f"All {retry_result.total_attempts} attempts failed: {e}",
-                retry_count=retry_result.total_attempts - 1,
-                retry_attempts=retry_result.total_attempts,
-                retry_elapsed_ms=retry_result.total_elapsed_ms,
+            final_attempt_elapsed = (
+                retry_result.attempts[-1].elapsed_ms if retry_result.attempts else 0.0
             )
+            result = BannerResult(
+                protocol=proto.upper(), host=host, port=port,
+            )
+            record_failure(result, e, elapsed_ms=final_attempt_elapsed)
+            result.retry_count = max(retry_result.total_attempts - 1, 0)
+            result.retry_attempts = max(retry_result.total_attempts, 1)
+            result.retry_elapsed_ms = retry_result.total_elapsed_ms
+            result.retry_history = [
+                {
+                    "attempt": attempt.attempt_number,
+                    "success": attempt.success,
+                    "elapsed_ms": attempt.elapsed_ms,
+                    **({"error": attempt.error} if attempt.error else {}),
+                    **({"phase": attempt.phase} if attempt.phase else {}),
+                    **({"detail_code": attempt.detail_code}
+                       if attempt.detail_code else {}),
+                }
+                for attempt in retry_result.attempts
+            ]
+            return result
 
     async def probe_hosts(
         self,

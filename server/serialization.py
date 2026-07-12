@@ -68,6 +68,23 @@ def _error_code(result: BannerResult) -> str:
     return mapping.get(status, "")
 
 
+def _fallback_error_phase(result: BannerResult) -> str:
+    """Classify legacy string-only errors without overstating certainty."""
+    error = result.error.casefold()
+    code = _error_code(result)
+    if code == "dns_error":
+        return "dns_resolution"
+    if "read" in error:
+        return "read"
+    if "connection closed" in error or "banner" in error:
+        return "protocol_probe"
+    if code in {"probe_timeout", "connection_refused"} or "connect" in error:
+        return "connect"
+    if "unexpected" in error or "probe failed" in error:
+        return "internal"
+    return "protocol_probe" if result.accessible else "internal"
+
+
 def _protocol_observations(result: BannerResult) -> dict[str, Any]:
     if result.ssh:
         return {"ssh": asdict(result.ssh)}
@@ -189,6 +206,8 @@ def banner_result_to_dict(result: BannerResult, *, detail_level: str = "evidence
                 error["os_error"] = result.failure.os_error
             if result.failure.context:
                 error["context"] = result.failure.context
+        else:
+            error["phase"] = _fallback_error_phase(result)
         if result.retry_attempts > 1 or result.retry_history:
             error["retry_summary"] = {
                 "attempts": result.retry_attempts,

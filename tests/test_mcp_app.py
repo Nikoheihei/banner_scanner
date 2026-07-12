@@ -33,6 +33,20 @@ class _FakeService:
         return {"service": "ok"}
 
 
+class _ErrorService:
+    def __init__(self, error):
+        self.error = error
+
+    async def probe_banner(self, **_arguments):
+        raise self.error
+
+    async def scan_batch(self, **_arguments):
+        raise self.error
+
+    async def health_check(self):
+        return {"service": "ok"}
+
+
 class _NoProbeEngine:
     def __init__(self):
         self.last_call = None
@@ -109,5 +123,32 @@ async def test_mcp_scan_batch_denylist_rejects_before_probe_engine():
     assert result["rejected"] is True
     assert result["tool"] == "scan_batch"
     assert result["error"]["code"] == "request_validation_error"
+    assert result["error"]["phase"] == "request_validation"
     assert "denied by server policy" in result["error"]["message"]
     assert engine.last_call is None
+
+
+async def test_mcp_tool_timeout_and_internal_errors_include_phase():
+    timeout_app = _with_fake_sdk(lambda: create_mcp(
+        service=_ErrorService(TimeoutError("request exceeded deadline")),
+    ))
+    timeout = await timeout_app.tools["probe_banner"](
+        hosts=["192.0.2.1"], protocols=["ssh"],
+    )
+    assert timeout["error"] == {
+        "code": "request_timeout",
+        "phase": "request_timeout",
+        "message": "request exceeded deadline",
+    }
+
+    internal_app = _with_fake_sdk(lambda: create_mcp(
+        service=_ErrorService(RuntimeError("unexpected failure")),
+    ))
+    internal = await internal_app.tools["scan_batch"](
+        hosts=["192.0.2.1"], protocol="ssh",
+    )
+    assert internal["error"] == {
+        "code": "internal_error",
+        "phase": "internal",
+        "message": "unexpected failure",
+    }

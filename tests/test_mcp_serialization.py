@@ -277,3 +277,19 @@ def test_summary_timeout_keeps_phase_but_omits_attempt_history():
     assert payload["error"]["phase"] == "protocol_read"
     assert payload["error"]["detail_code"] == "protocol_read_timeout"
     assert "attempt_history" not in payload["error"]
+
+
+def test_legacy_result_errors_receive_conservative_phase():
+    cases = (
+        ("DNS resolution for host failed", "dns_resolution"),
+        ("connect to host:22 timed out", "connect"),
+        ("read timed out after 3s", "read"),
+        ("connection closed before SSH banner", "protocol_probe"),
+        ("Unexpected: parser crashed", "internal"),
+    )
+    for message, expected_phase in cases:
+        result = BannerResult(
+            protocol="SSH", host="192.0.2.60", port=22, error=message,
+        )
+        payload, _ = _serialize_with_both(result)
+        assert payload["error"]["phase"] == expected_phase

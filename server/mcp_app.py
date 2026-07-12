@@ -17,12 +17,13 @@ SDK_INSTALL_HINT = 'Install the locked dependency with: pip install "mcp[cli]==1
 logger = logging.getLogger("uvicorn.error")
 
 
-def _tool_error(tool: str, code: str, exc: Exception) -> dict[str, Any]:
+def _tool_error(tool: str, code: str, phase: str, exc: Exception) -> dict[str, Any]:
     return {
         "tool": tool,
         "rejected": True,
         "error": {
             "code": code,
+            "phase": phase,
             "message": str(exc),
         },
     }
@@ -68,9 +69,14 @@ def create_mcp(service: BannerScannerService | None = None,
                 transport=transport_name,
             )
         except RequestValidationError as exc:
-            return _tool_error("probe_banner", "request_validation_error", exc)
+            return _tool_error(
+                "probe_banner", "request_validation_error", "request_validation", exc,
+            )
         except TimeoutError as exc:
-            return _tool_error("probe_banner", "request_timeout", exc)
+            return _tool_error("probe_banner", "request_timeout", "request_timeout", exc)
+        except Exception as exc:
+            logger.exception("Unexpected probe_banner tool error")
+            return _tool_error("probe_banner", "internal_error", "internal", exc)
 
     @mcp.tool()
     async def scan_batch(
@@ -95,9 +101,14 @@ def create_mcp(service: BannerScannerService | None = None,
                 transport=transport_name,
             )
         except RequestValidationError as exc:
-            return _tool_error("scan_batch", "request_validation_error", exc)
+            return _tool_error(
+                "scan_batch", "request_validation_error", "request_validation", exc,
+            )
         except TimeoutError as exc:
-            return _tool_error("scan_batch", "request_timeout", exc)
+            return _tool_error("scan_batch", "request_timeout", "request_timeout", exc)
+        except Exception as exc:
+            logger.exception("Unexpected scan_batch tool error")
+            return _tool_error("scan_batch", "internal_error", "internal", exc)
 
     @mcp.tool()
     async def health_check() -> dict[str, Any]:
