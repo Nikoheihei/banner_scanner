@@ -113,7 +113,13 @@ banner-scanner-mcp-http --transport sse --host 127.0.0.1 --port 8877
   "network_status": "connected",
   "protocol_status": "confirmed",
   "identification_status": "identified",
-  "endpoint": {"host": "192.0.2.10", "port": 22, "protocol": "SSH"},
+  "endpoint": {"host": "example.com", "resolved_ip": "192.0.2.10", "port": 22, "protocol": "SSH"},
+  "target_resolution": {
+    "input_host": "example.com",
+    "resolved_ips": ["192.0.2.10", "192.0.2.11"],
+    "attempted_ips": [{"ip": "192.0.2.10", "port": 22, "status": "connected"}],
+    "selected_ip": "192.0.2.10"
+  },
   "primary_identification": {
     "result_type": "software",
     "name": "OpenSSH",
@@ -132,6 +138,7 @@ banner-scanner-mcp-http --transport sse --host 127.0.0.1 --port 8877
 - `primary_identification` 是便于调用方直接读取的具体软件结论。
 - `findings` 并列保留软件家族、设备族、提供商、认证、能力、部署方式、服务状态和协议身份等其他事实，不会覆盖主要软件结论。
 - `observations` 是协议解析得到的事实字段。`evidence` 模式还包含截断后的 Banner、原始字节预览和探测步骤；`summary` 模式只保留关键字段。
+- 域名输入会被解析一次。`endpoint.host` 保留原始域名，`endpoint.resolved_ip` 是实际连接的地址；`target_resolution` 记录全部解析地址和按顺序尝试过的 IP。每种协议从第一个合规 IP 开始，连接或获得响应失败时才回退到下一个地址。
 
 `evidence_strength` 的顺序为 `conclusive > strong > moderate > weak`。它是规则预设的证据强弱，用于同一结果类型内排序，不代表统计准确率或运行时概率。
 
@@ -238,12 +245,12 @@ python3 tools/fingerprints/build_fingerprints.py \
 |---|---|
 | `BANNER_SCANNER_ALLOWLIST` | 允许的 IP/CIDR，逗号分隔 |
 | `BANNER_SCANNER_DENYLIST` | 禁止的 IP/CIDR，逗号分隔 |
-| `BANNER_SCANNER_ALLOWED_DOMAINS` | 允许的域名后缀 |
+| `BANNER_SCANNER_ALLOWED_DOMAINS` | 可选的域名后缀限制；未设置时不限制域名后缀，仍检查其解析出的 IP |
 | `BANNER_SCANNER_PRIVATE_NETWORK_POLICY` | `allow`、`deny` 或 `allowlist_only` |
 | `BANNER_SCANNER_AUTH_TOKEN` | HTTP Bearer token |
 | `BANNER_SCANNER_CORS_ORIGINS` | 明确允许的浏览器 Origin，不支持通配符 |
 
-非回环地址监听还必须设置 `BANNER_SCANNER_ALLOW_REMOTE_BIND=1`、Bearer token 和目标 allowlist。服务同时限制请求体、目标数、重试、单请求并发、全局并发、请求频率和总执行时间。
+非回环地址监听还必须设置 `BANNER_SCANNER_ALLOW_REMOTE_BIND=1`、Bearer token 和目标 allowlist。IP allowlist 也适用于域名：服务会检查域名解析出的每个候选 IP，策略拒绝的地址不会被连接。服务同时限制请求体、目标数、每个域名最多解析的 IP 数、重试、单请求并发、全局并发、请求频率和总执行时间。
 
 审计日志不默认记录完整 Banner，只记录截断预览和完整已捕获响应的 SHA-256 `banner_hash`。
 

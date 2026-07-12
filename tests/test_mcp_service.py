@@ -14,28 +14,23 @@ from banner_scanner.server.service import BannerScannerService
 class FakeEngine:
     def __init__(self):
         self.last_call = None
+        self.calls = []
 
-    async def probe_hosts(self, hosts, protocols, concurrency, max_retries,
-                          global_semaphore):
+    async def probe_single(self, host, port, protocol, max_retries=None):
         self.last_call = {
-            "hosts": hosts,
-            "protocols": protocols,
-            "concurrency": concurrency,
+            "host": host,
+            "port": port,
+            "protocol": protocol,
             "max_retries": max_retries,
-            "global_semaphore": global_semaphore,
         }
-        return [
-            HostResult(host=host, results={
-                protocols[0]: BannerResult(
-                    protocol=protocols[0].upper(),
-                    host=host,
-                    port=22,
-                    accessible=True,
-                    banner="SSH-2.0-Test",
-                )
-            })
-            for host in hosts
-        ]
+        self.calls.append(self.last_call)
+        return BannerResult(
+            protocol=protocol.upper(),
+            host=host,
+            port=port,
+            accessible=True,
+            banner="SSH-2.0-Test",
+        )
 
     async def health_check(self):
         return {
@@ -98,8 +93,8 @@ async def test_service_uses_tool_defaults_and_structured_output():
         transport="stdio",
     )
 
-    assert engine.last_call["concurrency"] == 5
     assert engine.last_call["max_retries"] == 2
+    assert engine.last_call["host"] == "192.0.2.1"
     assert output["connected"] == 1
     assert output["results"][0]["network_status"] == "connected"
     assert "matched_rules" not in str(output)
@@ -140,7 +135,7 @@ async def test_scan_batch_accepts_compressed_host_list():
     )
 
     assert output["total_hosts"] == 2
-    assert engine.last_call["hosts"] == ["192.0.2.1", "192.0.2.2"]
+    assert [call["host"] for call in engine.calls] == ["192.0.2.1", "192.0.2.2"]
 
 
 async def test_health_check_reports_transports_rules_and_limits():
@@ -169,7 +164,7 @@ async def test_request_timeout_covers_target_resolution():
     async def slow_resolution(_hosts):
         await asyncio.sleep(1)
 
-    service._validate_resolved_targets = slow_resolution
+    service._resolve_targets = slow_resolution
     try:
         await service.probe_banner(
             hosts=["192.0.2.1"],
@@ -179,4 +174,103 @@ async def test_request_timeout_covers_target_resolution():
         assert False, "Expected request timeout"
     except TimeoutError as exc:
         assert "exceeded" in str(exc)
+    assert engine.last_call is None
+
+
+async def test_domain_uses_ordered_ip_fallback_and_reports_resolution():
+    class FallbackEngine(FakeEngine):
+        async def probe_single(self, host, port, protocol, max_retries=None):
+            self.last_call = {
+                "host": host, "port": port, "protocol": protocol,
+                "max_retries": max_retries,
+            }
+            self.calls.append(self.last_call)
+            if host == "203.0.113.10":
+                return BannerResult(
+                    protocol="SSH", host=host, port=port,
+                    error=f"connect to {host}:{port} timed out",
+                )
+            return BannerResult(
+                protocol="SSH", host=host, port=port,
+                accessible=True, banner="SSH-2.0-Test",
+            )
+
+    engine = FallbackEngine()
+    service = BannerScannerService(engine=engine, target_policy=TargetPolicy())
+
+    async def lookup(_host):
+        return ["203.0.113.10", "203.0.113.11"]
+
+    service._lookup_addresses = lookup
+    output = await service.probe_banner(
+        hosts=["ftp.example.test"], protocols=["ssh"], retries=0,
+        authorization_confirmed=True,
+    )
+
+    result = output["results"][0]
+    assert [call["host"] for call in engine.calls] == ["203.0.113.10", "203.0.113.11"]
+    assert result["endpoint"] == {
+        "host": "ftp.example.test",
+        "resolved_ip": "203.0.113.11",
+        "port": 22,
+        "protocol": "SSH",
+    }
+    assert result["target_resolution"] == {
+        "input_host": "ftp.example.test",
+        "resolved_ips": ["203.0.113.10", "203.0.113.11"],
+        "attempted_ips": [
+            {
+                "ip": "203.0.113.10", "port": 22, "status": "timeout",
+                "error": "connect to 203.0.113.10:22 timed out",
+            },
+            {"ip": "203.0.113.11", "port": 22, "status": "connected"},
+        ],
+        "selected_ip": "203.0.113.11",
+    }
+
+
+async def test_domain_skips_policy_rejected_addresses_and_uses_allowed_candidate():
+    engine = FakeEngine()
+    service = BannerScannerService(
+        engine=engine,
+        target_policy=TargetPolicy(
+            allowlist=(ipaddress.ip_network("203.0.113.0/24"),),
+        ),
+    )
+
+    async def lookup(_host):
+        return ["198.51.100.10", "203.0.113.20"]
+
+    service._lookup_addresses = lookup
+    output = await service.probe_banner(
+        hosts=["mixed.example.test"], protocols=["ssh"], retries=0,
+        authorization_confirmed=True,
+    )
+
+    result = output["results"][0]
+    assert [call["host"] for call in engine.calls] == ["203.0.113.20"]
+    assert result["target_resolution"]["attempted_ips"][0]["status"] == "policy_rejected"
+    assert result["target_resolution"]["selected_ip"] == "203.0.113.20"
+
+
+async def test_domain_resolution_limit_rejects_before_any_probe():
+    engine = FakeEngine()
+    service = BannerScannerService(
+        engine=engine,
+        limits=RuntimeLimits(max_resolved_ips_per_host=1),
+        target_policy=TargetPolicy(),
+    )
+
+    async def lookup(_host):
+        return ["203.0.113.10", "203.0.113.11"]
+
+    service._lookup_addresses = lookup
+    try:
+        await service.probe_banner(
+            hosts=["many.example.test"], protocols=["ssh"],
+            authorization_confirmed=True,
+        )
+        assert False, "Expected resolved-address limit failure"
+    except RequestValidationError as exc:
+        assert "more than 1 addresses" in str(exc)
     assert engine.last_call is None

@@ -154,6 +154,13 @@ class BannerResult:
     protocol: str
     host: str
     port: int
+    # The service may receive a domain and connect to one resolved address.
+    # Keep both values so MCP callers can see exactly what was requested and used.
+    input_host: str = ""
+    resolved_ip: str = ""
+    selected_ip: str = ""
+    resolved_ips: list[str] = field(default_factory=list)
+    attempted_ips: list[dict[str, Any]] = field(default_factory=list)
     accessible: bool = False
     banner: str = ""
     banner_truncated: bool = False

@@ -10,9 +10,11 @@ import logging
 import socket
 import time
 import zlib
+from dataclasses import dataclass, field
 from typing import Any
 
 from ..core.engine import ProbeEngine
+from ..core.models import BannerResult
 from .audit import audit_probe, audit_tool_rejection, audit_tool_request, new_request_id
 from .policy import (
     RateLimiter,
@@ -25,6 +27,26 @@ from .serialization import banner_result_to_dict
 
 
 logger = logging.getLogger("banner_scanner.mcp")
+
+
+_DEFAULT_PORTS = {
+    "ssh": [22],
+    "ftp": [21, 990],
+    "telnet": [23],
+    "redis": [6379],
+    "mysql": [3306],
+    "pgsql": [5432],
+}
+
+
+@dataclass
+class ResolvedTarget:
+    """One caller target and its ordered, policy-checked IP candidates."""
+
+    input_host: str
+    resolved_ips: list[str]
+    allowed_ips: list[str]
+    policy_attempts: list[dict[str, str]] = field(default_factory=list)
 
 
 class BannerScannerService:
@@ -206,11 +228,12 @@ class BannerScannerService:
     async def _execute_request(self, *, request_id: str, tool: str, request,
                                transport: str) -> dict[str, Any]:
         async def operation() -> dict[str, Any]:
-            await self._validate_resolved_targets(request.hosts)
+            targets = await self._resolve_targets(request.hosts)
             return await self._run_probe(
                 request_id=request_id,
                 tool=tool,
                 request=request,
+                targets=targets,
                 transport=transport,
             )
 
@@ -225,21 +248,17 @@ class BannerScannerService:
             ) from exc
 
     async def _run_probe(self, *, request_id: str, tool: str, request,
-                         transport: str) -> dict[str, Any]:
+                         targets: list[ResolvedTarget], transport: str) -> dict[str, Any]:
         started = time.monotonic()
-        host_results = await self.engine.probe_hosts(
-            request.hosts,
-            protocols=request.protocols,
-            concurrency=request.concurrency,
-            max_retries=request.retries,
-            global_semaphore=self._global_budget,
-        )
+        semaphore = asyncio.Semaphore(request.concurrency)
 
-        banner_results = [
-            result
-            for host_result in host_results
-            for result in host_result.results.values()
-        ]
+        async def probe_target(target: ResolvedTarget) -> list[BannerResult]:
+            async with semaphore:
+                async with self._global_budget:
+                    return await self._probe_target(target, request.protocols, request.retries)
+
+        target_results = await asyncio.gather(*(probe_target(target) for target in targets))
+        banner_results = [result for results in target_results for result in results]
         elapsed_ms = (time.monotonic() - started) * 1000
         request_id = audit_probe(
             request_id=request_id,
@@ -282,6 +301,71 @@ class BannerScannerService:
             payload["results"] = output
             payload["returned_results"] = len(output)
         return payload
+
+    async def _probe_target(self, target: ResolvedTarget, protocols: list[str],
+                            retries: int) -> list[BannerResult]:
+        return [
+            await self._probe_protocol_with_fallback(target, protocol, retries)
+            for protocol in protocols
+        ]
+
+    def _ports_for_protocol(self, protocol: str) -> list[int]:
+        config = getattr(self.engine, "config", None)
+        protocol_config = getattr(config, "protocol_config", {}).get(protocol)
+        if protocol_config and protocol_config.ports:
+            return list(protocol_config.ports)
+        return list(_DEFAULT_PORTS[protocol])
+
+    @staticmethod
+    def _attempt_status(result: BannerResult) -> str:
+        if result.accessible:
+            return "connected" if not result.error else "connected_without_banner"
+        error = result.error.casefold()
+        if "timed out" in error or "timeout" in error:
+            return "timeout"
+        if "refused" in error:
+            return "refused"
+        return "unreachable"
+
+    @staticmethod
+    def _attach_resolution(result: BannerResult, target: ResolvedTarget,
+                           attempts: list[dict[str, Any]], selected_ip: str) -> BannerResult:
+        result.input_host = target.input_host
+        result.resolved_ips = list(target.resolved_ips)
+        result.attempted_ips = attempts
+        result.resolved_ip = result.host
+        result.selected_ip = selected_ip
+        return result
+
+    async def _probe_protocol_with_fallback(self, target: ResolvedTarget,
+                                            protocol: str, retries: int) -> BannerResult:
+        attempts: list[dict[str, Any]] = [dict(item) for item in target.policy_attempts]
+        last_result: BannerResult | None = None
+        for address in target.allowed_ips:
+            for port in self._ports_for_protocol(protocol):
+                result = await self.engine.probe_single(
+                    address, port, protocol, max_retries=retries,
+                )
+                attempts.append({
+                    "ip": address,
+                    "port": port,
+                    "status": self._attempt_status(result),
+                    **({"error": result.error} if result.error else {}),
+                })
+                last_result = result
+                # A TCP connection with no usable protocol response is not a
+                # useful Banner result, so the next candidate should be tried.
+                if result.accessible and not result.error:
+                    return self._attach_resolution(result, target, attempts, address)
+
+        if last_result is None:
+            last_result = BannerResult(
+                protocol=protocol.upper(),
+                host=target.input_host,
+                port=self._ports_for_protocol(protocol)[0],
+                error="No resolved address is permitted by the server policy",
+            )
+        return self._attach_resolution(last_result, target, attempts, "")
 
     @staticmethod
     def _unique_results(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -353,27 +437,59 @@ class BannerScannerService:
         logger.info("MCP health_check response ready")
         return response
 
-    async def _validate_resolved_targets(self, hosts: list[str]) -> None:
-        restrictive = (
-            self.target_policy.allowlist_enabled
-            or bool(self.target_policy.denylist)
-            or self.target_policy.private_network_policy != "allow"
-        )
-        if not restrictive:
-            return
+    async def _lookup_addresses(self, host: str) -> list[str]:
         loop = asyncio.get_running_loop()
+        try:
+            records = await loop.getaddrinfo(host, None, type=socket.SOCK_STREAM)
+        except OSError as exc:
+            raise RequestValidationError(f"Domain did not resolve to an address: {host}") from exc
+        addresses: list[str] = []
+        for record in records:
+            address = str(ipaddress.ip_address(record[4][0]))
+            if address not in addresses:
+                addresses.append(address)
+        if not addresses:
+            raise RequestValidationError(f"Domain did not resolve to an address: {host}")
+        return addresses
+
+    async def _resolve_targets(self, hosts: list[str]) -> list[ResolvedTarget]:
+        targets: list[ResolvedTarget] = []
         for host in hosts:
             try:
-                ipaddress.ip_address(host)
-                continue
+                address = str(ipaddress.ip_address(host))
             except ValueError:
-                pass
-            records = await loop.getaddrinfo(host, None, type=socket.SOCK_STREAM)
-            addresses = {
-                ipaddress.ip_address(record[4][0])
-                for record in records
-            }
-            if not addresses:
-                raise ValueError(f"Domain did not resolve to an address: {host}")
-            for address in addresses:
-                self.target_policy.validate_address(address)
+                addresses = await self._lookup_addresses(host)
+                if len(addresses) > self.limits.max_resolved_ips_per_host:
+                    raise RequestValidationError(
+                        f"Domain resolves to more than {self.limits.max_resolved_ips_per_host} addresses: {host}"
+                    )
+                allowed: list[str] = []
+                policy_attempts: list[dict[str, str]] = []
+                for value in addresses:
+                    try:
+                        self.target_policy.validate_address(ipaddress.ip_address(value))
+                    except RequestValidationError as exc:
+                        policy_attempts.append({
+                            "ip": value,
+                            "status": "policy_rejected",
+                            "error": str(exc),
+                        })
+                    else:
+                        allowed.append(value)
+                if not allowed:
+                    raise RequestValidationError(
+                        f"No resolved address is permitted by the server policy: {host}"
+                    )
+                targets.append(ResolvedTarget(
+                    input_host=host,
+                    resolved_ips=addresses,
+                    allowed_ips=allowed,
+                    policy_attempts=policy_attempts,
+                ))
+            else:
+                targets.append(ResolvedTarget(
+                    input_host=address,
+                    resolved_ips=[address],
+                    allowed_ips=[address],
+                ))
+        return targets
