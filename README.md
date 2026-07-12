@@ -43,7 +43,7 @@ python3 -m pip install -e .
 仅供本机 Cherry Studio 使用时，通常只需配置日志：
 
 ```bash
-export BANNER_SCANNER_LOG_FILE="/Users/summer/Documents/Codex/2026-06-23/wo/work/banner_scanner/logs/cherry_stdio.log"
+export BANNER_SCANNER_LOG_FILE="<project-root>/logs/cherry_stdio.log"
 ```
 
 若服务需要扫描任意公网 IPv4/IPv6，但不允许访问私网：
@@ -67,10 +67,10 @@ export BANNER_SCANNER_PRIVATE_NETWORK_POLICY="deny"
 |---|---|
 | 名称 | `banner-scanner-stdio` |
 | 类型 | `STDIO` |
-| 命令 | `/Users/summer/Documents/Codex/2026-06-23/wo/work/banner_scanner/.venv/bin/banner-scanner-mcp` |
+| 命令 | `<project-root>/.venv/bin/banner-scanner-mcp` |
 | 参数 | 留空 |
 
-`banner-scanner-mcp` 是由 stdio 客户端启动的命令；不需要另开一个监听端口的后台服务。
+将 `<project-root>` 替换为项目所在目录。`banner-scanner-mcp` 是由 stdio 客户端启动的命令；不需要另开一个监听端口的后台服务。
 
 ### Streamable HTTP
 
