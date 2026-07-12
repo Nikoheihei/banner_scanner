@@ -37,7 +37,7 @@ def test_audit_prefers_probe_computed_response_hash():
     assert banner_hash(result) == "a" * 64
 
 
-def test_audit_request_hides_host_preview_by_default():
+def test_audit_request_logs_all_hosts_by_default():
     old_value = os.environ.pop("BANNER_SCANNER_LOG_PARAMS", None)
     try:
         text = _capture_audit_log(lambda: audit_tool_request(
@@ -59,12 +59,12 @@ def test_audit_request_hides_host_preview_by_default():
 
     payload = json.loads(text)
     assert payload["target_count"] == 2
-    assert "host_preview" not in payload
+    assert payload["hosts"] == ["192.0.2.1", "192.0.2.2"]
 
 
-def test_audit_request_can_log_limited_host_preview():
+def test_audit_request_can_redact_hosts():
     old_value = os.environ.get("BANNER_SCANNER_LOG_PARAMS")
-    os.environ["BANNER_SCANNER_LOG_PARAMS"] = "1"
+    os.environ["BANNER_SCANNER_LOG_PARAMS"] = "0"
     try:
         text = _capture_audit_log(lambda: audit_tool_request(
             request_id="req2",
@@ -87,6 +87,4 @@ def test_audit_request_can_log_limited_host_preview():
 
     payload = json.loads(text)
     assert payload["target_count"] == 7
-    assert payload["host_preview"] == [
-        "192.0.2.1", "192.0.2.2", "192.0.2.3", "192.0.2.4", "192.0.2.5",
-    ]
+    assert "hosts" not in payload

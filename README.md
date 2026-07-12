@@ -257,17 +257,16 @@ MCP 服务启动后默认将运行日志保存到 `logs/mcp_server.log`，同时
 |---|---|
 | `BANNER_SCANNER_LOG_FILE` | 日志文件路径；默认 `logs/mcp_server.log`；设为空字符串可关闭文件日志 |
 | `BANNER_SCANNER_LOG_LEVEL` | 日志级别，默认 `INFO` |
-| `BANNER_SCANNER_LOG_PARAMS` | 设为 `1`、`true`、`yes` 或 `on` 时，记录前 5 个目标预览 |
+| `BANNER_SCANNER_LOG_PARAMS` | 默认记录完整目标列表和工具参数；设为 `0`、`false`、`no` 或 `off` 时隐藏目标地址 |
 
 示例：
 
 ```bash
 export BANNER_SCANNER_LOG_FILE=logs/cherry_sse.log
-export BANNER_SCANNER_LOG_PARAMS=1
 banner-scanner-fastmcp --transport sse --host 127.0.0.1 --port 8877
 ```
 
-日志会记录工具名、传输方式、目标数量、协议、重试次数、并发数、授权确认、耗时、连接结果摘要、错误原因和 `request_id`。默认不保存完整 Banner；探测结果只保存截断预览和 `banner_hash`。
+日志会记录工具名、传输方式、完整目标列表、协议、重试次数、并发数、授权确认、耗时，以及每个 IP:端口的连接结果、耗时、重试次数和错误原因；每次请求都可用 `request_id` 串联。默认不保存完整 Banner；探测结果只保存截断预览和 `banner_hash`。
 
 ## 验证
 

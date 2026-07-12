@@ -107,22 +107,25 @@ class BannerScannerService:
             self.limits.scan_batch_default_concurrency
             if concurrency is None else concurrency
         )
-        audit_tool_request(
-            request_id=request_id,
-            tool="scan_batch",
-            transport=transport,
-            hosts=hosts,
-            compressed_hosts_present=bool(compressed_hosts),
-            protocols=[protocol],
-            retries=retries,
-            concurrency=concurrency,
-            detail_level=detail_level,
-            result_mode=result_mode,
-            authorization_confirmed=authorization_confirmed,
-        )
+        raw_hosts = hosts
+        audit_logged = False
         try:
             self._rate_limiter.check()
             hosts = self._decode_hosts(hosts, compressed_hosts)
+            audit_tool_request(
+                request_id=request_id,
+                tool="scan_batch",
+                transport=transport,
+                hosts=hosts,
+                compressed_hosts_present=bool(compressed_hosts),
+                protocols=[protocol],
+                retries=retries,
+                concurrency=concurrency,
+                detail_level=detail_level,
+                result_mode=result_mode,
+                authorization_confirmed=authorization_confirmed,
+            )
+            audit_logged = True
             request = validate_probe_request(
                 hosts=hosts,
                 protocols=[protocol],
@@ -142,6 +145,22 @@ class BannerScannerService:
                 transport=transport,
             )
         except RequestValidationError as exc:
+            # A malformed compressed host list has no safely decodable targets,
+            # but every rejected call should still leave an audit trail.
+            if not audit_logged:
+                audit_tool_request(
+                    request_id=request_id,
+                    tool="scan_batch",
+                    transport=transport,
+                    hosts=raw_hosts,
+                    compressed_hosts_present=bool(compressed_hosts),
+                    protocols=[protocol],
+                    retries=retries,
+                    concurrency=concurrency,
+                    detail_level=detail_level,
+                    result_mode=result_mode,
+                    authorization_confirmed=authorization_confirmed,
+                )
             audit_tool_rejection(
                 request_id=request_id, tool="scan_batch", transport=transport,
                 code="request_validation_error", error=exc,
