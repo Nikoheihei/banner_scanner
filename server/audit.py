@@ -36,8 +36,7 @@ def audit_tool_request(*, request_id: str, tool: str, transport: str,
                        hosts: list[str] | None, compressed_hosts_present: bool,
                        protocols: list[str] | None, retries: int | None,
                        concurrency: int | None, detail_level: str,
-                       result_mode: str | None,
-                       authorization_confirmed: bool) -> None:
+                       result_mode: str | None) -> None:
     record = {
         "event": "mcp_tool_request",
         "request_id": request_id,
@@ -50,7 +49,6 @@ def audit_tool_request(*, request_id: str, tool: str, transport: str,
         "concurrency": concurrency,
         "detail_level": detail_level,
         "result_mode": result_mode,
-        "authorization_confirmed": authorization_confirmed,
     }
     if _log_params_enabled():
         # The service limits host counts, so storing the whole list is bounded
@@ -85,7 +83,7 @@ def banner_hash(result: BannerResult) -> str:
 
 
 def audit_probe(*, request_id: str | None = None, tool: str, transport: str, target_count: int,
-                protocols: list[str], authorization_confirmed: bool,
+                protocols: list[str],
                 results: Iterable[BannerResult], elapsed_ms: float,
                 preview_limit: int = 160) -> str:
     request_id = request_id or new_request_id()
@@ -113,7 +111,6 @@ def audit_probe(*, request_id: str | None = None, tool: str, transport: str, tar
         "transport": transport,
         "target_count": target_count,
         "protocols": protocols,
-        "authorization_confirmed": authorization_confirmed,
         "elapsed_ms": round(elapsed_ms, 1),
         "results": samples,
     }, ensure_ascii=False, separators=(",", ":")))

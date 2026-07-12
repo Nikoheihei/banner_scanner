@@ -36,12 +36,9 @@ async def verify_session(session, args: argparse.Namespace) -> None:
     print(json.dumps({"tools": sorted(names), "health": health}, indent=2))
 
     if args.probe_host:
-        if not args.confirm_authorized:
-            raise RuntimeError("--probe-host requires --confirm-authorized")
         result = tool_payload(await session.call_tool("probe_banner", arguments={
             "hosts": [args.probe_host],
             "protocols": args.protocol,
-            "authorization_confirmed": True,
         }))
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
@@ -75,7 +72,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--url")
     parser.add_argument("--probe-host")
     parser.add_argument("--protocol", action="append")
-    parser.add_argument("--confirm-authorized", action="store_true")
     args = parser.parse_args()
     if not args.url:
         args.url = (

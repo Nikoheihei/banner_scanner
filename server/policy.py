@@ -144,15 +144,10 @@ class ValidatedProbeRequest:
 
 
 def validate_probe_request(*, hosts, protocols, concurrency, retries,
-                           detail_level: str, authorization_confirmed: bool,
+                           detail_level: str,
                            batch: bool, limits: RuntimeLimits,
                            target_policy: TargetPolicy,
                            result_mode: str = "full") -> ValidatedProbeRequest:
-    if authorization_confirmed is not True:
-        raise RequestValidationError(
-            "authorization_confirmed=true is required and records intent only; "
-            "server target policy is enforced separately"
-        )
     if not isinstance(hosts, list):
         raise RequestValidationError("hosts must be an array")
     max_hosts = limits.scan_batch_max_hosts if batch else limits.probe_banner_max_hosts

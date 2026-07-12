@@ -76,7 +76,6 @@ async def _run_class(
         "retries": retries,
         "concurrency": concurrency,
         "detail_level": detail_level,
-        "authorization_confirmed": True,
     })
     by_host = {
         str((item.get("endpoint") or {}).get("host") or ""): item

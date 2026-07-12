@@ -50,17 +50,6 @@ class FakeEngine:
         }
 
 
-async def test_service_enforces_authorization_before_probe():
-    engine = FakeEngine()
-    service = BannerScannerService(engine=engine, target_policy=TargetPolicy())
-    try:
-        await service.probe_banner(hosts=["192.0.2.1"], authorization_confirmed=False)
-        assert False, "Expected authorization failure"
-    except RequestValidationError:
-        pass
-    assert engine.last_call is None
-
-
 async def test_service_denylist_overrides_authorization_before_probe():
     engine = FakeEngine()
     service = BannerScannerService(
@@ -74,7 +63,6 @@ async def test_service_denylist_overrides_authorization_before_probe():
         await service.scan_batch(
             hosts=["1.2.3.4"],
             protocol="ssh",
-            authorization_confirmed=True,
             transport="sse",
         )
         assert False, "Expected denylist failure"
@@ -89,7 +77,6 @@ async def test_service_uses_tool_defaults_and_structured_output():
     output = await service.probe_banner(
         hosts=["192.0.2.1"],
         protocols=["ssh"],
-        authorization_confirmed=True,
         transport="stdio",
     )
 
@@ -107,7 +94,6 @@ async def test_scan_batch_unique_mode_groups_equivalent_results():
         hosts=["192.0.2.1", "192.0.2.2"],
         protocol="ssh",
         result_mode="unique",
-        authorization_confirmed=True,
     )
 
     assert output["total_hosts"] == 2
@@ -131,7 +117,6 @@ async def test_scan_batch_accepts_compressed_host_list():
         compressed_hosts=encoded,
         protocol="ssh",
         result_mode="unique",
-        authorization_confirmed=True,
     )
 
     assert output["total_hosts"] == 2
@@ -169,7 +154,6 @@ async def test_request_timeout_covers_target_resolution():
         await service.probe_banner(
             hosts=["192.0.2.1"],
             protocols=["ssh"],
-            authorization_confirmed=True,
         )
         assert False, "Expected request timeout"
     except TimeoutError as exc:
@@ -204,7 +188,6 @@ async def test_domain_uses_ordered_ip_fallback_and_reports_resolution():
     service._lookup_addresses = lookup
     output = await service.probe_banner(
         hosts=["ftp.example.test"], protocols=["ssh"], retries=0,
-        authorization_confirmed=True,
     )
 
     result = output["results"][0]
@@ -244,7 +227,6 @@ async def test_domain_skips_policy_rejected_addresses_and_uses_allowed_candidate
     service._lookup_addresses = lookup
     output = await service.probe_banner(
         hosts=["mixed.example.test"], protocols=["ssh"], retries=0,
-        authorization_confirmed=True,
     )
 
     result = output["results"][0]
@@ -268,7 +250,6 @@ async def test_domain_resolution_limit_rejects_before_any_probe():
     try:
         await service.probe_banner(
             hosts=["many.example.test"], protocols=["ssh"],
-            authorization_confirmed=True,
         )
         assert False, "Expected resolved-address limit failure"
     except RequestValidationError as exc:

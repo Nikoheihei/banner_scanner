@@ -503,7 +503,6 @@ async def _call_mcp_samples(url: str, samples: list[TargetSample],
                             "retries": 0,
                             "concurrency": min(concurrency, 50),
                             "detail_level": "evidence",
-                            "authorization_confirmed": True,
                         }),
                         timeout=max(60.0, len(chunk) * 10.0),
                     )
