@@ -12,7 +12,12 @@ import time
 from dataclasses import dataclass, field
 from typing import AsyncIterator, Optional
 
-from .transport import TransportError, ConnectionTimeout, ReadTimeout
+from .transport import (
+    TransportError,
+    ConnectionTimeout,
+    ReadTimeout,
+    failure_from_exception,
+)
 
 logger = logging.getLogger("banner_scanner.retry")
 
@@ -46,6 +51,8 @@ class RetryAttempt:
     success: bool
     elapsed_ms: float
     error: Optional[str] = None
+    phase: Optional[str] = None
+    detail_code: Optional[str] = None
 
 
 @dataclass
@@ -95,10 +102,17 @@ class RetryExecutor:
 
             except RETRYABLE_EXCEPTIONS as e:
                 elapsed = (time.time() - attempt_start) * 1000
+                failure = (
+                    failure_from_exception(e, elapsed_ms=elapsed)
+                    if isinstance(e, TransportError) else None
+                )
                 self._result.attempts.append(
                     RetryAttempt(attempt_number=attempt_num, success=False,
-                                 elapsed_ms=round(elapsed, 1), error=str(e))
+                                 elapsed_ms=round(elapsed, 1), error=str(e),
+                                 phase=failure.phase if failure else None,
+                                 detail_code=failure.detail_code if failure else None)
                 )
+                self._result.total_attempts = attempt_num
                 if attempt_num <= self.config.max_retries:
                     delay = self._calc_delay(attempt_num)
                     logger.warning(
