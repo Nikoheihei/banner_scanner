@@ -6,7 +6,7 @@ import gzip
 import ipaddress
 import json
 
-from banner_scanner.core.models import BannerResult, HostResult
+from banner_scanner.core.models import BannerResult, HostResult, ProbeFailure
 from banner_scanner.server.policy import RequestValidationError, RuntimeLimits, TargetPolicy
 from banner_scanner.server.service import BannerScannerService
 
@@ -209,6 +209,49 @@ async def test_domain_uses_ordered_ip_fallback_and_reports_resolution():
             {"ip": "203.0.113.11", "port": 22, "status": "connected"},
         ],
         "selected_ip": "203.0.113.11",
+    }
+
+
+async def test_domain_fallback_keeps_structured_failure_diagnostics():
+    class FallbackEngine(FakeEngine):
+        async def probe_single(self, host, port, protocol, max_retries=None):
+            self.calls.append({"host": host, "port": port, "protocol": protocol})
+            if host == "203.0.113.10":
+                message = f"connect to {host}:{port} timed out"
+                return BannerResult(
+                    protocol="SSH", host=host, port=port, error=message,
+                    failure=ProbeFailure(
+                        phase="tcp_connect",
+                        detail_code="tcp_connect_timeout",
+                        message=message,
+                        elapsed_ms=3000.0,
+                    ),
+                )
+            return BannerResult(
+                protocol="SSH", host=host, port=port,
+                accessible=True, banner="SSH-2.0-Test",
+            )
+
+    engine = FallbackEngine()
+    service = BannerScannerService(engine=engine, target_policy=TargetPolicy())
+
+    async def lookup(_host):
+        return ["203.0.113.10", "203.0.113.11"]
+
+    service._lookup_addresses = lookup
+    output = await service.probe_banner(
+        hosts=["diagnostic.example.test"], protocols=["ssh"], retries=0,
+    )
+
+    first = output["results"][0]["target_resolution"]["attempted_ips"][0]
+    assert first == {
+        "ip": "203.0.113.10",
+        "port": 22,
+        "status": "timeout",
+        "error": "connect to 203.0.113.10:22 timed out",
+        "phase": "tcp_connect",
+        "detail_code": "tcp_connect_timeout",
+        "elapsed_ms": 3000.0,
     }
 
 

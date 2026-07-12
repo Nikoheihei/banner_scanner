@@ -312,6 +312,12 @@ class BannerScannerService:
     def _attempt_status(result: BannerResult) -> str:
         if result.accessible:
             return "connected" if not result.error else "connected_without_banner"
+        if result.failure is not None:
+            if result.failure.detail_code.endswith("_timeout"):
+                return "timeout"
+            if result.failure.detail_code == "tcp_connection_refused":
+                return "refused"
+            return "unreachable"
         error = result.error.casefold()
         if "timed out" in error or "timeout" in error:
             return "timeout"
@@ -343,6 +349,11 @@ class BannerScannerService:
                     "port": port,
                     "status": self._attempt_status(result),
                     **({"error": result.error} if result.error else {}),
+                    **({
+                        "phase": result.failure.phase,
+                        "detail_code": result.failure.detail_code,
+                        "elapsed_ms": round(result.failure.elapsed_ms, 1),
+                    } if result.failure is not None else {}),
                 })
                 last_result = result
                 # A TCP connection with no usable protocol response is not a
@@ -424,6 +435,7 @@ class BannerScannerService:
                 "total_probes": health.get("total_probes", 0),
                 "total_errors": health.get("total_errors", 0),
                 "error_rate_pct": health.get("error_rate_pct", 0.0),
+                "failure_counts": health.get("failure_counts", {}),
             },
         }
         logger.info("MCP health_check response ready")

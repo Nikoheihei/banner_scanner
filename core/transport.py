@@ -1,16 +1,96 @@
 """传输层：TCP/TLS 连接管理"""
 
 import asyncio
+import errno
 import logging
 import socket
 import ssl
 from typing import Optional, Tuple
 
+from .models import BannerResult, ProbeFailure
+
 logger = logging.getLogger("banner_scanner.transport")
 
-class TransportError(Exception): pass
-class ConnectionTimeout(TransportError): pass
-class ReadTimeout(TransportError): pass
+class TransportError(Exception):
+    phase = "protocol_exchange"
+    detail_code = "protocol_exchange_failed"
+
+    def __init__(self, message: str, *, phase: str | None = None,
+                 detail_code: str | None = None, os_error: int | None = None):
+        super().__init__(message)
+        if phase is not None:
+            self.phase = phase
+        if detail_code is not None:
+            self.detail_code = detail_code
+        self.os_error = os_error
+
+
+class ConnectionTimeout(TransportError):
+    phase = "tcp_connect"
+    detail_code = "tcp_connect_timeout"
+
+
+class ReadTimeout(TransportError):
+    phase = "protocol_read"
+    detail_code = "protocol_read_timeout"
+
+
+class DnsResolutionError(TransportError):
+    phase = "dns_resolution"
+    detail_code = "dns_resolution_failed"
+
+
+def failure_from_exception(exc: BaseException, *, elapsed_ms: float = 0.0) -> ProbeFailure:
+    """Convert a transport exception into stable result diagnostics."""
+    if isinstance(exc, TransportError):
+        return ProbeFailure(
+            phase=exc.phase,
+            detail_code=exc.detail_code,
+            message=str(exc),
+            elapsed_ms=round(elapsed_ms, 1),
+            os_error=exc.os_error,
+        )
+    return ProbeFailure(
+        phase="system",
+        detail_code="unexpected_error",
+        message=f"Unexpected: {exc}",
+        elapsed_ms=round(elapsed_ms, 1),
+    )
+
+
+def record_failure(result: BannerResult, exc: BaseException, *, elapsed_ms: float = 0.0) -> None:
+    """Preserve an existing text error while adding structured diagnostics."""
+    failure = failure_from_exception(exc, elapsed_ms=elapsed_ms)
+    result.failure = failure
+    result.error = failure.message
+    result.response_time_ms = max(result.response_time_ms, failure.elapsed_ms)
+    result.retry_elapsed_ms = max(result.retry_elapsed_ms, failure.elapsed_ms)
+    result.retry_history = [{
+        "attempt": 1,
+        "phase": failure.phase,
+        "detail_code": failure.detail_code,
+        "elapsed_ms": failure.elapsed_ms,
+    }]
+
+
+def record_result_failure(result: BannerResult, *, phase: str, detail_code: str,
+                          message: str, elapsed_ms: float = 0.0) -> None:
+    """Record an incomplete exchange that did not raise an exception."""
+    result.failure = ProbeFailure(
+        phase=phase,
+        detail_code=detail_code,
+        message=message,
+        elapsed_ms=round(elapsed_ms, 1),
+    )
+    result.error = message
+    result.response_time_ms = max(result.response_time_ms, round(elapsed_ms, 1))
+    result.retry_elapsed_ms = max(result.retry_elapsed_ms, round(elapsed_ms, 1))
+    result.retry_history = [{
+        "attempt": 1,
+        "phase": phase,
+        "detail_code": detail_code,
+        "elapsed_ms": round(elapsed_ms, 1),
+    }]
 
 
 def _make_tls_context() -> ssl.SSLContext:
@@ -61,8 +141,19 @@ async def upgrade_tls(
         )
         new_writer = asyncio.StreamWriter(new_transport, protocol, reader, loop)
         return reader, new_writer
-    except (asyncio.TimeoutError, OSError, ssl.SSLError) as exc:
-        raise TransportError(f"TLS handshake with {host} failed: {exc}") from exc
+    except asyncio.TimeoutError as exc:
+        raise TransportError(
+            f"TLS handshake with {host} timed out after {handshake_timeout:g}s",
+            phase="tls_handshake",
+            detail_code="tls_handshake_timeout",
+        ) from exc
+    except (OSError, ssl.SSLError) as exc:
+        raise TransportError(
+            f"TLS handshake with {host} failed: {exc}",
+            phase="tls_handshake",
+            detail_code="tls_handshake_failed",
+            os_error=getattr(exc, "errno", None),
+        ) from exc
 
 
 async def connect_tcp(
@@ -116,8 +207,27 @@ async def connect_tcp(
         return reader, writer, tcp_info
     except asyncio.TimeoutError:
         raise ConnectionTimeout(f"connect to {host}:{port} timed out")
-    except (OSError, ConnectionRefusedError) as e:
-        raise TransportError(str(e))
+    except socket.gaierror as exc:
+        raise DnsResolutionError(
+            f"DNS resolution for {host} failed: {exc}",
+            os_error=exc.errno,
+        ) from exc
+    except OSError as exc:
+        errno_code = exc.errno
+        if errno_code == errno.ECONNREFUSED:
+            detail_code = "tcp_connection_refused"
+        elif errno_code in {errno.ENETUNREACH, errno.EHOSTUNREACH}:
+            detail_code = "network_unreachable"
+        elif errno_code in {errno.EACCES, errno.EPERM}:
+            detail_code = "permission_denied"
+        else:
+            detail_code = "tcp_connect_failed"
+        raise TransportError(
+            f"connect to {host}:{port} failed: {exc}",
+            phase="tcp_connect",
+            detail_code=detail_code,
+            os_error=errno_code,
+        ) from exc
 
 
 async def read_exact(reader: asyncio.StreamReader, max_bytes: int, *, read_timeout: float) -> Tuple[bytes, bool]:

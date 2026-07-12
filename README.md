@@ -177,6 +177,32 @@ http://127.0.0.1:8877/mcp
 
 `evidence_strength` 按 `conclusive > strong > moderate > weak` 排序，只表示规则证据的明确程度，不表示统计正确率。
 
+### 失败诊断
+
+探测失败时，`error.code` 保持兼容的概括分类，`error.phase` 和
+`error.detail_code` 说明失败发生的位置。例如：
+
+```json
+{
+  "network_status": "timeout",
+  "error": {
+    "code": "probe_timeout",
+    "phase": "tcp_connect",
+    "detail_code": "tcp_connect_timeout",
+    "message": "connect to 192.0.2.10:21 timed out",
+    "elapsed_ms": 3001.2
+  }
+}
+```
+
+- `tcp_connect_timeout`：在连接时限内未完成 TCP 连接；可能是静默过滤、端口未开放、路由或本机出口限制，单次超时不能据此确定原因。
+- `protocol_read_timeout`：TCP 已连接，但未在读取时限内收到协议响应。
+- `tcp_connection_refused`：目标地址可达，但该端口主动拒绝连接。
+- `dns_resolution_failed`、`network_unreachable`、`permission_denied`：分别表示域名解析、本机网络路由或本机策略层面的失败。
+- `tls_handshake_timeout`、`tls_handshake_failed`：连接后 TLS 协商超时或失败。
+
+在 `detail_level="evidence"` 下，失败结果还会附带有限的 `attempt_history`；域名回退时，`target_resolution.attempted_ips` 也会保留每个已尝试地址的阶段、细化代码和耗时。`health_check` 的 `engine.failure_counts` 可查看当前服务进程按细化代码累计的失败数量。
+
 ## 探测与识别方式
 
 | 协议 | 主动交互 | 不执行的操作 |

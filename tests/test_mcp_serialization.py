@@ -5,6 +5,7 @@ from banner_scanner.core.models import (
     BannerResult,
     FingerprintMatch,
     FtpFeatures,
+    ProbeFailure,
     RedisInfo,
     SshBanner,
     TelnetBanner,
@@ -187,3 +188,72 @@ def test_summary_output_omits_large_protocol_payloads():
         "mode": "standalone",
         "os": "Linux",
     }
+
+
+def test_timeout_output_identifies_the_network_phase_without_changing_base_code():
+    result = BannerResult(
+        protocol="FTP",
+        host="192.0.2.50",
+        port=21,
+        error="connect to 192.0.2.50:21 timed out",
+        failure=ProbeFailure(
+            phase="tcp_connect",
+            detail_code="tcp_connect_timeout",
+            message="connect to 192.0.2.50:21 timed out",
+            elapsed_ms=3001.2,
+        ),
+        retry_attempts=1,
+        retry_elapsed_ms=3001.2,
+        retry_history=[{
+            "attempt": 1,
+            "phase": "tcp_connect",
+            "detail_code": "tcp_connect_timeout",
+            "elapsed_ms": 3001.2,
+        }],
+    )
+
+    payload, _ = _serialize_with_both(result)
+
+    assert payload["network_status"] == "timeout"
+    assert payload["error"] == {
+        "code": "probe_timeout",
+        "message": "connect to 192.0.2.50:21 timed out",
+        "phase": "tcp_connect",
+        "detail_code": "tcp_connect_timeout",
+        "elapsed_ms": 3001.2,
+        "retry_summary": {"attempts": 1, "total_elapsed_ms": 3001.2},
+        "attempt_history": [{
+            "attempt": 1,
+            "phase": "tcp_connect",
+            "detail_code": "tcp_connect_timeout",
+            "elapsed_ms": 3001.2,
+        }],
+    }
+
+
+def test_summary_timeout_keeps_phase_but_omits_attempt_history():
+    result = BannerResult(
+        protocol="MYSQL",
+        host="192.0.2.51",
+        port=3306,
+        error="read timed out after 3s",
+        failure=ProbeFailure(
+            phase="protocol_read",
+            detail_code="protocol_read_timeout",
+            message="read timed out after 3s",
+            elapsed_ms=3000.0,
+        ),
+        retry_history=[{
+            "attempt": 1,
+            "phase": "protocol_read",
+            "detail_code": "protocol_read_timeout",
+            "elapsed_ms": 3000.0,
+        }],
+    )
+
+    payload = stdio_banner_to_dict(result, detail_level="summary")
+
+    assert payload["network_status"] == "timeout"
+    assert payload["error"]["phase"] == "protocol_read"
+    assert payload["error"]["detail_code"] == "protocol_read_timeout"
+    assert "attempt_history" not in payload["error"]

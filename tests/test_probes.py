@@ -1,6 +1,7 @@
 """集成测试：Mock 传输层，验证完整探测流程。"""
 
 import asyncio
+import errno
 import hashlib
 import struct
 import sys
@@ -201,8 +202,59 @@ async def test_connection_timeout():
         assert br is not None
         assert br.accessible == False
         assert "timed out" in br.error
+        assert br.failure is not None
+        assert br.failure.phase == "tcp_connect"
+        assert br.failure.detail_code == "tcp_connect_timeout"
     finally:
         _transport.connect_tcp = original
+
+
+async def test_transport_classifies_refused_unreachable_and_dns_errors():
+    original = asyncio.open_connection
+
+    async def refused(*_args, **_kwargs):
+        raise OSError(errno.ECONNREFUSED, "Connection refused")
+
+    asyncio.open_connection = refused
+    try:
+        try:
+            await _transport.connect_tcp("192.0.2.61", 22, connect_timeout=0.1)
+            assert False, "Expected connection failure"
+        except _transport.TransportError as exc:
+            failure = _transport.failure_from_exception(exc)
+            assert failure.phase == "tcp_connect"
+            assert failure.detail_code == "tcp_connection_refused"
+            assert failure.os_error == errno.ECONNREFUSED
+    finally:
+        asyncio.open_connection = original
+
+    async def unreachable(*_args, **_kwargs):
+        raise OSError(errno.ENETUNREACH, "Network is unreachable")
+
+    asyncio.open_connection = unreachable
+    try:
+        try:
+            await _transport.connect_tcp("192.0.2.62", 22, connect_timeout=0.1)
+            assert False, "Expected network failure"
+        except _transport.TransportError as exc:
+            assert _transport.failure_from_exception(exc).detail_code == "network_unreachable"
+    finally:
+        asyncio.open_connection = original
+
+    async def dns_failure(*_args, **_kwargs):
+        raise __import__("socket").gaierror(-2, "Name or service not known")
+
+    asyncio.open_connection = dns_failure
+    try:
+        try:
+            await _transport.connect_tcp("missing.example.test", 22, connect_timeout=0.1)
+            assert False, "Expected DNS failure"
+        except _transport.TransportError as exc:
+            failure = _transport.failure_from_exception(exc)
+            assert failure.phase == "dns_resolution"
+            assert failure.detail_code == "dns_resolution_failed"
+    finally:
+        asyncio.open_connection = original
 
 
 async def test_implicit_tls_uses_fresh_plaintext_fallback():

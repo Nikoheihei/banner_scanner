@@ -99,7 +99,13 @@ async def probe_ftp(
         if not banner.strip():
             result.banner = ""  # 明确标注无 Banner
             # 在 error 中说明（但仍标记 accessible）
-            result.error = "TCP connected but no FTP banner received"
+            _transport.record_result_failure(
+                result,
+                phase="protocol_read",
+                detail_code="protocol_no_banner",
+                message="TCP connected but no FTP banner received",
+                elapsed_ms=(asyncio.get_event_loop().time() - start) * 1000,
+            )
 
         result.response_sha256 = captured_response_sha256(bytes(captured_data))
         # 统一提取有效信息
@@ -108,10 +114,16 @@ async def probe_ftp(
     except (_transport.ConnectionTimeout,
             _transport.ReadTimeout,
             _transport.TransportError) as e:
-        result.error = str(e)
+        _transport.record_failure(
+            result, e,
+            elapsed_ms=(asyncio.get_event_loop().time() - start) * 1000,
+        )
         logger.debug("[FTP] %s:%d %s", host, port, e)
     except Exception as e:
-        result.error = f"Unexpected: {e}"
+        _transport.record_failure(
+            result, e,
+            elapsed_ms=(asyncio.get_event_loop().time() - start) * 1000,
+        )
         logger.warning("[FTP] %s:%d unexpected error: %s", host, port, e)
     finally:
         await _transport.safe_close(writer)
