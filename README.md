@@ -1,24 +1,76 @@
 # Banner Scanner MCP
 
-面向已授权目标的六协议主动 Banner 探测与指纹识别服务。项目以 MCP 为主要入口，支持 SSH、FTP、Telnet、Redis、MySQL 和 PostgreSQL，并保留 CLI 作为本地调试入口。
+面向已授权目标的六协议主动 Banner 探测与指纹识别 MCP 服务。支持 SSH、FTP、Telnet、Redis、MySQL 和 PostgreSQL。
+
+## 代码结构
+
+```text
+banner_scanner/
+├── core/                     探测编排、结果模型、解析与指纹匹配
+├── probes/                   六种协议的主动探测实现
+├── fingerprints/             六种协议的指纹规则库
+├── server/                   MCP 工具、目标策略、日志和传输入口
+├── evaluation/               评测与样本处理脚本
+├── tests/                    单元与回归测试
+├── examples/                 MCP 客户端配置示例
+├── tools/                    维护、迁移和诊断工具
+├── cli.py                    本地命令行入口
+└── pyproject.toml            依赖和命令入口
+```
 
 ## 安装
 
-项目固定使用 MCP Python SDK `1.28.1`，并额外提供 `fastmcp==2.12.4` 入口，避免传输行为随依赖升级变化。
+需要 Python 3.10 或更高版本。在项目根目录执行：
 
 ```bash
 python3 -m pip install -e .
 ```
 
-需要 Python 3.10 或更高版本。依赖声明位于 `pyproject.toml`。
+## 启动前配置
 
-## 启动 MCP
+默认情况下服务只监听本机，目标策略允许直接提交 IP 或域名。可按部署需要设置以下环境变量：
 
-### stdio
+| 变量 | 作用 |
+|---|---|
+| `BANNER_SCANNER_ALLOWLIST` | 允许访问的 IP 或 CIDR，多个值用逗号分隔 |
+| `BANNER_SCANNER_DENYLIST` | 禁止访问的 IP 或 CIDR，优先于 allowlist |
+| `BANNER_SCANNER_ALLOWED_DOMAINS` | 可选的域名后缀限制；不设置时不限制域名后缀，仍检查解析出的 IP |
+| `BANNER_SCANNER_PRIVATE_NETWORK_POLICY` | 私网策略：`allow`、`deny` 或 `allowlist_only` |
+| `BANNER_SCANNER_LOG_FILE` | 日志文件路径，默认 `logs/mcp_server.log` |
+| `BANNER_SCANNER_LOG_PARAMS` | 默认记录完整目标和调用参数；设为 `0` 时隐藏目标地址 |
+| `BANNER_SCANNER_ALLOW_REMOTE_BIND` | 监听非本机地址时必须设为 `1` |
+
+仅供本机 Cherry Studio 使用时，通常只需配置日志：
 
 ```bash
-banner-scanner-mcp
+export BANNER_SCANNER_LOG_FILE="/Users/summer/Documents/Codex/2026-06-23/wo/work/banner_scanner/logs/cherry_stdio.log"
 ```
+
+若服务需要扫描任意公网 IPv4/IPv6，但不允许访问私网：
+
+```bash
+export BANNER_SCANNER_ALLOWLIST="0.0.0.0/0,::/0"
+export BANNER_SCANNER_PRIVATE_NETWORK_POLICY="deny"
+```
+
+对外提供 HTTP/SSE 服务时，还应设置明确的 allowlist、`BANNER_SCANNER_ALLOW_REMOTE_BIND=1`，并按部署环境配置 Bearer token 与网络访问控制。
+
+## 启动和客户端配置
+
+### Cherry Studio：stdio
+
+这是本机使用时推荐的方式。stdio 不监听 IP 或端口；Cherry Studio 每次启用或调用时会启动一个新的 MCP 子进程。
+
+在 Cherry Studio 的“设置 → MCP 服务器 → 添加服务器”中填写：
+
+| 字段 | 值 |
+|---|---|
+| 名称 | `banner-scanner-stdio` |
+| 类型 | `STDIO` |
+| 命令 | `/Users/summer/Documents/Codex/2026-06-23/wo/work/banner_scanner/.venv/bin/banner-scanner-mcp` |
+| 参数 | 留空 |
+
+`banner-scanner-mcp` 是由 stdio 客户端启动的命令；不需要另开一个监听端口的后台服务。
 
 ### Streamable HTTP
 
@@ -26,63 +78,45 @@ banner-scanner-mcp
 banner-scanner-mcp-http --host 127.0.0.1 --port 8877
 ```
 
-默认 MCP 地址为 `http://127.0.0.1:8877/mcp`，可参考 `examples/mcp.streamable-http.json` 配置客户端。
+客户端地址：
 
-### SSE 服务
+```text
+http://127.0.0.1:8877/mcp
+```
 
-Cherry Studio 使用 SSE 类型的 MCP 服务时，推荐启动 FastMCP 入口：
+### SSE
+
+SSE 用于兼容仍要求该传输方式的客户端：
 
 ```bash
 banner-scanner-fastmcp --transport sse --host 127.0.0.1 --port 8877
 ```
 
-客户端 URL 填写：
+客户端地址：
 
 ```text
 http://127.0.0.1:8877/sse
 ```
 
-如果服务需要给同一局域网内的其他机器访问，监听地址可以改为 `0.0.0.0`。此时必须显式确认允许远程监听，并配置目标 allowlist，避免 MCP 客户端把服务用来探测未授权目标：
-
-```bash
-export BANNER_SCANNER_ALLOW_REMOTE_BIND=1
-export BANNER_SCANNER_ALLOWLIST="203.0.113.0/24,198.51.100.10/32"
-banner-scanner-fastmcp --transport sse --host 0.0.0.0 --port 8877
-```
-
-Cherry Studio 中填写运行服务这台机器的局域网地址，例如：
-
-```text
-http://192.168.1.23:8877/sse
-```
-
-项目也保留另一个 SSE 启动命令：
-
-```bash
-banner-scanner-mcp-http --transport sse --host 127.0.0.1 --port 8877
-```
-
-无论使用哪个 SSE 启动命令，客户端地址都以 `/sse` 结尾，工具名称、输入参数和返回格式保持一致。
+同一局域网的其他机器访问时，监听地址改为 `0.0.0.0`，但客户端 URL 必须填写运行服务机器的实际局域网 IP，不能填写 `0.0.0.0`。
 
 ## MCP 工具
 
-三个工具是并列关系：
-
-| 工具 | 用途 | 主要限制 |
+| 工具 | 用途 | 限制 |
 |---|---|---|
 | `probe_banner` | 少量目标、多协议探测，默认返回证据详情 | 最多 20 个目标；默认并发 5，上限 20 |
 | `scan_batch` | 较多目标、单协议筛查，默认返回摘要 | 最多 100 个目标；默认并发 20，上限 50 |
-| `health_check` | 查看服务状态、六协议规则数、传输和运行上限 | 不建立外部连接 |
+| `health_check` | 查看服务状态、规则数量、目标策略和运行上限 | 不建立外部连接 |
 
-`probe_banner` 的 `protocols` 可省略。省略时依次探测六种协议，因此只传 IP 或域名即可；指定 `protocols` 可以减少无关连接。`scan_batch` 必须传一个 `protocol`。
+`probe_banner` 不传 `protocols` 时会依次探测六种协议。`scan_batch` 必须指定一个 `protocol`。
 
 ### `probe_banner`
 
 ```json
 {
-  "hosts": ["192.0.2.10"],
-  "protocols": ["ssh", "redis"],
-  "retries": 2,
+  "hosts": ["example.com"],
+  "protocols": ["ssh", "ftp"],
+  "retries": 1,
   "concurrency": 5,
   "detail_level": "evidence"
 }
@@ -96,22 +130,28 @@ banner-scanner-mcp-http --transport sse --host 127.0.0.1 --port 8877
   "protocol": "mysql",
   "retries": 1,
   "concurrency": 20,
-  "detail_level": "summary"
+  "detail_level": "summary",
+  "result_mode": "full"
 }
 ```
 
-工具调用表示客户端希望发起探测；是否允许建立连接仍由服务端的目标范围策略和运行上限强制决定。
+工具调用表达客户端希望发起探测；是否真正连接由服务端的 allowlist、denylist、私网策略、并发和频率限制决定。
 
 ## 结果解释
 
-单个探测结果的主要结构如下：
+单个结果的主要结构如下：
 
 ```json
 {
   "network_status": "connected",
   "protocol_status": "confirmed",
   "identification_status": "identified",
-  "endpoint": {"host": "example.com", "resolved_ip": "192.0.2.10", "port": 22, "protocol": "SSH"},
+  "endpoint": {
+    "host": "example.com",
+    "resolved_ip": "192.0.2.10",
+    "port": 22,
+    "protocol": "SSH"
+  },
   "target_resolution": {
     "input_host": "example.com",
     "resolved_ips": ["192.0.2.10", "192.0.2.11"],
@@ -122,217 +162,48 @@ banner-scanner-mcp-http --transport sse --host 127.0.0.1 --port 8877
     "result_type": "software",
     "name": "OpenSSH",
     "version": "8.9p1",
-    "evidence_strength": "conclusive",
-    "explanation": "Matched software name evidence for OpenSSH."
+    "evidence_strength": "conclusive"
   },
   "observations": {},
   "findings": {}
 }
 ```
 
-- `network_status` 表示连接结果，包括 `connected`、`timeout`、`refused`、`dns_error`、`cancelled` 和 `unreachable`。
-- `protocol_status` 表示响应是否符合预期协议。端口返回其他明确协议时为 `mismatch`，并同时返回 `expected_protocol` 和 `observed_protocol`。
-- `identification_status` 为 `identified`、`unidentified` 或 `conflict`。
-- `primary_identification` 是便于调用方直接读取的具体软件结论。
-- `findings` 并列保留软件家族、设备族、提供商、认证、能力、部署方式、服务状态和协议身份等其他事实，不会覆盖主要软件结论。
-- `observations` 是协议解析得到的事实字段。`evidence` 模式还包含截断后的 Banner、原始字节预览和探测步骤；`summary` 模式只保留关键字段。
-- 域名输入会被解析一次。`endpoint.host` 保留原始域名，`endpoint.resolved_ip` 是实际连接的地址；`target_resolution` 记录全部解析地址和按顺序尝试过的 IP。每种协议从第一个合规 IP 开始，连接或获得响应失败时才回退到下一个地址。
+- `network_status`：`connected`、`timeout`、`refused`、`dns_error`、`cancelled` 或 `unreachable`。
+- `protocol_status`：响应是否符合预期协议；`mismatch` 表示端口返回了另一种明确协议。
+- `identification_status`：`identified`、`unidentified` 或 `conflict`。
+- `endpoint.host`：调用时输入的 IP 或域名；`endpoint.resolved_ip`：实际连接的 IP。
+- `target_resolution`：域名的全部解析 IP、按顺序尝试过的 IP 以及最终连接的 IP。一个 IP 失败后才会尝试下一个，不会同时扫描全部解析地址。
+- `primary_identification`：最便于调用方读取的软件结论。
+- `findings`：提供商、设备族、认证、能力、部署方式、服务状态和协议身份等并列事实。
+- `observations`：协议解析所得字段；`evidence` 模式包含截断 Banner 和探测步骤，`summary` 模式只保留关键字段。
 
-`evidence_strength` 的顺序为 `conclusive > strong > moderate > weak`。它是规则预设的证据强弱，用于同一结果类型内排序，不代表统计准确率或运行时概率。
+`evidence_strength` 按 `conclusive > strong > moderate > weak` 排序，只表示规则证据的明确程度，不表示统计正确率。
 
-父产品和具体软件不是冲突。例如 FileZilla Pro Enterprise 可以作为主要软件，同时在 `findings.software_family` 中保留 FileZilla。只有同一层级出现互斥软件证据，例如同时指向 OpenSSH 和 Dropbear，才返回：
+## 探测与识别方式
 
-```json
-{
-  "identification_status": "conflict",
-  "primary_identification": null,
-  "candidates": [
-    {"result_type": "software", "name": "OpenSSH", "evidence_strength": "strong"},
-    {"result_type": "software", "name": "Dropbear", "evidence_strength": "strong"}
-  ]
-}
-```
-
-MCP 输出不暴露规则编号、正则表达式、`matched_rules` 或全部内部候选。内部离线识别入口仅用于规则回归和冲突审查，不注册为 MCP 工具。
-
-## 探测与识别流程
-
-```text
-MCP request
-  -> authorization and target policy
-  -> runtime limits and global concurrency budget
-  -> protocol-specific active probe
-  -> protocol parser
-  -> protocol mismatch detection
-  -> isolated fingerprint library
-  -> primary identification + parallel findings
-  -> shared MCP serializer
-```
-
-| 协议 | 主动交互 | 识别输入 | 不执行的操作 |
-|---|---|---|---|
-| SSH | 读取 SSH identification line | 版本行、解析的软件名、首包特征 | 不认证、不执行命令 |
-| FTP | 读取欢迎语，必要时请求 `HELP/SYST/FEAT` | 欢迎语、功能列表、解析字段 | 不登录、不上传下载 |
-| Telnet | 被动读取并处理 IAC 协商 | 文本、IAC、提示符和微特征 | 不提交口令 |
-| Redis | `PING`，随后读取 `INFO server` | RESP 文本和 INFO 字段 | 不认证、不修改数据 |
-| MySQL | 读取 protocol-v10 初始握手 | 版本、能力位、字符集、认证插件 | 不发送登录包、不执行 SQL |
-| PostgreSQL | `SSLRequest`，必要时完成 TLS 并发送最小 StartupMessage | SSL 行为、认证消息、错误字段和参数 | 不发送密码、不执行 SQL |
+| 协议 | 主动交互 | 不执行的操作 |
+|---|---|---|
+| SSH | 读取版本行，必要时发送标准识别行 | 不认证、不执行命令 |
+| FTP | 读取欢迎语，必要时请求 `HELP`、`SYST`、`FEAT` | 不登录、不上传下载 |
+| Telnet | 被动读取并处理 IAC 协商 | 不提交口令 |
+| Redis | `PING` 后读取 `INFO server` | 不认证、不修改数据 |
+| MySQL | 读取初始握手 | 不发送登录包、不执行 SQL |
+| PostgreSQL | `SSLRequest` 后发送最小 StartupMessage | 不发送密码、不执行 SQL |
 
 ## 指纹库
 
-六种协议严格使用独立文件：
+每种协议都使用与其报文格式对应的规则：SSH、FTP、Telnet 从 Banner 文本和解析字段中识别软件、设备或服务事实；Redis、MySQL、PostgreSQL 从握手、错误响应、版本、认证和能力字段中组合判断实现信息。
 
-| 协议 | 文件 | 规则数 |
-|---|---|---:|
-| SSH | `fingerprints/protocols/ssh_fingerprints.json` | 76 |
-| FTP | `fingerprints/protocols/ftp_fingerprints.json` | 61 |
-| Telnet | `fingerprints/protocols/telnet_fingerprints.json` | 103 |
-| Redis | `fingerprints/databases/redis_fingerprints.json` | 24 |
-| MySQL | `fingerprints/databases/mysql_fingerprints.json` | 16 |
-| PostgreSQL | `fingerprints/databases/pgsql_fingerprints.json` | 21 |
+规则可输出软件、软件家族、设备族、提供商、认证、能力、部署方式、服务状态和协议身份等事实。具体软件结论作为 `primary_identification` 返回，其余可识别事实保留在 `findings`，不会互相覆盖。
 
-文本协议规则直接对协议限定的 Banner 和解析文本执行正则匹配。规则可以附带静态标签和正则分组提取：
+## 日志
 
-```json
-{
-  "id": "ssh.software.bitvise-ssh-server",
-  "name": "Bitvise SSH Server",
-  "protocol": "SSH",
-  "pattern": "^SSH\\-[12]\\.[0-9]+\\-(?:[0-9.]+\\s+)?(?:(?P<component>FlowSsh|sshlib):\\s*)?(?:Bitvise\\s+SSH\\s+Server|WinSSHD)\\b[^\\r\\n]*(?=\\r?\\n|\\r|$)",
-  "result_type": "software",
-  "match_level": "software_name",
-  "evidence_strength": "strong",
-  "primary_eligible": true,
-  "labels": {"aliases": ["WinSSHD"], "provider": "Bitvise"},
-  "extract": [{"field": "component", "group": "component"}]
-}
-```
-
-Redis、MySQL 和 PostgreSQL 规则组合 Banner 与协议字段。`all`、`any` 和 `none` 可以递归嵌套；嵌套只表达布尔逻辑，不改变证据强度。
-
-```json
-{
-  "id": "mysql.impl.mariadb",
-  "name": "MariaDB",
-  "description": "Identifies MariaDB by version marker.",
-  "match": {"field_regex": {"mysql.version": "MariaDB"}},
-  "extract": [{"field": "version", "source": "mysql.version"}],
-  "labels": {"implementation": "MariaDB"},
-  "result_type": "software",
-  "match_level": "software_name",
-  "evidence_strength": "conclusive",
-  "primary_eligible": true
-}
-```
-
-当多条规则同时命中时，程序先比较识别层级和证据强度，再比较规则具体程度、实际命中长度和规则编号。数据库规则不再使用容易被误解为概率的 `confidence` 字段。
-
-从原始 SQLite 模板重建三个文本库：
-
-```bash
-python3 tools/fingerprints/build_fingerprints.py \
-  --db /path/to/fingerprint.db \
-  --output-dir fingerprints/protocols
-```
-
-## 安全配置
-
-默认只监听本机。可通过环境变量设置服务端策略：
-
-| 变量 | 含义 |
-|---|---|
-| `BANNER_SCANNER_ALLOWLIST` | 允许的 IP/CIDR，逗号分隔 |
-| `BANNER_SCANNER_DENYLIST` | 禁止的 IP/CIDR，逗号分隔 |
-| `BANNER_SCANNER_ALLOWED_DOMAINS` | 可选的域名后缀限制；未设置时不限制域名后缀，仍检查其解析出的 IP |
-| `BANNER_SCANNER_PRIVATE_NETWORK_POLICY` | `allow`、`deny` 或 `allowlist_only` |
-| `BANNER_SCANNER_AUTH_TOKEN` | HTTP Bearer token |
-| `BANNER_SCANNER_CORS_ORIGINS` | 明确允许的浏览器 Origin，不支持通配符 |
-
-非回环地址监听还必须设置 `BANNER_SCANNER_ALLOW_REMOTE_BIND=1`、Bearer token 和目标 allowlist。IP allowlist 也适用于域名：服务会检查域名解析出的每个候选 IP，策略拒绝的地址不会被连接。服务同时限制请求体、目标数、每个域名最多解析的 IP 数、重试、单请求并发、全局并发、请求频率和总执行时间。
-
-审计日志不默认记录完整 Banner，只记录截断预览和完整已捕获响应的 SHA-256 `banner_hash`。
-
-## 日志保存
-
-MCP 服务启动后默认将运行日志保存到 `logs/mcp_server.log`，同时继续输出到终端。日志可用于排查 Cherry Studio 是否连接到服务、MCP 是否完成初始化、工具是否被调用，以及请求是否被目标策略拒绝。
-
-可通过环境变量调整日志位置和详细程度：
-
-| 变量 | 含义 |
-|---|---|
-| `BANNER_SCANNER_LOG_FILE` | 日志文件路径；默认 `logs/mcp_server.log`；设为空字符串可关闭文件日志 |
-| `BANNER_SCANNER_LOG_LEVEL` | 日志级别，默认 `INFO` |
-| `BANNER_SCANNER_LOG_PARAMS` | 默认记录完整目标列表和工具参数；设为 `0`、`false`、`no` 或 `off` 时隐藏目标地址 |
-
-示例：
-
-```bash
-export BANNER_SCANNER_LOG_FILE=logs/cherry_sse.log
-banner-scanner-fastmcp --transport sse --host 127.0.0.1 --port 8877
-```
-
-日志会记录工具名、传输方式、完整目标列表、协议、重试次数、并发数、耗时，以及每个 IP:端口的连接结果、耗时、重试次数和错误原因；每次请求都可用 `request_id` 串联。默认不保存完整 Banner；探测结果只保存截断预览和 `banner_hash`。
-
-## 验证
-
-运行不依赖外网的单元测试：
-
-```bash
-python3 -m banner_scanner.tests.run_tests
-```
-
-使用六种协议的原始 Banner 做离线规则回归：
-
-```bash
-python3 -m banner_scanner.evaluation.validate_fingerprint_corpora \
-  --fingerprint-db /path/to/fingerprint.db \
-  --redis /path/to/scan_results.jsonl \
-  --mysql /path/to/mysql_results.jsonl \
-  --pgsql /path/to/pgsql_results.jsonl \
-  --per-class 384 \
-  --output validation.json
-```
-
-当前规则对 13,355 条分层历史样本的构建回归结果为 13,355/13,355，冲突和拒识均为 0。该结果只验证规则覆盖与冲突行为，不是公网主动探测性能。
-
-主动性能测试和 MCP 流程测试必须重新连接目标：
-
-```bash
-python3 -m banner_scanner.evaluation.active_fingerprint_eval \
-  --fingerprint-db /path/to/fingerprint.db \
-  --redis-results /path/to/scan_results.jsonl \
-  --mysql-results /path/to/mysql_results.jsonl \
-  --pgsql-results /path/to/pgsql_results.jsonl \
-  --output-dir evaluation/run \
-  --confirm-authorized
-```
-
-性能统计保留所有类别，不会删除 0% 连接类别。连接率按全部样本计算；Precision 和 Recall 只在已连接样本上计算，因此不可连接目标不会进入 Recall 分母。流程测试通过官方 MCP Streamable HTTP 客户端调用 `scan_batch`，不绕过 MCP 服务。
-
-## 代码结构
-
-```text
-banner_scanner/
-├── core/                     探测编排、解析结果、协议识别和两类匹配器
-├── probes/                   六种协议的主动探测实现
-├── fingerprints/protocols/   SSH、FTP、Telnet 独立文本规则
-├── fingerprints/databases/   Redis、MySQL、PostgreSQL 独立结构化规则
-├── server/                   MCP 工具、策略、审计、序列化和传输入口
-├── evaluation/               原始样本回归与主动性能/流程测试
-├── tests/                    单元和回归测试
-├── examples/                 MCP 客户端配置示例
-├── tools/fingerprints/       指纹库构建和迁移工具
-├── tools/mcp/                MCP 服务验证工具
-├── tools/legacy/             早期调试脚本和旧版共享 vendors.json 归档
-└── pyproject.toml            包信息、SDK 锁定和命令入口
-```
-
-当前 MCP 服务不依赖 `tools/legacy/vendors.json`。该目录仅保留早期调试脚本和旧共享指纹库，便于必要时对比历史实现。
+服务默认写入 `logs/mcp_server.log`，同时输出到终端。日志记录调用参数、目标解析 IP、实际尝试的 IP:端口、结果摘要、错误原因和 `request_id`；默认不保存完整 Banner，只保存截断预览和响应摘要哈希。
 
 ## 能力边界
 
-- 目标可连接不等于软件一定可识别；证据不足时返回 `unidentified`，不会用 Unknown 模板伪装成软件结论。
-- Banner 可以伪造，结果表示协议响应中的可观察证据，不是主机真实性证明。
-- 网络状态和公网资产会变化，历史 IP 只能用于抽样，正式指标必须来自本次主动连接。
-- PostgreSQL 未认证路径通常不暴露版本，代理、连接池和云服务也可能重写错误消息。
-- SSE 是兼容入口，不是新的首选传输。
+- 目标可连接不等于一定能识别软件；证据不足时返回 `unidentified`。
+- Banner 可以伪造，识别结果表示可观察到的协议证据，不是主机真实性证明。
+- 公网资产和服务状态会变化，历史 IP 不能代替本次主动连接结果。
+- PostgreSQL 未认证路径通常不公开版本；代理、连接池和云服务也可能重写响应。
